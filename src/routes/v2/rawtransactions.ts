@@ -95,7 +95,7 @@ router.post(
   sendRawTransaction
 )
 router.post(
-  "/change/:rawtx/:prevTxs/:destination/:fee",
+  "/change/:rawtx/:prevtxs/:destination/:fee",
   config.rawTransactionsRateLimit6,
   whChangeOutput
 )
@@ -357,27 +357,54 @@ async function whChangeOutput(
   next: express.NextFunction
 ) {
   try {
-    const params = [
-      req.params.rawtx,
-      JSON.parse(req.params.prevTxs),
-      req.params.destination,
-      parseFloat(req.params.fee)
-    ]
+    // TODO: What kind of validations should go here?
+
+    const rawTx = req.params.rawtx
+    if (!rawTx || rawTx === "") {
+      res.status(400)
+      return res.json({ error: "rawtx can not be empty" })
+    }
+
+    let prevTxs
+    try {
+      prevTxs = JSON.parse(req.params.prevtxs)
+    } catch (err) {
+      res.status(400)
+      return res.json({ error: "could not parse prevtxs" })
+    }
+
+    const destination = req.params.destination
+    if (!destination || destination === "") {
+      res.status(400)
+      return res.json({ error: "destination can not be empty" })
+    }
+
+    let fee = req.params.fee
+    if (!fee || fee === "") {
+      res.status(400)
+      return res.json({ error: "fee can not be empty" })
+    }
+    fee = parseFloat(fee)
+
+    const params = [rawTx, prevTxs, destination, fee]
     if (req.query.position) params.push(parseInt(req.query.position))
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
     requestConfig.data.id = "whc_createrawtx_change"
     requestConfig.data.method = "whc_createrawtx_change"
     requestConfig.data.params = params
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
-    }
+    const response = await BitboxHTTP(requestConfig)
+    return res.json(response.data.result)
   } catch (err) {
     res.status(500)
-    res.send(`Error in /change: ${err.message}`)
+    return res.json({ error: `Error in /change: ${err.message}` })
   }
 }
 

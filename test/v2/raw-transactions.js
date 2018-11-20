@@ -360,6 +360,10 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should submit hex encoded transaction", async () => {
+      // This is a difficult test to run as transaction hex is invalid after a
+      // block confirmation. So the unit tests simulates what the output 'should'
+      // be, but the integration asserts an expected failure.
+
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.RPC_BASEURL}`)
@@ -375,10 +379,30 @@ describe("#Raw-Transactions", () => {
       ]
 
       const result = await sendRawTransaction(req, res)
-      console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
-      //assert.hasAllKeys(result, ["error"])
-      //assert.include(result.error, "Request failed with status code 500")
+      if (process.env.TEST === "unit") {
+        assert.isArray(result)
+        assert.isString(result[0])
+
+        // Integration test
+      } else {
+        assert.hasAllKeys(result, ["error"])
+        assert.include(result.error, "Request failed with status code 500")
+      }
+    })
+  })
+
+  describe("whChangeOutput()", () => {
+    const whChangeOutput = rawtransactions.testableComponents.whChangeOutput
+
+    it("should throw 400 error if rawtx is empty", async () => {
+      req.params.rawtx = ""
+      const result = await whChangeOutput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "rawtx can not be empty")
     })
   })
 })
