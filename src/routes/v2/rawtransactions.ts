@@ -83,14 +83,17 @@ router.get(
   config.rawTransactionsRateLimit2,
   decodeRawTransaction
 )
-router.get(
-  "/decodeScript/:hex",
-  config.rawTransactionsRateLimit3,
-  decodeScript
-)
+router.get("/decodeScript/:hex", config.rawTransactionsRateLimit3, decodeScript)
 router.post(
   "/getRawTransaction/:txid",
-  config.rawTransactionsRateLimit4, getRawTransaction)
+  config.rawTransactionsRateLimit4,
+  getRawTransaction
+)
+router.post(
+  "/sendRawTransaction/:hex",
+  config.rawTransactionsRateLimit5,
+  sendRawTransaction
+)
 
 function root(
   req: express.Request,
@@ -101,6 +104,7 @@ function root(
 }
 
 // Decode transaction hex into a JSON object.
+// GET
 async function decodeRawTransaction(
   req: express.Request,
   res: express.Response,
@@ -138,6 +142,7 @@ async function decodeRawTransaction(
 }
 
 // Decode a raw transaction from hex to assembly.
+// GET
 async function decodeScript(
   req: express.Request,
   res: express.Response,
@@ -165,7 +170,6 @@ async function decodeScript(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-
   } catch (error) {
     // Write out error to error log.
     //logger.error(`Error in rawtransactions/decodeScript: `, err)
@@ -176,6 +180,7 @@ async function decodeScript(
 }
 
 // Get a JSON object breakdown of transaction details.
+// POST
 async function getRawTransaction(
   req: express.Request,
   res: express.Response,
@@ -188,11 +193,11 @@ async function getRawTransaction(
     const txids = req.body.txids
     if (!Array.isArray(txids)) {
       res.status(400)
-      return res.json({error: "txids must be an array"})
+      return res.json({ error: "txids must be an array" })
     }
     if (txids.length > 20) {
       res.status(400)
-      return res.json({error: "Array too large. Max 20 txids"})
+      return res.json({ error: "Array too large. Max 20 txids" })
     }
 
     const {
@@ -208,7 +213,7 @@ async function getRawTransaction(
     const results = []
 
     // Loop through each txid in the array
-    for(let i=0; i < txids.length; i++) {
+    for (let i = 0; i < txids.length; i++) {
       const txid = txids[i]
 
       if (!txid || txid === "") {
@@ -223,29 +228,76 @@ async function getRawTransaction(
     }
 
     return res.json(results)
-
-  } catch(err) {
+  } catch (err) {
     // Write out error to error log.
     //logger.error(`Error in rawtransactions/getRawTransaction: `, err)
 
     res.status(500)
     return res.json({ error: util.inspect(err) })
   }
+}
 
-
-  /*
+// Transmit a raw transaction to the BCH network.
+async function sendRawTransaction(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
   try {
-    let txids = JSON.parse(req.params.txid)
-    if (txids.length > 20) {
+    // Validation
+    const hexs = req.body.hex
+    if (!Array.isArray(hexs)) {
+      res.status(400)
+      return res.json({ error: "hex must be an array" })
+    }
+    if (hexs.length > 20) {
+      res.status(400)
+      return res.json({ error: "Array too large. Max 20 entries" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    requestConfig.data.id = "sendrawtransaction"
+    requestConfig.data.method = "sendrawtransaction"
+
+    const results = []
+
+    // Loop through each hex in the array
+    for (let i = 0; i < hexs.length; i++) {
+      const hex = hexs[i]
+
+      if (!hex || hex === "") {
+        res.status(400)
+        return res.json({ error: "Encountered empty hex" })
+      }
+
+      requestConfig.data.params = [hex]
+
+      const response = await BitboxHTTP(requestConfig)
+      results.push(response.data.result)
+    }
+
+    return res.json(results)
+
+
+    /*
+    https: let transactions = JSON.parse(req.params.hex)
+    if (transactions.length > 20) {
       res.json({
-        error: "Array too large. Max 20 txids"
+        error: "Array too large. Max 20 transactions"
       })
     }
+
     const result = [] as any
-    txids = txids.map((txid: any) => {
-      requestConfig.data.id = "getrawtransaction"
-      requestConfig.data.method = "getrawtransaction"
-      requestConfig.data.params = [txid, verbose]
+    transactions = transactions.map((transaction: any) => {
+      requestConfig.data.id = "sendrawtransaction"
+      requestConfig.data.method = "sendrawtransaction"
+      requestConfig.data.params = [transaction]
       BitboxHTTP(requestConfig).catch(error => {
         try {
           return {
@@ -262,7 +314,7 @@ async function getRawTransaction(
         }
       })
     })
-    axios.all(txids).then(
+    axios.all(transactions).then(
       axios.spread((...args) => {
         for (let i = 0; i < args.length; i++) {
           let tmp = {} as any
@@ -273,9 +325,9 @@ async function getRawTransaction(
       })
     )
   } catch (error) {
-    requestConfig.data.id = "getrawtransaction"
-    requestConfig.data.method = "getrawtransaction"
-    requestConfig.data.params = [req.params.txid, verbose]
+    requestConfig.data.id = "sendrawtransaction"
+    requestConfig.data.method = "sendrawtransaction"
+    requestConfig.data.params = [req.params.hex]
     BitboxHTTP(requestConfig)
       .then(response => {
         res.json(response.data.result)
@@ -285,70 +337,15 @@ async function getRawTransaction(
       })
   }
   */
-}
+  } catch (err) {
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/sendRawTransaction: `, err)
 
-
-router.post(
-  "/sendRawTransaction/:hex",
-  config.rawTransactionsRateLimit5,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    try {https://twitter.com/vinarmani/status/1064504066259210240
-      let transactions = JSON.parse(req.params.hex)
-      if (transactions.length > 20) {
-        res.json({
-          error: "Array too large. Max 20 transactions"
-        })
-      }
-
-      const result = [] as any
-      transactions = transactions.map((transaction: any) => {
-        requestConfig.data.id = "sendrawtransaction"
-        requestConfig.data.method = "sendrawtransaction"
-        requestConfig.data.params = [transaction]
-        BitboxHTTP(requestConfig).catch(error => {
-          try {
-            return {
-              data: {
-                result: error.response.data.error.message
-              }
-            }
-          } catch (ex) {
-            return {
-              data: {
-                result: "unknown error"
-              }
-            }
-          }
-        })
-      })
-      axios.all(transactions).then(
-        axios.spread((...args) => {
-          for (let i = 0; i < args.length; i++) {
-            let tmp = {} as any
-            const parsed = tmp.data.result
-            result.push(parsed)
-          }
-          res.json(result)
-        })
-      )
-    } catch (error) {
-      requestConfig.data.id = "sendrawtransaction"
-      requestConfig.data.method = "sendrawtransaction"
-      requestConfig.data.params = [req.params.hex]
-      BitboxHTTP(requestConfig)
-        .then(response => {
-          res.json(response.data.result)
-        })
-        .catch(error => {
-          res.send(error.response.data.error.message)
-        })
-    }
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+
+}
 
 router.post(
   "/change/:rawtx/:prevTxs/:destination/:fee",
@@ -513,6 +510,7 @@ module.exports = {
     root,
     decodeRawTransaction,
     decodeScript,
-    getRawTransaction
+    getRawTransaction,
+    sendRawTransaction
   }
 }

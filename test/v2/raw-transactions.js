@@ -211,7 +211,7 @@ describe("#Raw-Transactions", () => {
       assert.include(result.error, "txids must be an array")
     })
 
-    it("should throw 400 error if txids is too large", async () => {
+    it("should throw 400 error if txids array is too large", async () => {
       const testArray = []
       for (var i = 0; i < 25; i++) testArray.push("")
 
@@ -303,6 +303,60 @@ describe("#Raw-Transactions", () => {
       ])
       assert.isArray(result[0].vin)
       assert.isArray(result[0].vout)
+    })
+  })
+
+  describe("sendRawTransaction()", () => {
+    // block route handler.
+    const sendRawTransaction =
+      rawtransactions.testableComponents.sendRawTransaction
+
+    it("should throw 400 error if hexs array is missing", async () => {
+      const result = await sendRawTransaction(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "hex must be an array")
+    })
+
+    it("should throw 400 error if hexs array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.hex = testArray
+
+      const result = await sendRawTransaction(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 entries")
+    })
+
+    it("should throw 400 error if hex array element is empty", async () => {
+      req.body.hex = [""]
+
+      const result = await sendRawTransaction(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Encountered empty hex")
+    })
+
+    it("should throw 500 error if hex is invalid", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(500, { result: "Error: Request failed with status code 500" })
+      }
+
+      req.body.hex = ["abc123"]
+
+      const result = await sendRawTransaction(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Request failed with status code 500")
     })
   })
 })
