@@ -288,59 +288,6 @@ async function sendRawTransaction(
     }
 
     return res.json(results)
-
-    /*
-    https: let transactions = JSON.parse(req.params.hex)
-    if (transactions.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 transactions"
-      })
-    }
-
-    const result = [] as any
-    transactions = transactions.map((transaction: any) => {
-      requestConfig.data.id = "sendrawtransaction"
-      requestConfig.data.method = "sendrawtransaction"
-      requestConfig.data.params = [transaction]
-      BitboxHTTP(requestConfig).catch(error => {
-        try {
-          return {
-            data: {
-              result: error.response.data.error.message
-            }
-          }
-        } catch (ex) {
-          return {
-            data: {
-              result: "unknown error"
-            }
-          }
-        }
-      })
-    })
-    axios.all(transactions).then(
-      axios.spread((...args) => {
-        for (let i = 0; i < args.length; i++) {
-          let tmp = {} as any
-          const parsed = tmp.data.result
-          result.push(parsed)
-        }
-        res.json(result)
-      })
-    )
-  } catch (error) {
-    requestConfig.data.id = "sendrawtransaction"
-    requestConfig.data.method = "sendrawtransaction"
-    requestConfig.data.params = [req.params.hex]
-    BitboxHTTP(requestConfig)
-      .then(response => {
-        res.json(response.data.result)
-      })
-      .catch(error => {
-        res.send(error.response.data.error.message)
-      })
-  }
-  */
   } catch (err) {
     // Write out error to error log.
     //logger.error(`Error in rawtransactions/sendRawTransaction: `, err)

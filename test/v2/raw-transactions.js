@@ -404,5 +404,81 @@ describe("#Raw-Transactions", () => {
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "rawtx can not be empty")
     })
+
+    it("should throw 400 error if prevtx is empty", async () => {
+      req.params.rawtx = "fakeTx"
+      const result = await whChangeOutput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "could not parse prevtxs")
+    })
+
+    it("should throw 400 error if prevtx not parsable JSON", async () => {
+      req.params.rawtx = "fakeTx"
+      req.params.prevtxs = "someUnparsableJSON"
+      const result = await whChangeOutput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "could not parse prevtxs")
+    })
+
+    it("should throw 400 error if destination is empty", async () => {
+      req.params.rawtx = "fakeTx"
+      req.params.prevtxs = JSON.stringify([{ a: 0 }])
+      const result = await whChangeOutput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "destination can not be empty")
+    })
+
+    it("should throw 400 error fee is empty", async () => {
+      req.params.rawtx = "fakeTx"
+      req.params.prevtxs = JSON.stringify([{ a: 0 }])
+      req.params.destination = "bchtest:fakeaddress"
+      const result = await whChangeOutput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "fee can not be empty")
+    })
+
+    it("should generate change tx hex", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, {
+            result:
+              "0100000001b15ee60431ef57ec682790dec5a3c0d83a0c360633ea8308fbf6d5fc10a779670400000000ffffffff03efe40000000000001976a9141522a025f2365eebee65cd8a8b8a38180dbcd59588ac5c0d00000000000047512102f3e471222bb57a7d416c82bf81c627bfcd2bdc47f36e763ae69935bba4601ece21021580b888ff56feb27f17f08802ebed26258c23697d6a462d43fc13b565fda2dd52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000"
+          })
+      }
+
+      req.params.rawtx =
+        "0100000001b15ee60431ef57ec682790dec5a3c0d83a0c360633ea8308fbf6d5fc10a779670400000000ffffffff025c0d00000000000047512102f3e471222bb57a7d416c82bf81c627bfcd2bdc47f36e763ae69935bba4601ece21021580b888ff56feb27f17f08802ebed26258c23697d6a462d43fc13b565fda2dd52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000"
+      req.params.prevtxs = JSON.stringify([
+        {
+          txid:
+            "6779a710fcd5f6fb0883ea3306360c3ad8c0a3c5de902768ec57ef3104e65eb1",
+          vout: 4,
+          scriptPubKey: "76a9147b25205fd98d462880a3e5b0541235831ae959e588ac",
+          value: 0.00068257
+        }
+      ])
+      req.params.destination =
+        "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg"
+      req.params.fee = 0.000035
+
+      const result = await whChangeOutput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(
+        result,
+        "0100000001b15ee60431ef57ec682790dec5a3c0d83a0c360633ea8308fbf6d5fc10a779670400000000ffffffff03efe40000000000001976a9141522a025f2365eebee65cd8a8b8a38180dbcd59588ac5c0d00000000000047512102f3e471222bb57a7d416c82bf81c627bfcd2bdc47f36e763ae69935bba4601ece21021580b888ff56feb27f17f08802ebed26258c23697d6a462d43fc13b565fda2dd52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000"
+      )
+    })
   })
 })
