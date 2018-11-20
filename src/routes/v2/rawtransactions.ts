@@ -94,6 +94,11 @@ router.post(
   config.rawTransactionsRateLimit5,
   sendRawTransaction
 )
+router.post(
+  "/change/:rawtx/:prevTxs/:destination/:fee",
+  config.rawTransactionsRateLimit6,
+  whChangeOutput
+)
 
 function root(
   req: express.Request,
@@ -284,7 +289,6 @@ async function sendRawTransaction(
 
     return res.json(results)
 
-
     /*
     https: let transactions = JSON.parse(req.params.hex)
     if (transactions.length > 20) {
@@ -344,42 +348,38 @@ async function sendRawTransaction(
     res.status(500)
     return res.json({ error: util.inspect(err) })
   }
-
 }
 
-router.post(
-  "/change/:rawtx/:prevTxs/:destination/:fee",
-  config.rawTransactionsRateLimit6,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+// WH add change output to the transaction.
+async function whChangeOutput(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const params = [
+      req.params.rawtx,
+      JSON.parse(req.params.prevTxs),
+      req.params.destination,
+      parseFloat(req.params.fee)
+    ]
+    if (req.query.position) params.push(parseInt(req.query.position))
+
+    requestConfig.data.id = "whc_createrawtx_change"
+    requestConfig.data.method = "whc_createrawtx_change"
+    requestConfig.data.params = params
+
     try {
-      const params = [
-        req.params.rawtx,
-        JSON.parse(req.params.prevTxs),
-        req.params.destination,
-        parseFloat(req.params.fee)
-      ]
-      if (req.query.position) params.push(parseInt(req.query.position))
-
-      requestConfig.data.id = "whc_createrawtx_change"
-      requestConfig.data.method = "whc_createrawtx_change"
-      requestConfig.data.params = params
-
-      try {
-        const response = await BitboxHTTP(requestConfig)
-        res.json(response.data.result)
-      } catch (error) {
-        res.status(500).send(error.response.data.error)
-      }
-    } catch (err) {
-      res.status(500)
-      res.send(`Error in /change: ${err.message}`)
+      const response = await BitboxHTTP(requestConfig)
+      res.json(response.data.result)
+    } catch (error) {
+      res.status(500).send(error.response.data.error)
     }
+  } catch (err) {
+    res.status(500)
+    res.send(`Error in /change: ${err.message}`)
   }
-)
+}
 
 router.post(
   "/input/:rawTx/:txid/:n",
@@ -511,6 +511,7 @@ module.exports = {
     decodeRawTransaction,
     decodeScript,
     getRawTransaction,
-    sendRawTransaction
+    sendRawTransaction,
+    whChangeOutput
   }
 }
