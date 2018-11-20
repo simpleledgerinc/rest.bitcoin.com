@@ -23,7 +23,7 @@ const mockData = require("./mocks/raw-transactions-mocks")
 
 // Used for debugging.
 const util = require("util")
-util.inspect.defaultOptions = { depth: 1 }
+util.inspect.defaultOptions = { depth: 5 }
 
 describe("#Raw-Transactions", () => {
   let req, res
@@ -251,12 +251,12 @@ describe("#Raw-Transactions", () => {
       assert.include(result.error, "Request failed with status code 500")
     })
 
-    it("should get non-verbose transaction data", async () => {
+    it("should get concise transaction data", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.RPC_BASEURL}`)
           .post(``)
-          .reply(500, { result: "Error: Request failed with status code 500" })
+          .reply(200, { result: mockData.mockRawTransactionConcise })
       }
 
       req.body.txids = [
@@ -265,6 +265,44 @@ describe("#Raw-Transactions", () => {
 
       const result = await getRawTransaction(req, res)
       //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.isString(result[0])
+    })
+
+    it("should get verbose transaction data", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockRawTransactionVerbose })
+      }
+
+      req.body.txids = [
+        "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
+      ]
+      req.body.verbose = true
+
+      const result = await getRawTransaction(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.hasAnyKeys(result[0], [
+        "hex",
+        "txid",
+        "hash",
+        "size",
+        "version",
+        "locktime",
+        "vin",
+        "vout",
+        "blockhash",
+        "confirmations",
+        "time",
+        "blocktime"
+      ])
+      assert.isArray(result[0].vin)
+      assert.isArray(result[0].vout)
     })
   })
 })
