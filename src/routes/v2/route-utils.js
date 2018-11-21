@@ -6,12 +6,16 @@
 
 const axios = require("axios")
 
+const util = require("util")
+util.inspect.defaultOptions = { depth: 1 }
+
 const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default
 const BITBOX = new BITBOXCli()
 
 module.exports = {
   validateNetwork, // Prevents a common user error
-  setEnvVars // Allows RPC variables to be set dynamically based on changing env vars.
+  setEnvVars, // Allows RPC variables to be set dynamically based on changing env vars.
+  getNodeError // Extract error message from the full node.
 }
 
 // Returns true if user-provided cash address matches the correct network,
@@ -68,4 +72,24 @@ function setEnvVars() {
   }
 
   return { BitboxHTTP, username, password, requestConfig }
+}
+
+// Error messages returned by a full node can be burried pretty deep inside the
+// error object returned by Axios. This function attempts to extract the message.
+// If successful, it returns a string. If not, it returns false.
+function getNodeError(err) {
+  try {
+    // Attempt to extract the full node error message.
+    if (
+      err.response &&
+      err.response.data &&
+      err.response.data.error &&
+      err.response.data.error.message
+    )
+      return err.response.data.error.message
+
+    return false
+  } catch (err) {
+    return false
+  }
 }

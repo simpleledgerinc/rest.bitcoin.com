@@ -110,6 +110,11 @@ router.post(
   config.rawTransactionsRateLimit9,
   whReference
 )
+router.post(
+  "/decodeTransaction/:rawtx",
+  config.rawTransactionsRateLimit10,
+  whDecodeTx
+)
 
 function root(
   req: express.Request,
@@ -454,15 +459,15 @@ async function whReference(
 ) {
   try {
     const rawtx = req.params.rawtx
-    if(!rawtx || rawtx === "") {
+    if (!rawtx || rawtx === "") {
       res.status(400)
       return res.json({ error: "rawtx can not be empty" })
     }
 
     const destination = req.params.destination
-    if(!destination || destination === "") {
+    if (!destination || destination === "") {
       res.status(400)
-      return res.json({ error: "destination can not be empty"})
+      return res.json({ error: "destination can not be empty" })
     }
 
     const params = [rawtx, destination]
@@ -488,15 +493,27 @@ async function whReference(
   }
 }
 
-router.post(
-  "/decodeTransaction/:rawTx",
-  config.rawTransactionsRateLimit10,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [req.params.rawTx]
+async function whDecodeTx(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const rawtx = req.params.rawtx
+    if (!rawtx || rawtx === "") {
+      res.status(400)
+      return res.json({ error: "rawtx can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [rawtx]
+
     if (req.query.prevTxs) params.push(JSON.parse(req.query.prevTxs))
 
     if (req.query.height) params.push(req.query.height)
@@ -505,14 +522,21 @@ router.post(
     requestConfig.data.method = "whc_decodetransaction"
     requestConfig.data.params = params
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      return res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error.message)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Return the error message from the node, if it exists.
+    const msg = routeUtils.getNodeError(err)
+    if(msg) {
+      res.status(400)
+      return res.json({error: msg})
     }
+
+    res.status(500)
+    return res.json({ error: `Error in whDecodeTx: ${err.message}` })
   }
-)
+}
 
 router.post(
   "/create/:inputs/:outputs",
@@ -552,6 +576,7 @@ module.exports = {
     whChangeOutput,
     whInput,
     whOpReturn,
-    whReference
+    whReference,
+    whDecodeTx
   }
 }

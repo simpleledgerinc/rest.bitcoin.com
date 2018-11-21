@@ -114,9 +114,30 @@ const mockRawTransactionVerbose = {
   blocktime: 1542646373
 }
 
+const mockWHDecode = {
+  txid: "f8a9857fe3b8a288b5fcafb1b0fc196731f433add6d962f77acd7c10b970ff89",
+  fee: "500",
+  sendingaddress: "bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr",
+  referenceaddress: "bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr",
+  ismine: false,
+  version: 0,
+  type_int: 0,
+  type: "Simple Send",
+  propertyid: 368,
+  precision: "8",
+  amount: "10.00000000",
+  valid: true,
+  blockhash: "0000000046ba0bcef78caaa4492622176bbc563cf249ab52340a0449bc8e26f6",
+  blocktime: 1542814183,
+  positioninblock: 57,
+  block: 1269008,
+  confirmations: 2
+}
+
 module.exports = {
   mockDecodeRawTransaction,
   mockDecodeScript,
   mockRawTransactionConcise,
-  mockRawTransactionVerbose
+  mockRawTransactionVerbose,
+  mockWHDecode
 }

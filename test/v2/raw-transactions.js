@@ -5,6 +5,8 @@
   and integration tests. By default, TEST is set to 'unit'. Set this variable
   to 'integration' to run the tests against BCH mainnet.
 
+  TODO:
+  -Network 500 errors
 */
 
 "use strict"
@@ -646,6 +648,74 @@ describe("#Raw-Transactions", () => {
 
       assert.isString(result)
       assert.equal(result, expected)
+    })
+  })
+
+  describe("whDecodeTx()", () => {
+    const whDecodeTx = rawtransactions.testableComponents.whDecodeTx
+
+    it("should throw 400 error if rawtx is empty", async () => {
+      const result = await whDecodeTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "rawtx can not be empty")
+    })
+
+    it("should return node-error if rawtx is not a WH TX", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(500, {
+            error: { message: "Not a Wormhole Protocol transaction" }
+          })
+      }
+
+      req.params.rawtx =
+        "020000000189ff70b9107ccd7af762d9d6ad33f4316719fcb0b1affcb588a2b8e37f85a9f8000000006b483045022100abcee73654cf4fb5ad951b3967a3577a5049435a35bc23e2d064026dc49f6b07022062cba94df0a90fa5bde2d2973eae1dfd3027126b7dec579baf9dc123a2a79fd44121033dab7ef8681396e7c95f88a2733c470fdb11e2f9825838ecd059fc9fe7301275ffffffff0210270000000000001976a914a4b98b0c118de83e7d39c834445f51dce62425f588ac8a589800000000001976a914a4b98b0c118de83e7d39c834445f51dce62425f588ac00000000"
+
+      const result = await whDecodeTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "Not a Wormhole Protocol transaction")
+    })
+
+    it("should decode WH TX", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockWHDecode })
+      }
+
+      req.params.rawtx =
+        "0200000001f4158c5ec0424656626d201a50f8b51fbe94468aaec88d211bbc59c306e9df01000000006b483045022100c8397a4dd8c8cf1cdc80fb3d86665a8d88379f2583c2efa4165219939eebe32202207ec12283d6a5fe764e2b2efa3934357da161526d497eff20ac221d5f737d68d24121033dab7ef8681396e7c95f88a2733c470fdb11e2f9825838ecd059fc9fe7301275ffffffff0392809800000000001976a914a4b98b0c118de83e7d39c834445f51dce62425f588ac0000000000000000166a14087768630000000000000170000000003b9aca0022020000000000001976a914a4b98b0c118de83e7d39c834445f51dce62425f588ac00000000"
+
+      const result = await whDecodeTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAnyKeys(result, [
+        "txid",
+        "fee",
+        "sendingaddress",
+        "referenceaddress",
+        "ismine",
+        "version",
+        "type_int",
+        "type",
+        "propertyid",
+        "precision",
+        "amount",
+        "valid",
+        "blockhash",
+        "blocktime",
+        "positioninblock",
+        "block",
+        "confirmations"
+      ])
     })
   })
 })
