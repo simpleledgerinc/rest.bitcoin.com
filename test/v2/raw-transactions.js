@@ -243,12 +243,14 @@ describe("#Raw-Transactions", () => {
       assert.include(result.error, "Encountered empty TXID")
     })
 
-    it("should throw 500 error if txid is invalid", async () => {
+    it("should throw 400 error if txid is invalid", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.RPC_BASEURL}`)
           .post(``)
-          .reply(500, { result: "Error: Request failed with status code 500" })
+          .reply(500, {
+            error: { message: "parameter 1 must be of length 64 (not 6)" }
+          })
       }
 
       req.body.txids = ["abc123"]
@@ -257,7 +259,8 @@ describe("#Raw-Transactions", () => {
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "Request failed with status code 500")
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "parameter 1 must be of length 64 (not 6)")
     })
 
     it("should get concise transaction data", async () => {
@@ -356,7 +359,9 @@ describe("#Raw-Transactions", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.RPC_BASEURL}`)
           .post(``)
-          .reply(500, { result: "Error: Request failed with status code 500" })
+          .reply(500, {
+            error: { message: "TX decode failed" }
+          })
       }
 
       req.body.hex = ["abc123"]
@@ -365,7 +370,8 @@ describe("#Raw-Transactions", () => {
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "Request failed with status code 500")
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "TX decode failed")
     })
 
     it("should submit hex encoded transaction", async () => {
@@ -397,7 +403,7 @@ describe("#Raw-Transactions", () => {
         // Integration test
       } else {
         assert.hasAllKeys(result, ["error"])
-        assert.include(result.error, "Request failed with status code 500")
+        assert.include(result.error, "transaction already in block chain")
       }
     })
   })
