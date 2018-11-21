@@ -99,6 +99,7 @@ router.post(
   config.rawTransactionsRateLimit6,
   whChangeOutput
 )
+router.post("/input/:rawTx/:txid/:n", config.rawTransactionsRateLimit7, whInput)
 
 function root(
   req: express.Request,
@@ -355,30 +356,49 @@ async function whChangeOutput(
   }
 }
 
-router.post(
-  "/input/:rawTx/:txid/:n",
-  config.rawTransactionsRateLimit7,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+// Add a transaction input
+async function whInput(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const rawtx = req.params.rawtx
+
+
+    const txid = req.params.txid
+    if(!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    let n = req.params.n
+    if(n === undefined || n === "") {
+      res.status(400)
+      return res.json({ error: "n can not be empty" })
+    }
+    n = parseInt(n)
+
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createrawtx_input"
     requestConfig.data.method = "whc_createrawtx_input"
-    requestConfig.data.params = [
-      req.params.rawTx,
-      req.params.txid,
-      parseInt(req.params.n)
-    ]
+    requestConfig.data.params = [rawtx, txid, n]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
-    }
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    res.status(500)
+    return res.json({ error: `Error in /input: ${err.message}` })
   }
-)
+}
 
 router.post(
   "/opReturn/:rawTx/:payload",
@@ -486,6 +506,7 @@ module.exports = {
     decodeScript,
     getRawTransaction,
     sendRawTransaction,
-    whChangeOutput
+    whChangeOutput,
+    whInput
   }
 }

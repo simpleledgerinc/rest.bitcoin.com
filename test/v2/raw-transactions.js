@@ -481,4 +481,51 @@ describe("#Raw-Transactions", () => {
       )
     })
   })
+
+  describe("whInput()", () => {
+    const whInput = rawtransactions.testableComponents.whInput
+
+    it("should throw 400 error if txid is empty", async () => {
+      const result = await whInput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 400 error if n is empty", async () => {
+      req.params.txid = "fakeTXID"
+
+      const result = await whInput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "n can not be empty")
+    })
+
+    it("should generate tx hex if rawtx is empty", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, {
+            result:
+              "0200000001ee42830efcd184b75581f8ad0a34bee5feccf8d39adf86a5ed05df17907206b00000000000ffffffff0000000000"
+          })
+      }
+
+      req.params.txid =
+        "b006729017df05eda586df9ad3f8ccfee5be340aadf88155b784d1fc0e8342ee"
+      req.params.n = 0
+
+      const result = await whInput(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(
+        result,
+        "0200000001ee42830efcd184b75581f8ad0a34bee5feccf8d39adf86a5ed05df17907206b00000000000ffffffff0000000000"
+      )
+    })
+  })
 })
