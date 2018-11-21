@@ -158,12 +158,19 @@ async function decodeRawTransaction(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
     //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -196,12 +203,19 @@ async function decodeScript(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
     //logger.error(`Error in rawtransactions/decodeScript: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -255,6 +269,13 @@ async function getRawTransaction(
 
     return res.json(results)
   } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
     //logger.error(`Error in rawtransactions/getRawTransaction: `, err)
 
@@ -310,8 +331,12 @@ async function sendRawTransaction(
 
     return res.json(results)
   } catch (err) {
-    // Write out error to error log.
-    //logger.error(`Error in rawtransactions/sendRawTransaction: `, err)
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
 
     res.status(500)
     return res.json({ error: util.inspect(err) })
@@ -371,6 +396,13 @@ async function whChangeOutput(
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
   } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     res.status(500)
     return res.json({ error: `Error in /change: ${err.message}` })
   }
@@ -413,6 +445,13 @@ async function whInput(
 
     return res.json(response.data.result)
   } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     res.status(500)
     return res.json({ error: `Error in whInput: ${err.message}` })
   }
@@ -452,6 +491,13 @@ async function whOpReturn(
 
     return res.json(response.data.result)
   } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     res.status(500)
     return res.json({ error: `Error in whOpReturn: ${err.message}` })
   }
@@ -493,6 +539,13 @@ async function whReference(
 
     return res.json(response.data.result)
   } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     res.status(500)
     return res.json({ error: `Error in whReference: ${err.message}` })
   }
@@ -596,7 +649,7 @@ async function whCreateTx(
 
     return res.json(response.data.result)
   } catch (err) {
-    // Return the error message from the node, if it exists.
+    // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {
       res.status(status)

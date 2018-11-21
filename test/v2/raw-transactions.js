@@ -5,8 +5,6 @@
   and integration tests. By default, TEST is set to 'unit'. Set this variable
   to 'integration' to run the tests against BCH mainnet.
 
-  TODO:
-  -Network 500 errors
 */
 
 "use strict"
@@ -103,7 +101,7 @@ describe("#Raw-Transactions", () => {
       assert.include(result.error, "hex can not be empty")
     })
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -119,8 +117,12 @@ describe("#Raw-Transactions", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
     })
 
     it("should GET /decodeRawTransaction", async () => {
@@ -163,7 +165,7 @@ describe("#Raw-Transactions", () => {
       assert.include(result.error, "hex can not be empty")
     })
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -179,8 +181,12 @@ describe("#Raw-Transactions", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
     })
 
     it("should GET /decodeScript", async () => {
