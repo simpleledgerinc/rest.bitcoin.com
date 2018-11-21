@@ -53,8 +53,21 @@ const mockProperties = [
   }
 ]
 
+const mockBalancesForAddress = [
+  { propertyid: 1, balance: "3.97384339", reserved: "0.00000000" },
+  { propertyid: 314, balance: "1000.00000000", reserved: "0.00000000" },
+  { propertyid: 317, balance: "100.00000000", reserved: "0.00000000" },
+  { propertyid: 353, balance: "4567.00000000", reserved: "0.00000000" },
+  { propertyid: 363, balance: "4567000.00000000", reserved: "0.00000000" },
+  { propertyid: 364, balance: "4567000.00000000", reserved: "0.00000000" },
+  { propertyid: 367, balance: "4567000.00000000", reserved: "0.00000000" },
+  { propertyid: 368, balance: "4566655.00000000", reserved: "0.00000000" },
+  { propertyid: 473, balance: "4566655.00000000", reserved: "0.00000000" }
+]
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
-  mockProperties
+  mockProperties,
+  mockBalancesForAddress
 }

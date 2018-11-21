@@ -86,6 +86,98 @@ describe("#DataRetrieval", () => {
     })
   })
 
+  describe("balancesForAddress()", () => {
+    // block route handler.
+    const balancesForAddress =
+      dataRetrievalRoute.testableComponents.balancesForAddress
+
+    it("should throw 400 if address is empty", async () => {
+      const result = await balancesForAddress(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "address can not be empty")
+    })
+
+    it("should throw 400 if address is invalid", async () => {
+      req.params.address = "badAddress"
+
+      const result = await balancesForAddress(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Invalid BCH address.")
+    })
+
+    it("should throw 400 if address network mismatch", async () => {
+      req.params.address =
+        "bitcoincash:qzxtuwx8jxjja5wj8eyq98amq9z669s8xsl76vph9z"
+
+      const result = await balancesForAddress(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Invalid network.")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.address = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+
+      const result = await balancesForAddress(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should report a zero balance correctly.", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: "No tokens found." })
+      }
+
+      req.params.address = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+
+      const result = await balancesForAddress(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(result, "No tokens found.")
+    })
+
+    it("should report multiple token balance correctly", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBalancesForAddress })
+      }
+
+      req.params.address = "bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr"
+
+      const result = await balancesForAddress(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.hasAnyKeys(result[0], ["propertyid", "balance", "reserved"])
+    })
+  })
+
   describe("getCurrentConsensusHash()", () => {
     // block route handler.
     const getCurrentConsensusHash =
@@ -104,8 +196,12 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
     })
 
     it("should GET /getCurrentConsensusHash", async () => {
@@ -140,8 +236,12 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
     })
 
     it("should GET /getCurrentConsensusHash", async () => {
@@ -185,8 +285,12 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
     })
 
     it("should GET properties", async () => {
