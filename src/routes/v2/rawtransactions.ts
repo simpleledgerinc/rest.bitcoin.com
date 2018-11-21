@@ -99,7 +99,12 @@ router.post(
   config.rawTransactionsRateLimit6,
   whChangeOutput
 )
-router.post("/input/:rawTx/:txid/:n", config.rawTransactionsRateLimit7, whInput)
+router.post("/input/:rawtx/:txid/:n", config.rawTransactionsRateLimit7, whInput)
+router.post(
+  "/opReturn/:rawtx/:payload",
+  config.rawTransactionsRateLimit8,
+  whOpReturn
+)
 
 function root(
   req: express.Request,
@@ -365,20 +370,18 @@ async function whInput(
   try {
     const rawtx = req.params.rawtx
 
-
     const txid = req.params.txid
-    if(!txid || txid === "") {
+    if (!txid || txid === "") {
       res.status(400)
       return res.json({ error: "txid can not be empty" })
     }
 
     let n = req.params.n
-    if(n === undefined || n === "") {
+    if (n === undefined || n === "") {
       res.status(400)
       return res.json({ error: "n can not be empty" })
     }
     n = parseInt(n)
-
 
     const {
       BitboxHTTP,
@@ -396,30 +399,48 @@ async function whInput(
     return res.json(response.data.result)
   } catch (err) {
     res.status(500)
-    return res.json({ error: `Error in /input: ${err.message}` })
+    return res.json({ error: `Error in whInput: ${err.message}` })
   }
 }
 
-router.post(
-  "/opReturn/:rawTx/:payload",
-  config.rawTransactionsRateLimit8,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+// Add an op-return to the transaction.
+async function whOpReturn(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const rawtx = req.params.rawtx
+    if (!rawtx || rawtx === "") {
+      res.status(400)
+      return res.json({ error: "rawtx can not be empty" })
+    }
+
+    const payload = req.params.payload
+    if (!payload || payload === "") {
+      res.status(400)
+      return res.json({ error: "payload can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createrawtx_opreturn"
     requestConfig.data.method = "whc_createrawtx_opreturn"
-    requestConfig.data.params = [req.params.rawTx, req.params.payload]
+    requestConfig.data.params = [rawtx, payload]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
-    }
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    res.status(500)
+    return res.json({ error: `Error in whOpReturn: ${err.message}` })
   }
-)
+}
 
 router.post(
   "/reference/:rawTx/:destination",
@@ -438,7 +459,7 @@ router.post(
 
     try {
       const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
+      return res.json(response.data.result)
     } catch (error) {
       res.status(500).send(error.response.data.error)
     }
@@ -464,7 +485,7 @@ router.post(
 
     try {
       const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
+      return res.json(response.data.result)
     } catch (error) {
       res.status(500).send(error.response.data.error.message)
     }
@@ -491,7 +512,7 @@ router.post(
 
     try {
       const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
+      return res.json(response.data.result)
     } catch (error) {
       res.status(500).send(error.response.data.error.message)
     }
@@ -507,6 +528,7 @@ module.exports = {
     getRawTransaction,
     sendRawTransaction,
     whChangeOutput,
-    whInput
+    whInput,
+    whOpReturn
   }
 }

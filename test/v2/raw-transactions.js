@@ -528,4 +528,50 @@ describe("#Raw-Transactions", () => {
       )
     })
   })
+
+  describe("whOpReturn()", () => {
+    const whOpReturn = rawtransactions.testableComponents.whOpReturn
+
+    it("should throw 400 error if rawtx is empty", async () => {
+      const result = await whOpReturn(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "rawtx can not be empty")
+    })
+
+    it("should throw 400 error if payload is empty", async () => {
+      req.params.rawtx = "fakeTX"
+
+      const result = await whOpReturn(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "payload can not be empty")
+    })
+
+    it("should return a transaction payload", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, {
+            result:
+              "0100000000010000000000000000166a140877686300000000000000020000000006dac2c000000000"
+          })
+      }
+
+      req.params.rawtx = "01000000000000000000"
+      req.params.payload = "00000000000000020000000006dac2c0"
+
+      const result = await whOpReturn(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(
+        result,
+        "0100000000010000000000000000166a140877686300000000000000020000000006dac2c000000000"
+      )
+    })
+  })
 })
