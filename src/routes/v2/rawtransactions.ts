@@ -527,10 +527,10 @@ async function whDecodeTx(
     return res.json(response.data.result)
   } catch (err) {
     // Return the error message from the node, if it exists.
-    const msg = routeUtils.getNodeError(err)
-    if(msg) {
-      res.status(400)
-      return res.json({error: msg})
+    const { msg, status } = routeUtils.getNodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
 
     res.status(500)

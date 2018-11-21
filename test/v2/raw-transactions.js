@@ -662,6 +662,30 @@ describe("#Raw-Transactions", () => {
       assert.include(result.error, "rawtx can not be empty")
     })
 
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.rawtx =
+        "0200000001f4158c5ec0424656626d201a50f8b51fbe94468aaec88d211bbc59c306e9df01000000006b483045022100c8397a4dd8c8cf1cdc80fb3d86665a8d88379f2583c2efa4165219939eebe32202207ec12283d6a5fe764e2b2efa3934357da161526d497eff20ac221d5f737d68d24121033dab7ef8681396e7c95f88a2733c470fdb11e2f9825838ecd059fc9fe7301275ffffffff0392809800000000001976a914a4b98b0c118de83e7d39c834445f51dce62425f588ac0000000000000000166a14087768630000000000000170000000003b9aca0022020000000000001976a914a4b98b0c118de83e7d39c834445f51dce62425f588ac00000000"
+
+      const result = await whDecodeTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
     it("should return node-error if rawtx is not a WH TX", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {

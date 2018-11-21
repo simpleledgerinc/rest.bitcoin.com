@@ -86,10 +86,18 @@ function getNodeError(err) {
       err.response.data.error &&
       err.response.data.error.message
     )
-      return err.response.data.error.message
+      return { msg: err.response.data.error.message, status: 400 }
 
-    return false
+    // Attempt to detect a network connection error.
+    if (err.message && err.message.indexOf("ENOTFOUND") > -1) {
+      return {
+        msg: "Network error: Could not communicate with full node.",
+        status: 503
+      }
+    }
+
+    return { msg: false, status: 500 }
   } catch (err) {
-    return false
+    return { msg: false, status: 500 }
   }
 }
