@@ -65,9 +65,48 @@ const mockBalancesForAddress = [
   { propertyid: 473, balance: "4566655.00000000", reserved: "0.00000000" }
 ]
 
+const mockBalanceForId = [
+  {
+    address: "bchtest:qqcsp0yke938cdvvstehhqv07pzhel30tv32e5vz8a",
+    balance: "24.2",
+    reserved: "0.0"
+  },
+  {
+    address: "bchtest:qp7z6v3mqq3p8f0kqy6lv2s54sq7pupluu85hgp327",
+    balance: "75.8",
+    reserved: "0.0"
+  },
+  {
+    address: "bchtest:qpalmy832fp9ytdlx444sehajljnm554dulckcvjl5",
+    balance: "1.0",
+    reserved: "0.0"
+  },
+  {
+    address: "bchtest:qqwrj8yer7us830ca4y7fw89q24gh3cu8u8a7z489j",
+    balance: "10.0",
+    reserved: "0.0"
+  },
+  {
+    address: "bchtest:qzspkw5g0tew8k3xl7cwctlt3swuaurvkqelj2pmzf",
+    balance: "100.0",
+    reserved: "0.0"
+  },
+  {
+    address: "bchtest:qq0ae7jqqvr87gex4yk3ukppvnm0w7ftqqpzv0lcqa",
+    balance: "99.0",
+    reserved: "0.0"
+  },
+  {
+    address: "bchtest:qq6qag6mv2fzuq73qanm6k60wppy23djnv7ddk3lpk",
+    balance: "90.0",
+    reserved: "0.0"
+  }
+]
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
   mockProperties,
-  mockBalancesForAddress
+  mockBalancesForAddress,
+  mockBalanceForId
 }

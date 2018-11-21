@@ -218,8 +218,8 @@ async function balancesForId(
     requestConfig.data.params = [propertyId]
 
     const response = await BitboxHTTP(requestConfig)
-    
-    res.json(response.data.result)
+
+    return res.json(response.data.result)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)

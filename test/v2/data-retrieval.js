@@ -87,7 +87,6 @@ describe("#DataRetrieval", () => {
   })
 
   describe("balancesForAddress()", () => {
-    // block route handler.
     const balancesForAddress =
       dataRetrievalRoute.testableComponents.balancesForAddress
 
@@ -175,6 +174,58 @@ describe("#DataRetrieval", () => {
 
       assert.isArray(result)
       assert.hasAnyKeys(result[0], ["propertyid", "balance", "reserved"])
+    })
+  })
+
+  describe("balancesForId()", () => {
+    const balancesForId = dataRetrievalRoute.testableComponents.balancesForId
+
+    it("should throw 400 if propertyId is empty", async () => {
+      const result = await balancesForId(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "propertyId can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.propertyId = 192
+
+      const result = await balancesForId(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should report token balances correctly", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBalanceForId })
+      }
+
+      req.params.propertyId = 192
+
+      const result = await balancesForId(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.hasAllKeys(result[0], ["address", "balance", "reserved"])
     })
   })
 
