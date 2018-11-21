@@ -105,6 +105,11 @@ router.post(
   config.rawTransactionsRateLimit8,
   whOpReturn
 )
+router.post(
+  "/reference/:rawtx/:destination",
+  config.rawTransactionsRateLimit9,
+  whReference
+)
 
 function root(
   req: express.Request,
@@ -442,29 +447,46 @@ async function whOpReturn(
   }
 }
 
-router.post(
-  "/reference/:rawTx/:destination",
-  config.rawTransactionsRateLimit9,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [req.params.rawTx, req.params.destination]
+async function whReference(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const rawtx = req.params.rawtx
+    if(!rawtx || rawtx === "") {
+      res.status(400)
+      return res.json({ error: "rawtx can not be empty" })
+    }
+
+    const destination = req.params.destination
+    if(!destination || destination === "") {
+      res.status(400)
+      return res.json({ error: "destination can not be empty"})
+    }
+
+    const params = [rawtx, destination]
     if (req.query.amount) params.push(req.query.amount)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
     requestConfig.data.id = "whc_createrawtx_reference"
     requestConfig.data.method = "whc_createrawtx_reference"
     requestConfig.data.params = params
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      return res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
-    }
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    res.status(500)
+    return res.json({ error: `Error in whReference: ${err.message}` })
   }
-)
+}
 
 router.post(
   "/decodeTransaction/:rawTx",
@@ -529,6 +551,7 @@ module.exports = {
     sendRawTransaction,
     whChangeOutput,
     whInput,
-    whOpReturn
+    whOpReturn,
+    whReference
   }
 }
