@@ -115,6 +115,11 @@ router.post(
   config.rawTransactionsRateLimit10,
   whDecodeTx
 )
+router.post(
+  "/create/:inputs/:outputs",
+  config.rawTransactionsRateLimit11,
+  whCreateTx
+)
 
 function root(
   req: express.Request,
@@ -493,6 +498,7 @@ async function whReference(
   }
 }
 
+// Decode the raw hex of a WH transaction.
 async function whDecodeTx(
   req: express.Request,
   res: express.Response,
@@ -527,7 +533,7 @@ async function whDecodeTx(
     return res.json(response.data.result)
   } catch (err) {
     // Return the error message from the node, if it exists.
-    const { msg, status } = routeUtils.getNodeError(err)
+    const { msg, status } = routeUtils.decodeError(err)
     if (msg) {
       res.status(status)
       return res.json({ error: msg })
@@ -538,32 +544,69 @@ async function whDecodeTx(
   }
 }
 
-router.post(
-  "/create/:inputs/:outputs",
-  config.rawTransactionsRateLimit11,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [
-      JSON.parse(req.params.inputs),
-      JSON.parse(req.params.outputs)
-    ]
+// Create a transaction spending the given inputs and creating new outputs.
+async function whCreateTx(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameters
+    let inputs = req.params.inputs
+    if (!inputs || inputs === "") {
+      res.status(400)
+      return res.json({ error: "inputs can not be empty" })
+    }
+
+    try {
+      inputs = JSON.parse(inputs)
+    } catch (err) {
+      res.status(400)
+      return res.json({ error: "could not parse inputs" })
+    }
+
+    let outputs = req.params.outputs
+    if (!outputs || outputs === "") {
+      res.status(400)
+      return res.json({ error: "outputs can not be empty" })
+    }
+
+    try {
+      outputs = JSON.parse(outputs)
+    } catch (err) {
+      res.status(400)
+      return res.json({ error: "could not parse outputs" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [inputs, outputs]
     if (req.query.locktime) params.push(req.query.locktime)
 
     requestConfig.data.id = "createrawtransaction"
     requestConfig.data.method = "createrawtransaction"
     requestConfig.data.params = params
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      return res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error.message)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Return the error message from the node, if it exists.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: `Error in whCreateTx: ${err.message}` })
   }
-)
+}
 
 module.exports = {
   router,
@@ -577,6 +620,7 @@ module.exports = {
     whInput,
     whOpReturn,
     whReference,
-    whDecodeTx
+    whDecodeTx,
+    whCreateTx
   }
 }

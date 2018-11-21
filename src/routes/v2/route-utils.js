@@ -15,7 +15,7 @@ const BITBOX = new BITBOXCli()
 module.exports = {
   validateNetwork, // Prevents a common user error
   setEnvVars, // Allows RPC variables to be set dynamically based on changing env vars.
-  getNodeError // Extract error message from the full node.
+  decodeError // Extract and interpret error messages.
 }
 
 // Returns true if user-provided cash address matches the correct network,
@@ -75,9 +75,11 @@ function setEnvVars() {
 }
 
 // Error messages returned by a full node can be burried pretty deep inside the
-// error object returned by Axios. This function attempts to extract the message.
-// If successful, it returns a string. If not, it returns false.
-function getNodeError(err) {
+// error object returned by Axios. This function attempts to extract and interpret
+// error messages.
+// Returns an object. If successful, obj.msg is a string.
+// If there is a failure, obj.msg is false.
+function decodeError(err) {
   try {
     // Attempt to extract the full node error message.
     if (

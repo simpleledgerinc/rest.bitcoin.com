@@ -742,4 +742,115 @@ describe("#Raw-Transactions", () => {
       ])
     })
   })
+
+  describe("whCreateTx()", () => {
+    const whCreateTx = rawtransactions.testableComponents.whCreateTx
+
+    it("should throw 400 error if inputs are empty", async () => {
+      const result = await whCreateTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "inputs can not be empty")
+    })
+
+    it("should throw 400 error if inputs are not parsable JSON", async () => {
+      req.params.inputs = "fakeTx"
+
+      const result = await whCreateTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "could not parse inputs")
+    })
+
+    it("should throw 400 error if outputs are empty", async () => {
+      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
+      const result = await whCreateTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "outputs can not be empty")
+    })
+
+    it("should throw 400 error if outputs are not parsable JSON", async () => {
+      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
+      req.params.outputs = "fakeTx"
+
+      const result = await whCreateTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "could not parse outputs")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.inputs = JSON.stringify([mockData.mockWHCreateInput])
+      req.params.outputs = JSON.stringify({})
+
+      const result = await whCreateTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should return node-error", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(500, {
+            error: { message: "txid must be hexadecimal string (not 'myid')" }
+          })
+      }
+
+      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
+      req.params.outputs = JSON.stringify({})
+
+      const result = await whCreateTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txid must be hexadecimal string (not 'myid')"
+      )
+    })
+
+    it("should create WH TX", async () => {
+      const expected =
+        "0200000001b29af9aaf74f82ad7ff181fcc6f3d2cf5fa701a1c969620f9185ee3df29cedf70100000000ffffffff0000000000"
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: expected })
+      }
+
+      req.params.inputs = JSON.stringify([mockData.mockWHCreateInput])
+      req.params.outputs = JSON.stringify({})
+
+      const result = await whCreateTx(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(result, expected)
+    })
+  })
 })

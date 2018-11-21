@@ -134,10 +134,24 @@ const mockWHDecode = {
   confirmations: 2
 }
 
+const mockWHCreateInput = {
+  txid: "f7ed9cf23dee85910f6269c9a101a75fcfd2f3c6fc81f17fad824ff7aaf99ab2",
+  vout: 1,
+  scriptPubKey: "76a914a4b98b0c118de83e7d39c834445f51dce62425f588ac",
+  amount: 0.09984138,
+  satoshis: 9984138,
+  height: 1269011,
+  confirmations: 4,
+  legacyAddress: "mvXwPH74hW2yVTWwDwzsjGoaUAqJvWk7ZJ",
+  cashAddress: "bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr",
+  value: 0.09984138
+}
+
 module.exports = {
   mockDecodeRawTransaction,
   mockDecodeScript,
   mockRawTransactionConcise,
   mockRawTransactionVerbose,
-  mockWHDecode
+  mockWHDecode,
+  mockWHCreateInput
 }
