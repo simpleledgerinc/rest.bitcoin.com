@@ -101,7 +101,7 @@ describe("#AddressRouter", () => {
     it("should GET /utxo/:address single address", done => {
       const mockRequest = httpMocks.createRequest({
         method: "GET",
-        url: '/utxo/["qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c"%5D'
+        url: '/utxo/["qpk4hk3wuxe2uqtqc97n8atzrrr6r5mleczf9sur4h"%5D'
       })
       const mockResponse = httpMocks.createResponse({
         eventEmitter: require("events").EventEmitter
@@ -131,7 +131,7 @@ describe("#AddressRouter", () => {
       const mockRequest = httpMocks.createRequest({
         method: "GET",
         url:
-          '/utxo/["qql6r7khtjgwy3ufnjtsczvaf925hyw49cudht57tr", "qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c"%5D'
+          '/utxo/["qpk4hk3wuxe2uqtqc97n8atzrrr6r5mleczf9sur4h", "qq49jys0hgfl4qd3d6qc0lp9e4mgefltlujef7u7rd"%5D'
       })
       const mockResponse = httpMocks.createResponse({
         eventEmitter: require("events").EventEmitter
