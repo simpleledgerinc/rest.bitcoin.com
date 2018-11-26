@@ -108,11 +108,20 @@ const mockAddressPropertyBalance = {
   reserved: "0.000000"
 }
 
+const mockBalanceHash = {
+  block: 1270046,
+  blockhash: "00000000b0ed54ba9be49a23dc38baa11eba1454056212c4f6de4fe9fbbc02f8",
+  propertyid: 24,
+  balanceshash:
+    "80e368a2b6b6ed8183dbaa7969bb5129eaac9154c8022525e0597bb58ba7ab0e"
+}
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
   mockProperties,
   mockBalancesForAddress,
   mockBalanceForId,
-  mockAddressPropertyBalance
+  mockAddressPropertyBalance,
+  mockBalanceHash
 }

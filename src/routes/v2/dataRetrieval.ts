@@ -114,6 +114,11 @@ router.get(
   addressPropertyBalance
 )
 router.get(
+  "/balancesHash/:propertyId",
+  config.dataRetrievalRateLimit4,
+  balancesHash
+)
+router.get(
   "/currentConsensusHash",
   config.dataRetrievalRateLimit6,
   getCurrentConsensusHash
@@ -234,7 +239,7 @@ async function balancesForId(
     }
 
     res.status(500)
-    return res.json({ error: util.inspect(err)})
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -284,26 +289,45 @@ async function addressPropertyBalance(
   }
 }
 
-router.get(
-  "/balancesHash/:propertyId",
-  config.dataRetrievalRateLimit4,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function balancesHash(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getbalanceshash"
     requestConfig.data.method = "whc_getbalanceshash"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.get(
   "/crowdSale/:propertyId",
@@ -684,6 +708,7 @@ module.exports = {
     balancesForAddress,
     balancesForId,
     addressPropertyBalance,
+    balancesHash,
     getCurrentConsensusHash,
     info,
     properties
