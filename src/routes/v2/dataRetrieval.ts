@@ -127,6 +127,7 @@ router.get(
 router.get("/grants/:propertyId", config.dataRetrievalRateLimit8, grants)
 
 router.get("/info", config.dataRetrievalRateLimit9, info)
+router.get("/payload/:txid", config.dataRetrievalRateLimit10, payload)
 router.get("/properties", config.dataRetrievalRateLimit17, properties)
 
 function root(
@@ -474,30 +475,48 @@ async function info(
     }
 
     res.status(500)
-    return res.json({ error: `Error in /change: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
-router.get(
-  "/payload/:txid",
-  config.dataRetrievalRateLimit10,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function payload(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getpayload"
     requestConfig.data.method = "whc_getpayload"
-    requestConfig.data.params = [req.params.txid]
+    requestConfig.data.params = [txid]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+    
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.get(
   "/property/:propertyId",
@@ -749,6 +768,7 @@ module.exports = {
     getCurrentConsensusHash,
     grants,
     info,
+    payload,
     properties
   }
 }

@@ -153,6 +153,11 @@ const mockGrants = {
   ]
 }
 
+const mockPayload = {
+  payload: "0000003700000004000000000000303900",
+  payloadsize: 17
+}
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
@@ -162,5 +167,6 @@ module.exports = {
   mockAddressPropertyBalance,
   mockBalanceHash,
   mockCrowdsale,
-  mockGrants
+  mockGrants,
+  mockPayload
 }
