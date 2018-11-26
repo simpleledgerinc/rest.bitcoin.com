@@ -103,10 +103,16 @@ const mockBalanceForId = [
   }
 ]
 
+const mockAddressPropertyBalance = {
+  balance: "1234567890123.123000",
+  reserved: "0.000000"
+}
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
   mockProperties,
   mockBalancesForAddress,
-  mockBalanceForId
+  mockBalanceForId,
+  mockAddressPropertyBalance
 }

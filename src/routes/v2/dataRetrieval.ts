@@ -109,6 +109,11 @@ router.get(
   balancesForId
 )
 router.get(
+  "/balance/:address/:propertyId",
+  config.dataRetrievalRateLimit3,
+  addressPropertyBalance
+)
+router.get(
   "/currentConsensusHash",
   config.dataRetrievalRateLimit6,
   getCurrentConsensusHash
@@ -229,33 +234,55 @@ async function balancesForId(
     }
 
     res.status(500)
-    return res.json({ error: `Error in /change: ${err.message}` })
+    return res.json({ error: util.inspect(err)})
   }
 }
 
-router.get(
-  "/balance/:address/:propertyId",
-  config.dataRetrievalRateLimit3,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function addressPropertyBalance(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getbalance"
     requestConfig.data.method = "whc_getbalance"
-    requestConfig.data.params = [
-      req.params.address,
-      parseInt(req.params.propertyId)
-    ]
+    requestConfig.data.params = [address, propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.get(
   "/balancesHash/:propertyId",
@@ -656,6 +683,7 @@ module.exports = {
     root,
     balancesForAddress,
     balancesForId,
+    addressPropertyBalance,
     getCurrentConsensusHash,
     info,
     properties
