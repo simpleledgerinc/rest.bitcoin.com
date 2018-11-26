@@ -130,6 +130,12 @@ router.get("/info", config.dataRetrievalRateLimit9, info)
 router.get("/payload/:txid", config.dataRetrievalRateLimit10, payload)
 router.get("/properties", config.dataRetrievalRateLimit17, properties)
 router.get("/property/:propertyId", config.dataRetrievalRateLimit11, property)
+router.get(
+  "/seedBlocks/:startBlock/:endBlock",
+  config.dataRetrievalRateLimit12,
+  seedBlocks
+)
+router.get("/STO/:txid/:recipientFilter", config.dataRetrievalRateLimit13, sto)
 
 function root(
   req: express.Request,
@@ -559,50 +565,99 @@ async function property(
   }
 }
 
-router.get(
-  "/seedBlocks/:startBlock/:endBlock",
-  config.dataRetrievalRateLimit12,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+// Returns a list of blocks containing Omni transactions for use in seed block filtering.
+// Does this even work?
+async function seedBlocks(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let startBlock = req.params.startBlock
+    if (!startBlock || startBlock === "") {
+      res.status(400)
+      return res.json({ error: "startBlock can not be empty" })
+    }
+    startBlock = parseInt(startBlock)
+
+    let endBlock = req.params.endBlock
+    if (!endBlock || endBlock === "") {
+      res.status(400)
+      return res.json({ error: "endBlock can not be empty" })
+    }
+    endBlock = parseInt(endBlock)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getseedblocks"
     requestConfig.data.method = "whc_getseedblocks"
-    requestConfig.data.params = [
-      parseInt(req.params.startBlock),
-      parseInt(req.params.endBlock)
-    ]
+    requestConfig.data.params = [startBlock, endBlock]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/STO/:txid/:recipientFilter",
-  config.dataRetrievalRateLimit13,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// Get information and recipients of a send-to-owners transaction.
+async function sto(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    let recipientFilter = req.params.recipientFilter
+    if (!recipientFilter || recipientFilter === "") {
+      recipientFilter = "*"
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getsto"
     requestConfig.data.method = "whc_getsto"
-    requestConfig.data.params = [req.params.txid, req.params.recipientFilter]
+    requestConfig.data.params = [txid, recipientFilter]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.get(
   "/transaction/:txid",
@@ -790,6 +845,8 @@ module.exports = {
     info,
     payload,
     properties,
-    property
+    property,
+    seedBlocks,
+    sto
   }
 }

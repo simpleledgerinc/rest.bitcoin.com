@@ -174,6 +174,26 @@ const mockProperty = {
   totaltokens: "1000000.0"
 }
 
+const mockSTO = {
+  txid: "18abf3097cf2b8731daeea06bf0b19b0df9f3d4895d7d09ddf77bb7f63c9b831",
+  fee: "1114",
+  sendingaddress: "bchtest:qz04wg2jj75x34tge2v8w0l6r0repfcvcygv3t7sg5",
+  referenceaddress: "bchtest:qz04wg2jj75x34tge2v8w0l6r0repfcvcygv3t7sg5",
+  ismine: false,
+  version: 0,
+  type_int: 55,
+  type: "Grant Property Tokens",
+  propertyid: 4,
+  precision: "2",
+  amount: "123.45",
+  valid: true,
+  blockhash: "0000000000000048c5939847c8304448af2f0b4851b30150c9b2a352dd02bae5",
+  blocktime: 1532837111,
+  positioninblock: 3,
+  block: 1249133,
+  confirmations: 20920
+}
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
@@ -185,5 +205,6 @@ module.exports = {
   mockCrowdsale,
   mockGrants,
   mockPayload,
-  mockProperty
+  mockProperty,
+  mockSTO
 }

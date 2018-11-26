@@ -844,4 +844,98 @@ describe("#DataRetrieval", () => {
       ])
     })
   })
+
+  describe("sto()", () => {
+    const sto = dataRetrievalRoute.testableComponents.sto
+
+    it("should throw 400 if txid is empty", async () => {
+      const result = await sto(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.txid =
+        "18abf3097cf2b8731daeea06bf0b19b0df9f3d4895d7d09ddf77bb7f63c9b831"
+
+      const result = await sto(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should throw 400 for non-WH transaction", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(500, {
+            error: {
+              message: "Not a Wormhole Protocol transaction"
+            }
+          })
+      }
+
+      req.params.txid =
+        "af90b66b3568ab879ad6c7a59cb2cd85c13c92fada0de2a691b27673e87e337f"
+
+      const result = await sto(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "Not a Wormhole Protocol transaction")
+    })
+
+    it("should get STO information", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockSTO })
+      }
+
+      req.params.txid =
+        "18abf3097cf2b8731daeea06bf0b19b0df9f3d4895d7d09ddf77bb7f63c9b831"
+
+      const result = await sto(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, [
+        "txid",
+        "fee",
+        "sendingaddress",
+        "referenceaddress",
+        "ismine",
+        "version",
+        "type_int",
+        "type",
+        "propertyid",
+        "precision",
+        "amount",
+        "valid",
+        "blockhash",
+        "blocktime",
+        "positioninblock",
+        "block",
+        "confirmations"
+      ])
+    })
+  })
 })
