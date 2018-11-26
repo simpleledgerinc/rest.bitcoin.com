@@ -211,6 +211,23 @@ describe("#DataRetrieval", () => {
       )
     })
 
+    it("should return empty array for zero balances", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: [] })
+      }
+
+      req.params.propertyId = 117
+
+      const result = await balancesForId(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.isEmpty(result)
+    })
+
     it("should report token balances correctly", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
