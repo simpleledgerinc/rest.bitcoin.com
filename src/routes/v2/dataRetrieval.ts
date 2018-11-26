@@ -124,6 +124,7 @@ router.get(
   config.dataRetrievalRateLimit6,
   getCurrentConsensusHash
 )
+router.get("/grants/:propertyId", config.dataRetrievalRateLimit8, grants)
 
 router.get("/info", config.dataRetrievalRateLimit9, info)
 router.get("/properties", config.dataRetrievalRateLimit17, properties)
@@ -401,32 +402,49 @@ async function getCurrentConsensusHash(
     }
 
     res.status(500)
-    return res.json({ error: `Error in /change: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
-router.get(
-  "/grants/:propertyId",
-  config.dataRetrievalRateLimit8,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function grants(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getgrants"
     requestConfig.data.method = "whc_getgrants"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      //res.status(500).send(error.response.data.error);
-      res.status(500)
-      return res.send(error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 async function info(
   req: express.Request,
@@ -729,6 +747,7 @@ module.exports = {
     balancesHash,
     crowdsale,
     getCurrentConsensusHash,
+    grants,
     info,
     properties
   }

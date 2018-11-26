@@ -134,6 +134,25 @@ const mockCrowdsale = {
   maxtokens: false
 }
 
+const mockGrants = {
+  propertyid: 4,
+  name: "test_token1",
+  issuer: "bchtest:qz04wg2jj75x34tge2v8w0l6r0repfcvcygv3t7sg5",
+  creationtxid:
+    "6579dea76c3d0b4463671c5476f90f20c746992c300a4b8ec4ce6748c0960836",
+  totaltokens: "122.22",
+  issuances: [
+    {
+      txid: "18abf3097cf2b8731daeea06bf0b19b0df9f3d4895d7d09ddf77bb7f63c9b831",
+      grant: "123.45"
+    },
+    {
+      txid: "e41c5a52e4985d07308d98d029c92c5350f1169dfd7af1a5ab20b956c90f8c86",
+      revoke: "1.23"
+    }
+  ]
+}
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
@@ -142,5 +161,6 @@ module.exports = {
   mockBalanceForId,
   mockAddressPropertyBalance,
   mockBalanceHash,
-  mockCrowdsale
+  mockCrowdsale,
+  mockGrants
 }
