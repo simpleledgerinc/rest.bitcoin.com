@@ -158,6 +158,22 @@ const mockPayload = {
   payloadsize: 17
 }
 
+const mockProperty = {
+  propertyid: 111,
+  name: "Quantum Miner",
+  category: "Companies",
+  subcategory: "Bitcoin Mining",
+  data: "Quantum Miner Tokens QMT",
+  url: "www.example.com",
+  precision: 1,
+  issuer: "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg",
+  creationtxid:
+    "8d2e358edcddadbaa4e0f7c9e3fe2ff7e128c4bed6d3a6a67af6aa5922c7bcd8",
+  fixedissuance: true,
+  managedissuance: false,
+  totaltokens: "1000000.0"
+}
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
@@ -168,5 +184,6 @@ module.exports = {
   mockBalanceHash,
   mockCrowdsale,
   mockGrants,
-  mockPayload
+  mockPayload,
+  mockProperty
 }

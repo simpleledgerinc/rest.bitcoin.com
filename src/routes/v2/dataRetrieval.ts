@@ -129,6 +129,7 @@ router.get("/grants/:propertyId", config.dataRetrievalRateLimit8, grants)
 router.get("/info", config.dataRetrievalRateLimit9, info)
 router.get("/payload/:txid", config.dataRetrievalRateLimit10, payload)
 router.get("/properties", config.dataRetrievalRateLimit17, properties)
+router.get("/property/:propertyId", config.dataRetrievalRateLimit11, property)
 
 function root(
   req: express.Request,
@@ -503,7 +504,7 @@ async function payload(
     requestConfig.data.params = [txid]
 
     const response = await BitboxHTTP(requestConfig)
-    
+
     return res.json(response.data.result)
   } catch (err) {
     // Attempt to decode the error message.
@@ -518,26 +519,45 @@ async function payload(
   }
 }
 
-router.get(
-  "/property/:propertyId",
-  config.dataRetrievalRateLimit11,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function property(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyid = req.params.propertyid
+    if (!propertyid || propertyid === "") {
+      res.status(400)
+      return res.json({ error: "propertyid can not be empty" })
+    }
+    propertyid = parseInt(propertyid)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getproperty"
     requestConfig.data.method = "whc_getproperty"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyid]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.get(
   "/seedBlocks/:startBlock/:endBlock",
@@ -769,6 +789,7 @@ module.exports = {
     grants,
     info,
     payload,
-    properties
+    properties,
+    property
   }
 }
