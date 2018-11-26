@@ -367,6 +367,98 @@ describe("#DataRetrieval", () => {
     })
   })
 
+  describe("crowdsale()", () => {
+    const crowdsale = dataRetrievalRoute.testableComponents.crowdsale
+
+    it("should throw 400 if propertyId is empty", async () => {
+      const result = await crowdsale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "propertyId can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.propertyId = 7
+
+      const result = await crowdsale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should throw 400 for noncrowdsale propertyid", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(500, {
+            error: {
+              message: "Property identifier does not refer to a crowdsale"
+            }
+          })
+      }
+
+      req.params.propertyId = 6
+
+      const result = await crowdsale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "Property identifier does not refer to a crowdsale"
+      )
+    })
+
+    it("should report crowdsale information", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockCrowdsale })
+      }
+
+      req.params.propertyId = 7
+
+      const result = await crowdsale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, [
+        "propertyid",
+        "name",
+        "active",
+        "issuer",
+        "propertyiddesired",
+        "precision",
+        "tokensperunit",
+        "earlybonus",
+        "starttime",
+        "deadline",
+        "amountraised",
+        "tokensissued",
+        "addedissuertokens",
+        "closedearly",
+        "maxtokens"
+      ])
+    })
+  })
+
   describe("getCurrentConsensusHash()", () => {
     // block route handler.
     const getCurrentConsensusHash =

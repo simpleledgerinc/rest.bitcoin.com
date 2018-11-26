@@ -118,6 +118,7 @@ router.get(
   config.dataRetrievalRateLimit4,
   balancesHash
 )
+router.get("/crowdSale/:propertyId", config.dataRetrievalRateLimit5, crowdsale)
 router.get(
   "/currentConsensusHash",
   config.dataRetrievalRateLimit6,
@@ -329,31 +330,48 @@ async function balancesHash(
   }
 }
 
-router.get(
-  "/crowdSale/:propertyId",
-  config.dataRetrievalRateLimit5,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function crowdsale(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
     let verbose = false
     if (req.query.verbose && req.query.verbose === "true") verbose = true
 
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getcrowdsale"
     requestConfig.data.method = "whc_getcrowdsale"
-    requestConfig.data.params = [parseInt(req.params.propertyId), verbose]
+    requestConfig.data.params = [propertyId, verbose]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      //res.status(500).send(error.response.data.error);
-      res.status(500)
-      return res.send(error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 async function getCurrentConsensusHash(
   req: express.Request,
@@ -709,6 +727,7 @@ module.exports = {
     balancesForId,
     addressPropertyBalance,
     balancesHash,
+    crowdsale,
     getCurrentConsensusHash,
     info,
     properties

@@ -116,6 +116,24 @@ const mockBalanceHash = {
     "80e368a2b6b6ed8183dbaa7969bb5129eaac9154c8022525e0597bb58ba7ab0e"
 }
 
+const mockCrowdsale = {
+  propertyid: 7,
+  name: "crowsale_5",
+  active: false,
+  issuer: "bchtest:qz04wg2jj75x34tge2v8w0l6r0repfcvcygv3t7sg5",
+  propertyiddesired: 1,
+  precision: "5",
+  tokensperunit: "0.10000000",
+  earlybonus: 10,
+  starttime: 1532875701,
+  deadline: 1533874961,
+  amountraised: "42.50925682",
+  tokensissued: "10000000.00000",
+  addedissuertokens: "9999995.61573",
+  closedearly: false,
+  maxtokens: false
+}
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
@@ -123,5 +141,6 @@ module.exports = {
   mockBalancesForAddress,
   mockBalanceForId,
   mockAddressPropertyBalance,
-  mockBalanceHash
+  mockBalanceHash,
+  mockCrowdsale
 }
