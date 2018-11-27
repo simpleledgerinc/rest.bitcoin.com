@@ -214,6 +214,12 @@ const mockTransaction = {
   confirmations: 20978
 }
 
+const mockBlockTransactions = [
+  "5a6e71b12718fff4ca9981376fdf6e78357e9bfd126162ab22a8ee728c8dfad3",
+  "6afffd7d14060b6e79c504c5f17596616eb99356b71d301b5b37df1df065b9a0",
+  "18abf3097cf2b8731daeea06bf0b19b0df9f3d4895d7d09ddf77bb7f63c9b831"
+]
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
@@ -227,5 +233,6 @@ module.exports = {
   mockPayload,
   mockProperty,
   mockSTO,
-  mockTransaction
+  mockTransaction,
+  mockBlockTransactions
 }

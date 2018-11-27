@@ -1032,4 +1032,78 @@ describe("#DataRetrieval", () => {
       ])
     })
   })
+
+  describe("blockTransactions()", () => {
+    const blockTransactions =
+      dataRetrievalRoute.testableComponents.blockTransactions
+
+    it("should throw 400 if index is empty", async () => {
+      const result = await blockTransactions(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "index can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.index = 1249133
+
+      const result = await blockTransactions(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should throw 400 for out-of-range block index", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(500, {
+            error: {
+              message: "JSON integer out of range"
+            }
+          })
+      }
+
+      req.params.index = 1111111111111111
+
+      const result = await blockTransactions(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "JSON integer out of range")
+    })
+
+    it("should get WH block transactions", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBlockTransactions })
+      }
+
+      req.params.index = 1249133
+
+      const result = await blockTransactions(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+    })
+  })
 })

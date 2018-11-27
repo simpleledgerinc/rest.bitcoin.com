@@ -97,6 +97,7 @@ while (i < 21) {
   i++
 }
 
+// Create the routes and point to the route handler functions.
 router.get("/", config.dataRetrievalRateLimit1, root)
 router.get(
   "/balancesForAddress/:address",
@@ -137,6 +138,11 @@ router.get(
 )
 router.get("/STO/:txid/:recipientFilter", config.dataRetrievalRateLimit13, sto)
 router.get("/transaction/:txid", config.dataRetrievalRateLimit14, transaction)
+router.get(
+  "/blockTransactions/:index",
+  config.dataRetrievalRateLimit15,
+  blockTransactions
+)
 
 function root(
   req: express.Request,
@@ -699,26 +705,45 @@ async function transaction(
   }
 }
 
-router.get(
-  "/blockTransactions/:index",
-  config.dataRetrievalRateLimit15,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function blockTransactions(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let index = req.params.index
+    if (!index || index === "") {
+      res.status(400)
+      return res.json({ error: "index can not be empty" })
+    }
+    index = parseInt(index)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_listblocktransactions"
     requestConfig.data.method = "whc_listblocktransactions"
-    requestConfig.data.params = [parseInt(req.params.index)]
+    requestConfig.data.params = [index]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.get(
   "/pendingTransactions",
@@ -865,6 +890,7 @@ module.exports = {
     property,
     seedBlocks,
     sto,
-    transaction
+    transaction,
+    blockTransactions
   }
 }
