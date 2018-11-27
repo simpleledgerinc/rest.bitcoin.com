@@ -136,6 +136,7 @@ router.get(
   seedBlocks
 )
 router.get("/STO/:txid/:recipientFilter", config.dataRetrievalRateLimit13, sto)
+router.get("/transaction/:txid", config.dataRetrievalRateLimit14, transaction)
 
 function root(
   req: express.Request,
@@ -659,28 +660,44 @@ async function sto(
   }
 }
 
-router.get(
-  "/transaction/:txid",
-  config.dataRetrievalRateLimit14,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function transaction(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_gettransaction"
     requestConfig.data.method = "whc_gettransaction"
-    requestConfig.data.params = [req.params.txid]
+    requestConfig.data.params = [txid]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      //res.status(500).send(error.response.data.error);
-      res.status(500)
-      return res.send(error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.get(
   "/blockTransactions/:index",
@@ -847,6 +864,7 @@ module.exports = {
     properties,
     property,
     seedBlocks,
-    sto
+    sto,
+    transaction
   }
 }
