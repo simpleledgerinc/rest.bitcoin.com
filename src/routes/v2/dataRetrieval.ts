@@ -143,6 +143,11 @@ router.get(
   config.dataRetrievalRateLimit15,
   blockTransactions
 )
+router.get(
+  "/pendingTransactions",
+  config.dataRetrievalRateLimit16,
+  pendingTransactions
+)
 
 function root(
   req: express.Request,
@@ -745,31 +750,63 @@ async function blockTransactions(
   }
 }
 
-router.get(
-  "/pendingTransactions",
-  config.dataRetrievalRateLimit16,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = []
-    if (req.query.address) params.push(req.query.address)
+async function pendingTransactions(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
     requestConfig.data.id = "whc_listpendingtransactions"
     requestConfig.data.method = "whc_listpendingtransactions"
-    requestConfig.data.params = params
+    requestConfig.data.params = [address]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500)
-      return res.send(error)
-      //res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 // Get a list of all tokens that have been created.
 async function properties(
@@ -891,6 +928,7 @@ module.exports = {
     seedBlocks,
     sto,
     transaction,
-    blockTransactions
+    blockTransactions,
+    pendingTransactions
   }
 }
