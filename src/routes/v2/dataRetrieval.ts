@@ -153,6 +153,11 @@ router.get(
   config.dataRetrievalRateLimit18,
   frozenBalance
 )
+router.get(
+  "/frozenBalanceForAddress/:address",
+  config.dataRetrievalRateLimit19,
+  frozenBalanceForAddress
+)
 
 function root(
   req: express.Request,
@@ -885,11 +890,6 @@ async function frozenBalance(
       })
     }
 
-    //const params = [
-    //  BITBOX.Address.toCashAddress(req.params.address),
-    //  parseInt(req.params.propertyId)
-    //]
-
     const {
       BitboxHTTP,
       username,
@@ -917,27 +917,63 @@ async function frozenBalance(
   }
 }
 
-router.get(
-  "/frozenBalanceForAddress/:address",
-  config.dataRetrievalRateLimit19,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [BITBOX.Address.toCashAddress(req.params.address)]
+async function frozenBalanceForAddress(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getfrozenbalanceforaddress"
     requestConfig.data.method = "whc_getfrozenbalanceforaddress"
-    requestConfig.data.params = params
+    requestConfig.data.params = [address]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.get(
   "/frozenBalanceForId/:propertyId",
@@ -981,6 +1017,7 @@ module.exports = {
     transaction,
     blockTransactions,
     pendingTransactions,
-    frozenBalance
+    frozenBalance,
+    frozenBalanceForAddress
   }
 }
