@@ -6,8 +6,10 @@
   to 'integration' to run the tests against BCH mainnet.
 
   TODO:
-  -Create e2e test for pendingTransactions as the data is transient and can not
-  be adaquately tested in a unit or integration test.
+  -pendingTransactions: Create e2e test for pendingTransactions as the data is
+  transient and can not be adaquately tested in a unit or integration test.
+  -frozenBalance: Need an address with an actual balance of a managed token with
+  a frozen balance, for integration tests.
 */
 
 "use strict"
@@ -1180,6 +1182,91 @@ describe("#DataRetrieval", () => {
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
+    })
+  })
+
+  describe("frozenBalance()", () => {
+    const frozenBalance = dataRetrievalRoute.testableComponents.frozenBalance
+
+    it("should throw 400 if address is empty", async () => {
+      const result = await frozenBalance(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "address can not be empty")
+    })
+
+    it("should throw 400 if propertyId is empty", async () => {
+      req.params.address = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+      const result = await frozenBalance(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "propertyId can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.address = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+      req.params.propertyId = 4
+
+      const result = await frozenBalance(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should throw 400 if address is invalid", async () => {
+      req.params.address = "badAddress"
+      req.params.propertyId = 4
+
+      const result = await frozenBalance(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Invalid BCH address.")
+    })
+
+    it("should throw 400 if address network mismatch", async () => {
+      req.params.address =
+        "bitcoincash:qzxtuwx8jxjja5wj8eyq98amq9z669s8xsl76vph9z"
+      req.params.propertyId = 4
+
+      const result = await frozenBalance(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Invalid network.")
+    })
+
+    it("should get frozen balance", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockFrozenBalance })
+      }
+
+      req.params.address = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+      req.params.propertyId = 4
+
+      const result = await frozenBalance(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["frozen", "balance"])
     })
   })
 })

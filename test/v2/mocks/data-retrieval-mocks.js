@@ -220,6 +220,11 @@ const mockBlockTransactions = [
   "18abf3097cf2b8731daeea06bf0b19b0df9f3d4895d7d09ddf77bb7f63c9b831"
 ]
 
+const mockFrozenBalance = {
+  frozen: false,
+  balance: "0.00"
+}
+
 module.exports = {
   mockConsensusHash,
   mockInfo,
@@ -234,5 +239,6 @@ module.exports = {
   mockProperty,
   mockSTO,
   mockTransaction,
-  mockBlockTransactions
+  mockBlockTransactions,
+  mockFrozenBalance
 }
