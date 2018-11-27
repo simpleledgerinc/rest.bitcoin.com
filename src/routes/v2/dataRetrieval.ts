@@ -158,6 +158,11 @@ router.get(
   config.dataRetrievalRateLimit19,
   frozenBalanceForAddress
 )
+router.get(
+  "/frozenBalanceForId/:propertyId",
+  config.dataRetrievalRateLimit20,
+  frozenBalanceForId
+)
 
 function root(
   req: express.Request,
@@ -975,27 +980,45 @@ async function frozenBalanceForAddress(
   }
 }
 
-router.get(
-  "/frozenBalanceForId/:propertyId",
-  config.dataRetrievalRateLimit20,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [parseInt(req.params.propertyId)]
+async function frozenBalanceForId(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getfrozenbalanceforid"
     requestConfig.data.method = "whc_getfrozenbalanceforid"
-    requestConfig.data.params = params
+    requestConfig.data.params = [propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+    
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 module.exports = {
   router,
@@ -1018,6 +1041,7 @@ module.exports = {
     blockTransactions,
     pendingTransactions,
     frozenBalance,
-    frozenBalanceForAddress
+    frozenBalanceForAddress,
+    frozenBalanceForId
   }
 }

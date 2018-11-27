@@ -11,6 +11,7 @@
   -frozenBalance: Need an address with an actual balance of a managed token with
   a frozen balance, for integration tests.
   -frozenBalanceForAddress: Same as frozenBalance
+  -frozenBalanceForId: Same as frozenBalance
 */
 
 "use strict"
@@ -1338,6 +1339,35 @@ describe("#DataRetrieval", () => {
       req.params.address = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
 
       const result = await frozenBalanceForAddress(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+    })
+  })
+
+  describe("frozenBalanceForId()", () => {
+    const frozenBalanceForId =
+      dataRetrievalRoute.testableComponents.frozenBalanceForId
+
+    it("should throw 400 if propertyId is empty", async () => {
+      const result = await frozenBalanceForId(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "propertyId can not be empty")
+    })
+
+    it("should get frozen balance", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: [] })
+      }
+
+      req.params.propertyId = 4
+
+      const result = await frozenBalanceForId(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
