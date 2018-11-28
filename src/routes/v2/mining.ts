@@ -61,8 +61,8 @@ while (i < 4) {
 }
 
 router.get("/", config.miningRateLimit1, root)
-
 router.get("/getMiningInfo", config.miningRateLimit2, getMiningInfo)
+router.get("/getNetworkHashps", config.miningRateLimit3, getNetworkHashPS)
 
 function root(
   req: express.Request,
@@ -130,26 +130,39 @@ async function getMiningInfo(
   }
 }
 
-router.get(
-  "/getNetworkHashps",
-  config.miningRateLimit3,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function getNetworkHashPS(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "getnetworkhashps"
     requestConfig.data.method = "getnetworkhashps"
     requestConfig.data.params = []
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
+
 //
 // router.post('/submitBlock/:hex', (req, res, next) => {
 //   let parameters = '';
@@ -185,6 +198,7 @@ module.exports = {
   router,
   testableComponents: {
     root,
-    getMiningInfo
+    getMiningInfo,
+    getNetworkHashPS
   }
 }

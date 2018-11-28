@@ -134,4 +134,41 @@ describe("#Mining", () => {
       ])
     })
   })
+
+  describe("#getNetworkHashPS", async () => {
+    const getNetworkHashPS = miningRoute.testableComponents.getNetworkHashPS
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      const result = await getNetworkHashPS(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should GET Network Hash per second", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: 517604755.6648782 })
+      }
+
+      const result = await getNetworkHashPS(req, res)
+      console.log(`result: ${util.inspect(result)}`)
+    })
+  })
 })
