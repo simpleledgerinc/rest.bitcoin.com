@@ -5,6 +5,12 @@ const router = express.Router()
 import axios from "axios"
 import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
+const routeUtils = require("./route-utils")
+const logger = require("./logging.js")
+
+// Used to convert error messages to strings, to safely pass to users.
+const util = require("util")
+util.inspect.defaultOptions = { depth: 1 }
 
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
@@ -57,14 +63,16 @@ while (i < 4) {
 router.get(
   "/",
   config.miningRateLimit1,
-  async (
+  root)
+
+function root (
     req: express.Request,
     res: express.Response,
     next: express.NextFunction
-  ) => {
-    res.json({ status: "mining" })
+  ) {
+    return res.json({ status: "mining" })
   }
-)
+
 //
 // router.get('/getBlockTemplate/:templateRequest', (req, res, next) => {
 //   BitboxHTTP({
@@ -162,4 +170,9 @@ router.get(
 //   });
 // });
 
-module.exports = router
+module.exports = {
+  router,
+  testableComponents: {
+    root
+  }
+}

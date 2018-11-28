@@ -1,30 +1,28 @@
 /*
-  TESTS FOR THE CONTROL.JS LIBRARY
+  TESTS FOR THE MINING.TS LIBRARY
 
   This test file uses the environment variable TEST to switch between unit
   and integration tests. By default, TEST is set to 'unit'. Set this variable
   to 'integration' to run the tests against BCH mainnet.
-
 */
 
 "use strict"
 
 const chai = require("chai")
 const assert = chai.assert
-const controlRoute = require("../../dist/routes/v2/control")
+const miningRoute = require("../../dist/routes/v2/mining")
 const nock = require("nock") // HTTP mocking
 
 let originalEnvVars // Used during transition from integration to unit tests.
 
 // Mocking data.
 const { mockReq, mockRes } = require("./mocks/express-mocks")
-const mockData = require("./mocks/control-mock")
 
 // Used for debugging.
 const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
 
-describe("#ControlRouter", () => {
+describe("#Mining", () => {
   let req, res
 
   before(() => {
@@ -77,64 +75,13 @@ describe("#ControlRouter", () => {
 
   describe("#root", async () => {
     // root route handler.
-    const root = controlRoute.testableComponents.root
+    const root = miningRoute.testableComponents.root
 
     it("should respond to GET for base route", async () => {
       const result = root(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
-      assert.equal(result.status, "control", "Returns static string")
-    })
-  })
-
-  describe("#GetInfo", () => {
-    const getInfo = controlRoute.testableComponents.getInfo
-
-    it("should throw 500 when network issues", async () => {
-      // Save the existing RPC URL.
-      const savedUrl = process.env.RPC_BASEURL
-
-      // Manipulate the URL to cause a 500 network error.
-      process.env.RPC_BASEURL = "http://fakeurl/api/"
-
-      const result = await getInfo(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
-
-      // Restore the saved URL.
-      process.env.RPC_BASEURL = savedUrl
-
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
-    })
-
-    it("should get info on the full node", async () => {
-      // Mock the RPC call for unit tests.
-      if (process.env.TEST === "unit") {
-        nock(`${process.env.RPC_BASEURL}`)
-          .post(``)
-          .reply(200, { result: mockData.mockGetInfo })
-      }
-
-      const result = await getInfo(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
-
-      assert.hasAllKeys(result, [
-        "version",
-        "protocolversion",
-        "walletversion",
-        "balance",
-        "blocks",
-        "timeoffset",
-        "connections",
-        "proxy",
-        "difficulty",
-        "testnet",
-        "keypoololdest",
-        "keypoolsize",
-        "paytxfee",
-        "relayfee",
-        "errors"
-      ])
+      assert.equal(result.status, "mining", "Returns static string")
     })
   })
 })

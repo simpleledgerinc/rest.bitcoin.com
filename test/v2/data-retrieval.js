@@ -62,6 +62,7 @@ describe("#DataRetrieval", () => {
     // Explicitly reset the parmas and body.
     req.params = {}
     req.body = {}
+    req.query = {}
 
     // Activate nock if it's inactive.
     if (!nock.isActive()) nock.activate()
