@@ -168,7 +168,9 @@ describe("#Mining", () => {
       }
 
       const result = await getNetworkHashPS(req, res)
-      console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isNumber(result)
     })
   })
 })
