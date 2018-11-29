@@ -9,7 +9,7 @@ const bitboxproxy = require("slpjs").bitbox
 const utils = require("slpjs").utils
 const slpBalances = require("slp-balances")
 
-const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
 const config = {
