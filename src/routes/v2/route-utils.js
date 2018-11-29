@@ -98,6 +98,14 @@ function decodeError(err) {
       }
     }
 
+    // Different kind of network error
+    if (err.message && err.message.indexOf("ENETUNREACH") > -1) {
+      return {
+        msg: "Network error: Could not communicate with full node.",
+        status: 503
+      }
+    }
+
     return { msg: false, status: 500 }
   } catch (err) {
     return { msg: false, status: 500 }

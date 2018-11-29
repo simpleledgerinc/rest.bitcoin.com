@@ -5,6 +5,12 @@ const router = express.Router()
 import axios from "axios"
 import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
+const routeUtils = require("./route-utils")
+const logger = require("./logging.js")
+
+// Used to convert error messages to strings, to safely pass to users.
+const util = require("util")
+util.inspect.defaultOptions = { depth: 1 }
 
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
@@ -54,17 +60,18 @@ while (i < 4) {
   i++
 }
 
-router.get(
-  "/",
-  config.miningRateLimit1,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    res.json({ status: "mining" })
-  }
-)
+router.get("/", config.miningRateLimit1, root)
+router.get("/getMiningInfo", config.miningRateLimit2, getMiningInfo)
+router.get("/getNetworkHashps", config.miningRateLimit3, getNetworkHashPS)
+
+function root(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  return res.json({ status: "mining" })
+}
+
 //
 // router.get('/getBlockTemplate/:templateRequest', (req, res, next) => {
 //   BitboxHTTP({
@@ -90,47 +97,72 @@ router.get(
 //   });
 // });
 
-router.get(
-  "/getMiningInfo",
-  config.miningRateLimit2,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function getMiningInfo(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "getmininginfo"
     requestConfig.data.method = "getmininginfo"
     requestConfig.data.params = []
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
-    }
-  }
-)
+    const response = await BitboxHTTP(requestConfig)
 
-router.get(
-  "/getNetworkHashps",
-  config.miningRateLimit3,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function getNetworkHashPS(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "getnetworkhashps"
     requestConfig.data.method = "getnetworkhashps"
     requestConfig.data.params = []
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
+
 //
 // router.post('/submitBlock/:hex', (req, res, next) => {
 //   let parameters = '';
@@ -162,4 +194,11 @@ router.get(
 //   });
 // });
 
-module.exports = router
+module.exports = {
+  router,
+  testableComponents: {
+    root,
+    getMiningInfo,
+    getNetworkHashPS
+  }
+}
