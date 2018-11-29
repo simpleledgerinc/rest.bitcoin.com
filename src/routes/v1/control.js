@@ -5,7 +5,7 @@ const router = express.Router()
 const axios = require("axios")
 const RateLimit = require("express-rate-limit")
 
-//const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default;
+//const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default;
 //const BITBOX = new BITBOXCli();
 
 const BitboxHTTP = axios.create({
