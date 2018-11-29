@@ -46,6 +46,7 @@ var transactionV2 = require("./routes/v2/transaction");
 var utilV2 = require("./routes/v2/util");
 var dataRetrievalV2 = require("./routes/v2/dataRetrieval");
 var payloadCreationV2 = require("./routes/v2/payloadCreation");
+var wormholeV2 = require("./routes/v2/wormhole");
 require("dotenv").config();
 var app = express();
 app.use(swStats.getMiddleware({ swaggerSpec: apiSpec }));
@@ -97,6 +98,7 @@ app.use("/" + v2prefix + "/" + "transaction", transactionV2);
 app.use("/" + v2prefix + "/" + "util", utilV2);
 app.use("/" + v2prefix + "/" + "dataRetrieval", dataRetrievalV2.router);
 app.use("/" + v2prefix + "/" + "payloadCreation", payloadCreationV2);
+app.use("/" + v2prefix + "/" + "wormhole", wormholeV2.router);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     var err = {
