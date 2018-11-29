@@ -5,6 +5,12 @@ const router = express.Router()
 import axios from "axios"
 import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
+const routeUtils = require("./route-utils")
+const logger = require("./logging.js")
+
+// Used to convert error messages to strings, to safely pass to users.
+const util = require("util")
+util.inspect.defaultOptions = { depth: 1 }
 
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
@@ -81,38 +87,52 @@ while (i < 16) {
   i++
 }
 
-router.get(
-  "/",
-  config.payloadCreationRateLimit1,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    res.json({ status: "payloadCreation" })
-  }
-)
+router.get("/", config.payloadCreationRateLimit1, root)
+router.get("/burnBCH", config.payloadCreationRateLimit2, burnBCH)
 
-router.get(
-  "/burnBCH",
-  config.payloadCreationRateLimit2,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+function root(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  return res.json({ status: "payloadCreation" })
+}
+
+async function burnBCH(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createpayload_burnbch"
     requestConfig.data.method = "whc_createpayload_burnbch"
     requestConfig.data.params = []
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.post(
   "/changeIssuer/:propertyId",
@@ -448,4 +468,10 @@ router.post(
   }
 )
 
-module.exports = router
+module.exports = {
+  router,
+  testableComponents: {
+    root,
+    burnBCH
+  }
+}
