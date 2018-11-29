@@ -6,7 +6,7 @@ import axios from "axios"
 import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
 
-const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
 interface IRLConfig {

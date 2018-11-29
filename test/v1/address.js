@@ -131,7 +131,7 @@ describe("#AddressRouter", () => {
       const mockRequest = httpMocks.createRequest({
         method: "GET",
         url:
-          '/utxo/["qpk4hk3wuxe2uqtqc97n8atzrrr6r5mleczf9sur4h", "qq49jys0hgfl4qd3d6qc0lp9e4mgefltlujef7u7rd"%5D'
+          '/utxo/["qz4q7h2jxmfhg3l7r7zeumzgeh7gyp6shuqmq5h6np", "qzqlp044n3qn7kntlc0mr5tp2a0ee0vvyq9yyyyjh0"%5D'
       })
       const mockResponse = httpMocks.createResponse({
         eventEmitter: require("events").EventEmitter

@@ -5,8 +5,11 @@ const router = express.Router()
 const axios = require("axios")
 const RateLimit = require("express-rate-limit")
 
-const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
+
+const util = require("util")
+util.inspect.defaultOptions = { depth: 1 }
 
 const config = {
   addressRateLimit1: undefined,
@@ -118,7 +121,6 @@ router.get(
       addresses.forEach(address => {
         final.push([])
       })
-
       axios
         .get(`${process.env.BITCOINCOM_BASEURL}addrs/${addresses}/utxo`)
         .then(response => {
@@ -135,7 +137,8 @@ router.get(
           res.json(final)
         })
         .catch(error => {
-          res.send(error.response.data.error.message)
+          //res.send(error.response.data.error.message)
+          console.log(`Error: `, error)
         })
     } catch (error) {
       axios
@@ -156,7 +159,8 @@ router.get(
           res.json(parsed)
         })
         .catch(error => {
-          res.send(error.response.data.error.message)
+          //res.send(error.response.data.error.message)
+          console.log(`Error: `, error)
         })
     }
   }
