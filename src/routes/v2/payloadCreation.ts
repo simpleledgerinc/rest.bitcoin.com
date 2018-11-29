@@ -12,7 +12,7 @@ const BitboxHTTP = axios.create({
 const username = process.env.RPC_USERNAME
 const password = process.env.RPC_PASSWORD
 
-const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
 const requestConfig: IRequestConfig = {
