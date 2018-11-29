@@ -89,6 +89,11 @@ while (i < 16) {
 
 router.get("/", config.payloadCreationRateLimit1, root)
 router.get("/burnBCH", config.payloadCreationRateLimit2, burnBCH)
+router.post(
+  "/changeIssuer/:propertyId",
+  config.payloadCreationRateLimit2,
+  changeIssuer
+)
 
 function root(
   req: express.Request,
@@ -134,26 +139,48 @@ async function burnBCH(
   }
 }
 
-router.post(
-  "/changeIssuer/:propertyId",
-  config.payloadCreationRateLimit2,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function changeIssuer(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createpayload_changeissuer"
     requestConfig.data.method = "whc_createpayload_changeissuer"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.post(
   "/closeCrowdSale/:propertyId",
@@ -472,6 +499,7 @@ module.exports = {
   router,
   testableComponents: {
     root,
-    burnBCH
+    burnBCH,
+    changeIssuer
   }
 }
