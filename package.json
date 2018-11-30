@@ -1,6 +1,6 @@
 {
   "name": "rest.bitcoin.com",
-  "version": "1.12.2",
+  "version": "1.12.3",
   "description": "REST API for Bitcoin.com's Cloud",
   "author": "Gabriel Cardona @ Bitcoin.com",
   "license": "MIT",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "bitbox-sdk": "^2.2.4",
+    "bitbox-sdk": "^2.2.6",
     "bitcoincash-zmq-decoder": "0.1.5",
     "body-parser": "~1.17.1",
     "cookie-parser": "~1.4.3",
