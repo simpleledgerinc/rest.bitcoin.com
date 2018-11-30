@@ -94,6 +94,16 @@ router.post(
   config.payloadCreationRateLimit2,
   changeIssuer
 )
+router.post(
+  "/closeCrowdSale/:propertyId",
+  config.payloadCreationRateLimit3,
+  closeCrowdSale
+)
+router.post(
+  "/grant/:propertyId/:amount",
+  config.payloadCreationRateLimit4,
+  grant
+)
 
 function root(
   req: express.Request,
@@ -145,6 +155,7 @@ async function changeIssuer(
   next: express.NextFunction
 ) {
   try {
+    // Validate input parameter
     let propertyId = req.params.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
@@ -182,52 +193,104 @@ async function changeIssuer(
   }
 }
 
-router.post(
-  "/closeCrowdSale/:propertyId",
-  config.payloadCreationRateLimit3,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function closeCrowdSale(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameter
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createpayload_closecrowdsale"
     requestConfig.data.method = "whc_createpayload_closecrowdsale"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.post(
-  "/grant/:propertyId/:amount",
-  config.payloadCreationRateLimit4,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [parseInt(req.params.propertyId), req.params.amount]
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function grant(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameter
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    // Validate input parameter
+    let amount = req.params.amount
+    if (!amount || amount === "") {
+      res.status(400)
+      return res.json({ error: "amount can not be empty" })
+    }
+
+    const params = [propertyId, amount]
+
     if (req.query.memo) params.push(req.query.memo)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
     requestConfig.data.id = "whc_createpayload_grant"
     requestConfig.data.method = "whc_createpayload_grant"
     requestConfig.data.params = params
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      //res.status(500).send(error.response.data.error);
-      res.status(500)
-      return res.send(error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.post(
   "/crowdsale/:ecosystem/:propertyPrecision/:previousId/:category/:subcategory/:name/:url/:data/:propertyIdDesired/:tokensPerUnit/:deadline/:earlyBonus/:undefine/:totalNumber",
@@ -500,6 +563,8 @@ module.exports = {
   testableComponents: {
     root,
     burnBCH,
-    changeIssuer
+    changeIssuer,
+    closeCrowdSale,
+    grant
   }
 }

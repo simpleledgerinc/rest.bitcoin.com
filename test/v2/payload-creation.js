@@ -1,5 +1,5 @@
 /*
-  TESTS FOR THE MINING.TS LIBRARY
+  TESTS FOR THE PAYLOADCREATION.TS LIBRARY
 
   This test file uses the environment variable TEST to switch between unit
   and integration tests. By default, TEST is set to 'unit'. Set this variable
@@ -17,7 +17,7 @@ let originalEnvVars // Used during transition from integration to unit tests.
 
 // Mocking data.
 const { mockReq, mockRes } = require("./mocks/express-mocks")
-const mockData = require("./mocks/mining-mocks")
+//const mockData = require("./mocks/mining-mocks")
 
 // Used for debugging.
 const util = require("util")
@@ -175,6 +175,123 @@ describe("#Payload Creation", () => {
 
       assert.isString(result)
       assert.equal(result, "0000004600000004")
+    })
+  })
+
+  describe("#closeCrowdSale", async () => {
+    const closeCrowdSale =
+      payloadCreationRoute.testableComponents.closeCrowdSale
+
+    it("should throw 400 error if propertyId is missing", async () => {
+      const result = await closeCrowdSale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "propertyId can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.propertyId = 4
+
+      const result = await closeCrowdSale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should GET mining information", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: "0000003500000004" })
+      }
+
+      req.params.propertyId = 4
+
+      const result = await closeCrowdSale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(result, "0000003500000004")
+    })
+  })
+
+  describe("#grant", async () => {
+    const grant = payloadCreationRoute.testableComponents.grant
+
+    it("should throw 400 error if propertyId is missing", async () => {
+      const result = await grant(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "propertyId can not be empty")
+    })
+
+    it("should throw 400 error if amount is missing", async () => {
+      req.params.propertyId = 4
+
+      const result = await grant(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "amount can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.propertyId = 4
+      req.params.amount = "1000"
+
+      const result = await grant(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should GET mining information", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: "000000370000000400000000000186a000" })
+      }
+
+      req.params.propertyId = 4
+      req.params.amount = "1000"
+
+      const result = await grant(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(result, "000000370000000400000000000186a000")
     })
   })
 })
