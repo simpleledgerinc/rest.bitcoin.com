@@ -119,6 +119,11 @@ router.post(
   config.payloadCreationRateLimit8,
   managed
 )
+router.post(
+  "/participateCrowdSale/:amount",
+  config.payloadCreationRateLimit9,
+  participateCrowdSale
+)
 
 function root(
   req: express.Request,
@@ -656,26 +661,48 @@ async function managed(
   }
 }
 
-router.post(
-  "/participateCrowdSale/:amount",
-  config.payloadCreationRateLimit9,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function participateCrowdSale(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let amount = req.params.amount
+    if (!amount || amount === "") {
+      res.status(400)
+      return res.json({ error: "amount can not be empty" })
+    }
+    amount = amount.toString()
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createpayload_particrowdsale"
     requestConfig.data.method = "whc_createpayload_particrowdsale"
-    requestConfig.data.params = [req.params.amount]
+    requestConfig.data.params = [amount]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+    
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.post(
   "/revoke/:propertyId/:amount",
@@ -835,6 +862,7 @@ module.exports = {
     grant,
     crowdsale,
     fixed,
-    managed
+    managed,
+    participateCrowdSale
   }
 }

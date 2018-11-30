@@ -936,4 +936,59 @@ describe("#Payload Creation", () => {
       )
     })
   })
+
+  describe("#participateCrowdSale", async () => {
+    const participateCrowdSale =
+      payloadCreationRoute.testableComponents.participateCrowdSale
+
+    it("should throw 400 error if amount is missing", async () => {
+      const result = await participateCrowdSale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "amount can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.amount = 1000
+
+      const result = await participateCrowdSale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should return fixed token payload", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, {
+            result: "0000000100000001000000174876e800"
+          })
+      }
+
+      req.params.amount = 1000
+
+      const result = await participateCrowdSale(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(result, "0000000100000001000000174876e800")
+    })
+  })
 })
