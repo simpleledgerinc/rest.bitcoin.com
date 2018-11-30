@@ -109,6 +109,11 @@ router.post(
   config.payloadCreationRateLimit6,
   crowdsale
 )
+router.post(
+  "/fixed/:ecosystem/:propertyPrecision/:previousId/:category/:subcategory/:name/:url/:data/:amount",
+  config.payloadCreationRateLimit7,
+  fixed
+)
 
 function root(
   req: express.Request,
@@ -444,36 +449,110 @@ async function crowdsale(
   }
 }
 
-router.post(
-  "/fixed/:ecosystem/:propertyPrecision/:previousId/:category/:subcategory/:name/:url/:data/:amount",
-  config.payloadCreationRateLimit7,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function fixed(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameter
+    let ecosystem = req.params.ecosystem
+    if (!ecosystem || ecosystem === "") {
+      res.status(400)
+      return res.json({ error: "ecosystem can not be empty" })
+    }
+    ecosystem = parseInt(ecosystem)
+
+    let propertyPrecision = req.params.propertyPrecision
+    if (!propertyPrecision || propertyPrecision === "") {
+      res.status(400)
+      return res.json({ error: "propertyPrecision can not be empty" })
+    }
+    propertyPrecision = parseInt(propertyPrecision)
+
+    let previousId = req.params.previousId
+    if (previousId === undefined || previousId === "") {
+      res.status(400)
+      return res.json({ error: "previousId can not be empty" })
+    }
+    previousId = parseInt(previousId)
+
+    const category = req.params.category
+    if (!category || category === "") {
+      res.status(400)
+      return res.json({ error: "category can not be empty" })
+    }
+
+    const subcategory = req.params.subcategory
+    if (!subcategory || subcategory === "") {
+      res.status(400)
+      return res.json({ error: "subcategory can not be empty" })
+    }
+
+    const name = req.params.name
+    if (!name || name === "") {
+      res.status(400)
+      return res.json({ error: "name can not be empty" })
+    }
+
+    const url = req.params.url
+    if (!url || url === "") {
+      res.status(400)
+      return res.json({ error: "url can not be empty" })
+    }
+
+    const data = req.params.data
+    if (!data || data === "") {
+      res.status(400)
+      return res.json({ error: "data can not be empty" })
+    }
+
+    let amount = req.params.amount
+    if (!amount || amount === "") {
+      res.status(400)
+      return res.json({ error: "amount can not be empty" })
+    }
+    amount = amount.toString()
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createpayload_issuancefixed"
     requestConfig.data.method = "whc_createpayload_issuancefixed"
     requestConfig.data.params = [
-      parseInt(req.params.ecosystem),
-      parseInt(req.params.propertyPrecision),
-      parseInt(req.params.previousId),
-      req.params.category,
-      req.params.subcategory,
-      req.params.name,
-      req.params.url,
-      req.params.data,
-      req.params.amount
+      ecosystem,
+      propertyPrecision,
+      previousId,
+      category,
+      subcategory,
+      name,
+      url,
+      data,
+      amount
     ]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.post(
   "/managed/:ecosystem/:propertyPrecision/:previousId/:category/:subcategory/:name/:url/:data",
@@ -682,6 +761,7 @@ module.exports = {
     changeIssuer,
     closeCrowdSale,
     grant,
-    crowdsale
+    crowdsale,
+    fixed
   }
 }
