@@ -14,7 +14,7 @@ const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
 
 // BITBOX
-const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
 // Typescript
@@ -49,29 +49,29 @@ while (i < 3) {
 }
 
 router.get("/", config.controlRateLimit1, root)
-router.post("/confirmedTransactions", config.controlRateLimit2, confirmedTransactions)
+router.post("/confirmed", config.controlRateLimit2, confirmed)
 
 function root(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
 ) {
-  return res.json({ status: "wormhole" })
+  return res.json({ status: "wormhole/transaction" })
 }
 
 // Get an array of wormhole TX information for a given addresses
-async function confirmedTransactions(
+async function confirmed(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
 ) {
   try {
     const addresses = req.body.addresses
-    const page = req.body.page ? parseInt(req.body.page, 10) : 0
+    const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
     const pageSize = 100
     const whdb = await getWormholedb()
 
-    logger.debug(`Executing wormhole/transactions with these addresses: `, addresses, `on page: `, page)
+    logger.debug(`Executing wormhole/transactions with these addresses: `, addresses, `on page: `, currentPage)
 
     // Reject if address is not an array.
     if (!Array.isArray(addresses)) {
@@ -123,7 +123,7 @@ async function confirmedTransactions(
           block: 1,
           positioninblock: 1,
         })
-        .skip(page * pageSize)
+        .skip(currentPage * pageSize)
         .limit(pageSize)
         .toArray()
 
@@ -131,7 +131,7 @@ async function confirmedTransactions(
         const pagesTotal = Math.ceil(resultCount / pageSize)
 
         retArray.push({
-          page: page,
+          currentPage: currentPage,
           pagesTotal: pagesTotal,
           txs: result,
         })
@@ -160,6 +160,6 @@ module.exports = {
   router,
   testableComponents: {
     root,
-    confirmedTransactions
+    confirmed
   }
 }
