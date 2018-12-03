@@ -135,6 +135,12 @@ router.post(
   config.payloadCreationRateLimit12,
   simpleSend
 )
+router.post("/STO/:propertyId/:amount", config.payloadCreationRateLimit13, STO)
+router.post(
+  "/freeze/:toAddress/:propertyId",
+  config.payloadCreationRateLimit14,
+  freeze
+)
 
 function root(
   req: express.Request,
@@ -863,15 +869,37 @@ async function simpleSend(
   }
 }
 
-router.post(
-  "/STO/:propertyId/:amount",
-  config.payloadCreationRateLimit13,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [parseInt(req.params.propertyId), req.params.amount]
+// Send-to-owners
+async function STO(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameter
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    let amount = req.params.amount
+    if (!amount || amount === "") {
+      res.status(400)
+      return res.json({ error: "amount can not be empty" })
+    }
+    amount = amount.toString()
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId, amount]
+
     if (req.query.distributionProperty)
       params.push(parseInt(req.query.distributionProperty))
 
@@ -879,41 +907,96 @@ router.post(
     requestConfig.data.method = "whc_createpayload_sto"
     requestConfig.data.params = params
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
-    }
-  }
-)
+    const response = await BitboxHTTP(requestConfig)
 
-router.post(
-  "/freeze/:toAddress/:propertyId",
-  config.payloadCreationRateLimit14,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [
-      BITBOX.Address.toCashAddress(req.params.toAddress),
-      parseInt(req.params.propertyId),
-      "100"
-    ]
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function freeze(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    let address = req.params.toAddress
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    address = BITBOX.Address.toCashAddress(address)
+
+    const params = [address, propertyId, "100"]
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
     requestConfig.data.id = "whc_createpayload_freeze"
     requestConfig.data.method = "whc_createpayload_freeze"
     requestConfig.data.params = params
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.post(
   "/unfreeze/:toAddress/:propertyId",
@@ -956,6 +1039,8 @@ module.exports = {
     participateCrowdSale,
     revoke,
     sendAll,
-    simpleSend
+    simpleSend,
+    STO,
+    freeze
   }
 }
