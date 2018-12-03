@@ -7,7 +7,7 @@ import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
 const logger = require("./logging.js")
 const routeUtils = require("./route-utils")
-const getWormholedb = require("./services/wormholedb")
+const getWormholedb = require("./services/wormholedb").getInstance
 
 // Used for processing error messages before sending them to the user.
 const util = require("util")
@@ -69,7 +69,7 @@ async function confirmed(
     const addresses = req.body.addresses
     const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
     const pageSize = 100
-    const whdb = await getWormholedb()
+    const whdb: Wormholedb = await getWormholedb()
 
     logger.debug(`Executing wormhole/transactions with these addresses: `, addresses, `on page: `, currentPage)
 
@@ -104,37 +104,9 @@ async function confirmed(
       }
 
       try {
-        const query = {
-          valid: true, // Only valid transactions
-          type_int: 0, // Simple Send type
-          $or: [
-            { sendingaddress: thisAddress }, // From address
-            { referenceaddress: thisAddress }, // Receiving address
-          ]
-        }
-        const result = await whdb.collection('confirmed').find(query).project({
-          _id: 0,
-          blk: 0,
-          confirmations: 0,
-          ismine: 0,
-          tx: 0,
-        })
-        .sort({
-          block: 1,
-          positioninblock: 1,
-        })
-        .skip(currentPage * pageSize)
-        .limit(pageSize)
-        .toArray()
+        const result = await whdb.getConfirmedTransactions(thisAddress, pageSize, currentPage)
 
-        const resultCount = await whdb.collection('confirmed').countDocuments(query)
-        const pagesTotal = Math.ceil(resultCount / pageSize)
-
-        retArray.push({
-          currentPage: currentPage,
-          pagesTotal: pagesTotal,
-          txs: result,
-        })
+        retArray.push(result)
       } catch (err) {
         console.log(err)
         res.status(400)
