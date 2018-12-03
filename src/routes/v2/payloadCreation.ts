@@ -129,6 +129,7 @@ router.post(
   config.payloadCreationRateLimit10,
   revoke
 )
+router.post("/sendAll/:ecosystem", config.payloadCreationRateLimit11, sendAll)
 
 function root(
   req: express.Request,
@@ -763,26 +764,48 @@ async function revoke(
   }
 }
 
-router.post(
-  "/sendAll/:ecosystem",
-  config.payloadCreationRateLimit11,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function sendAll(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let ecosystem = req.params.ecosystem
+    if (!ecosystem || ecosystem === "") {
+      res.status(400)
+      return res.json({ error: "ecosystem can not be empty" })
+    }
+    ecosystem = parseInt(ecosystem)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createpayload_sendall"
     requestConfig.data.method = "whc_createpayload_sendall"
-    requestConfig.data.params = [parseInt(req.params.ecosystem)]
+    requestConfig.data.params = [ecosystem]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.post(
   "/simpleSend/:propertyId/:amount",
@@ -899,6 +922,7 @@ module.exports = {
     fixed,
     managed,
     participateCrowdSale,
-    revoke
+    revoke,
+    sendAll
   }
 }
