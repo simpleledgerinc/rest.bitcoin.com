@@ -1247,7 +1247,7 @@ describe("#Payload Creation", () => {
   describe("#freeze", async () => {
     const freeze = payloadCreationRoute.testableComponents.freeze
 
-    it("should throw 400 error if freeze is missing", async () => {
+    it("should throw 400 error if propertyId is missing", async () => {
       const result = await freeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
@@ -1335,6 +1335,101 @@ describe("#Payload Creation", () => {
       assert.equal(
         result,
         "000000b9000000040000000000002710626368746573743a71723436777a763063756d613667736b68367377786c707671646364726a6e7a6a67677174346578767000"
+      )
+    })
+  })
+
+  describe("#unfreeze", async () => {
+    const unfreeze = payloadCreationRoute.testableComponents.unfreeze
+
+    it("should throw 400 error if propertyId is missing", async () => {
+      const result = await unfreeze(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "propertyId can not be empty")
+    })
+
+    it("should throw 400 if address is empty", async () => {
+      req.params.propertyId = 4
+
+      const result = await unfreeze(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "address can not be empty")
+    })
+
+    it("should throw 400 if address is invalid", async () => {
+      req.params.propertyId = 4
+      req.params.toAddress = "badAddress"
+
+      const result = await unfreeze(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Invalid BCH address.")
+    })
+
+    it("should throw 400 if address network mismatch", async () => {
+      req.params.propertyId = 4
+      req.params.toAddress =
+        "bitcoincash:qzxtuwx8jxjja5wj8eyq98amq9z669s8xsl76vph9z"
+
+      const result = await unfreeze(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Invalid network.")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.propertyId = 4
+      req.params.toAddress =
+        "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+
+      const result = await unfreeze(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should return fixed participateCrowdSale payload", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, {
+            result:
+              "000000ba000000040000000000002710626368746573743a71723436777a763063756d613667736b68367377786c707671646364726a6e7a6a67677174346578767000"
+          })
+      }
+
+      req.params.propertyId = 4
+      req.params.toAddress =
+        "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+
+      const result = await unfreeze(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(
+        result,
+        "000000ba000000040000000000002710626368746573743a71723436777a763063756d613667736b68367377786c707671646364726a6e7a6a67677174346578767000"
       )
     })
   })
