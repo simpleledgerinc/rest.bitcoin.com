@@ -130,6 +130,11 @@ router.post(
   revoke
 )
 router.post("/sendAll/:ecosystem", config.payloadCreationRateLimit11, sendAll)
+router.post(
+  "/simpleSend/:propertyId/:amount",
+  config.payloadCreationRateLimit12,
+  simpleSend
+)
 
 function root(
   req: express.Request,
@@ -807,29 +812,56 @@ async function sendAll(
   }
 }
 
-router.post(
-  "/simpleSend/:propertyId/:amount",
-  config.payloadCreationRateLimit12,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function simpleSend(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameter
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    let amount = req.params.amount
+    if (!amount || amount === "") {
+      res.status(400)
+      return res.json({ error: "amount can not be empty" })
+    }
+    amount = amount.toString()
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_createpayload_simplesend"
     requestConfig.data.method = "whc_createpayload_simplesend"
-    requestConfig.data.params = [
-      parseInt(req.params.propertyId),
-      req.params.amount
-    ]
+    requestConfig.data.params = [propertyId, amount]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 router.post(
   "/STO/:propertyId/:amount",
@@ -923,6 +955,7 @@ module.exports = {
     managed,
     participateCrowdSale,
     revoke,
-    sendAll
+    sendAll,
+    simpleSend
   }
 }
