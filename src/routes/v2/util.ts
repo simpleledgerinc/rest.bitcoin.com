@@ -5,6 +5,12 @@ const router = express.Router()
 import axios from "axios"
 import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
+const routeUtils = require("./route-utils")
+const logger = require("./logging.js")
+
+// Used to convert error messages to strings, to safely pass to users.
+const util = require("util")
+util.inspect.defaultOptions = { depth: 1 }
 
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
@@ -53,37 +59,60 @@ while (i < 3) {
   i++
 }
 
-router.get(
-  "/",
-  config.utilRateLimit1,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    res.json({ status: "util" })
-  }
-)
+router.get("/", config.utilRateLimit1, root)
+router.get("/validateAddress/:address", config.utilRateLimit2, validateAddress)
 
-router.get(
-  "/validateAddress/:address",
-  config.utilRateLimit2,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+function root(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  return res.json({ status: "util" })
+}
+
+async function validateAddress(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "validateaddress"
     requestConfig.data.method = "validateaddress"
-    requestConfig.data.params = [req.params.address]
+    requestConfig.data.params = [address]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-module.exports = router
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+module.exports = {
+  router,
+  testableComponents: {
+    root,
+    validateAddress
+  }
+}
