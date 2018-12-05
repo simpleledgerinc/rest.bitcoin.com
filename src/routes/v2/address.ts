@@ -54,7 +54,8 @@ while (i < 6) {
 
 // Connect the route endpoints to their handler functions.
 router.get("/", config.addressRateLimit1, root)
-router.post("/details", config.addressRateLimit2, details)
+router.post("/details", config.addressRateLimit2, detailsBulk)
+router.get("/details/:address", config.addressRateLimit2, detailsSingle)
 router.post("/utxo/:address", config.addressRateLimit3, utxo)
 router.post("/unconfirmed/:address", config.addressRateLimit4, unconfirmed)
 router.post("/transactions/:address", config.addressRateLimit5, transactions)
@@ -68,10 +69,38 @@ function root(
   return res.json({ status: "address" })
 }
 
-// Retrieve details on an address.
+// Query the Insight API for details on a single BCH address.
+async function detailsFromInsight(thisAddress: string, req: express.Request) {
+  try {
+
+    const legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
+
+
+    let path = `${process.env.BITCOINCOM_BASEURL}addr/${legacyAddr}`
+
+    // Optional query strings limit the number of TXIDs.
+    // https://github.com/bitpay/insight-api/blob/master/README.md#notes-on-upgrading-from-v02
+    if (req.body.from && req.body.to)
+      path = `${path}?from=${req.body.from}&to=${req.body.to}`
+
+    // Query the Insight server.
+    const response = await axios.get(path)
+
+    // Append different address formats to the return data.
+    const retData = response.data
+    retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
+    retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+
+    return retData
+  } catch (err) {
+    throw err
+  }
+}
+
+// POST handler for bulk queries on address details
 // curl -d '{"addresses": ["bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr", "bchtest:qp6hgvevf4gzz6l7pgcte3gaaud9km0l459fa23dul"]}' -H "Content-Type: application/json" http://localhost:3000/v2/address/details
 // curl -d '{"addresses": ["bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr", "bchtest:qp6hgvevf4gzz6l7pgcte3gaaud9km0l459fa23dul"], "from": 1, "to": 5}' -H "Content-Type: application/json" http://localhost:3000/v2/address/details
-async function details(
+async function detailsBulk(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -82,7 +111,9 @@ async function details(
     // Reject if address is not an array.
     if (!Array.isArray(addresses)) {
       res.status(400)
-      return res.json({ error: "addresses needs to be an array" })
+      return res.json({
+        error: "addresses needs to be an array. Use GET for single address."
+      })
     }
 
     logger.debug(`Executing address/details with these addresses: `, addresses)
@@ -111,20 +142,8 @@ async function details(
         })
       }
 
-      let path = `${process.env.BITCOINCOM_BASEURL}addr/${legacyAddr}`
-
-      // Optional query strings limit the number of TXIDs.
-      // https://github.com/bitpay/insight-api/blob/master/README.md#notes-on-upgrading-from-v02
-      if (req.body.from && req.body.to)
-        path = `${path}?from=${req.body.from}&to=${req.body.to}`
-
-      // Query the Insight server.
-      const response = await axios.get(path)
-
-      // Append different address formats to the return data.
-      const retData = response.data
-      retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
-      retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+      // Query the Insight API.
+      const retData = await detailsFromInsight(thisAddress, req)
 
       retArray.push(retData)
     }
@@ -132,6 +151,70 @@ async function details(
     // Return the array of retrieved address information.
     res.status(200)
     return res.json(retArray)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// GET handler for single address details
+async function detailsSingle(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    // Reject if address is an array.
+    if (Array.isArray(address)) {
+      res.status(400)
+      return res.json({
+        error: "address can not be an array. Use POST for bulk upload."
+      })
+    }
+
+    logger.debug(`Executing address/detailsSingle with this address: `, address)
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    // Query the Insight API.
+    const retData = await detailsFromInsight(address, req)
+
+    // Return the array of retrieved address information.
+    res.status(200)
+    return res.json(retData)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -379,7 +462,8 @@ module.exports = {
   router,
   testableComponents: {
     root,
-    details,
+    detailsBulk,
+    detailsSingle,
     utxo,
     unconfirmed,
     transactions

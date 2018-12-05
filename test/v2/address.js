@@ -79,14 +79,14 @@ describe("#AddressRouter", () => {
     })
   })
 
-  describe("#AddressDetails", () => {
+  describe("#AddressDetailsBulk", () => {
     // details route handler.
-    const details = addressRoute.testableComponents.details
+    const detailsBulk = addressRoute.testableComponents.detailsBulk
 
     it("should throw an error for an empty body", async () => {
       req.body = {}
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -101,7 +101,7 @@ describe("#AddressRouter", () => {
         address: `qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -116,7 +116,7 @@ describe("#AddressRouter", () => {
         addresses: [`02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -131,7 +131,7 @@ describe("#AddressRouter", () => {
         addresses: [`bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`]
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(result.error, "Invalid network", "Proper error message")
@@ -148,7 +148,7 @@ describe("#AddressRouter", () => {
         // Switch the Insight URL to something that will error out.
         process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
 
-        const result = await details(req, res)
+        const result = await detailsBulk(req, res)
 
         // Restore the saved URL.
         process.env.BITCOINCOM_BASEURL = savedUrl
@@ -174,7 +174,7 @@ describe("#AddressRouter", () => {
       }
 
       // Call the details API.
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       // Assert that required fields exist in the returned object.
@@ -215,11 +215,114 @@ describe("#AddressRouter", () => {
       }
 
       // Call the details API.
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
       assert.equal(result.length, 2, "2 outputs for 2 inputs")
+    })
+  })
+
+  describe("#AddressDetailsSingle", () => {
+    // details route handler.
+    const detailsSingle = addressRoute.testableComponents.detailsSingle
+
+    it("should throw 400 if address is empty", async () => {
+      const result = await detailsSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "address can not be empty")
+    })
+
+    it("should error on an array", async () => {
+      req.params.address = [`qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
+
+      const result = await detailsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "address can not be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw an error for an invalid address", async () => {
+      req.params.address = `02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
+
+      const result = await detailsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "Invalid BCH address",
+        "Proper error message"
+      )
+    })
+
+    it("should detect a network mismatch", async () => {
+      req.params.address = `bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`
+
+      const result = await detailsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "Invalid network", "Proper error message")
+    })
+
+    it("should throw 500 when network issues", async () => {
+      const savedUrl = process.env.BITCOINCOM_BASEURL
+
+      try {
+        req.params.address = `qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
+
+        // Switch the Insight URL to something that will error out.
+        process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
+
+        const result = await detailsSingle(req, res)
+
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+
+        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.include(result.error, "ENOTFOUND", "Error message expected")
+      } catch (err) {
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+      }
+    })
+
+    it("should get details for a single address", async () => {
+      req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz`)
+          .reply(200, mockData.mockAddressDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Assert that required fields exist in the returned object.
+      assert.hasAllKeys(result, [
+        "addrStr",
+        "balance",
+        "balanceSat",
+        "totalReceived",
+        "totalReceivedSat",
+        "totalSent",
+        "totalSentSat",
+        "unconfirmedBalance",
+        "unconfirmedBalanceSat",
+        "unconfirmedTxApperances",
+        "txApperances",
+        "transactions",
+        "legacyAddress",
+        "cashAddress"
+      ])
     })
   })
 
