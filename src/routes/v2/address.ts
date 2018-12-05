@@ -56,7 +56,8 @@ while (i < 6) {
 router.get("/", config.addressRateLimit1, root)
 router.post("/details", config.addressRateLimit2, detailsBulk)
 router.get("/details/:address", config.addressRateLimit2, detailsSingle)
-router.post("/utxo/:address", config.addressRateLimit3, utxo)
+router.post("/utxo", config.addressRateLimit3, utxoBulk)
+router.get("/utxo/:address", config.addressRateLimit3, utxoSingle)
 router.post("/unconfirmed/:address", config.addressRateLimit4, unconfirmed)
 router.post("/transactions/:address", config.addressRateLimit5, transactions)
 
@@ -72,9 +73,7 @@ function root(
 // Query the Insight API for details on a single BCH address.
 async function detailsFromInsight(thisAddress: string, req: express.Request) {
   try {
-
     const legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
-
 
     let path = `${process.env.BITCOINCOM_BASEURL}addr/${legacyAddr}`
 
@@ -231,8 +230,35 @@ async function detailsSingle(
   }
 }
 
+// Retrieve UTXO data from the Insight API
+async function utxoFromInsight(thisAddress: string) {
+  try {
+    const legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
+
+    const path = `${process.env.BITCOINCOM_BASEURL}addr/${legacyAddr}/utxo`
+
+    // Query the Insight server.
+    const response = await axios.get(path)
+
+    // Append different address formats to the return data.
+    const retData = {
+      utxos: Array,
+      legacyAddress: String,
+      cashAddress: String
+    }
+    retData.utxos = response.data
+    retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
+    retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+    //console.log(`utxoFromInsight retData: ${util.inspect(retData)}`)
+
+    return retData
+  } catch (err) {
+    throw err
+  }
+}
+
 // Retrieve UTXO information for an address.
-async function utxo(
+async function utxoBulk(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -246,7 +272,7 @@ async function utxo(
       return res.json({ error: "addresses needs to be an array" })
     }
 
-    logger.debug(`Executing address/utxo with these addresses: `, addresses)
+    logger.debug(`Executing address/utxoBulk with these addresses: `, addresses)
 
     // Loop through each address.
     const retArray = []
@@ -272,15 +298,7 @@ async function utxo(
         })
       }
 
-      const path = `${process.env.BITCOINCOM_BASEURL}addr/${legacyAddr}/utxo`
-
-      // Query the Insight server.
-      const response = await axios.get(path)
-
-      // Append different address formats to the return data.
-      const retData = response.data
-      retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
-      retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+      const retData = await utxoFromInsight(thisAddress)
 
       retArray.push(retData)
     }
@@ -288,6 +306,70 @@ async function utxo(
     // Return the array of retrieved address information.
     res.status(200)
     return res.json(retArray)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// GET handler for single address details
+async function utxoSingle(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    // Reject if address is an array.
+    if (Array.isArray(address)) {
+      res.status(400)
+      return res.json({
+        error: "address can not be an array. Use POST for bulk upload."
+      })
+    }
+
+    logger.debug(`Executing address/utxoSingle with this address: `, address)
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    // Query the Insight API.
+    const retData = await utxoFromInsight(address)
+
+    // Return the array of retrieved address information.
+    res.status(200)
+    return res.json(retData)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -464,7 +546,8 @@ module.exports = {
     root,
     detailsBulk,
     detailsSingle,
-    utxo,
+    utxoBulk,
+    utxoSingle,
     unconfirmed,
     transactions
   }
