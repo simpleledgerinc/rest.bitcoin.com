@@ -1,4 +1,4 @@
-const MongoClient = require("mongodb").MongoClient
+const axios = require('axios')
 
 var _instance: Wormholedb = null
 
@@ -21,52 +21,67 @@ const getInstance = async function (): Promise<Wormholedb> {
 }
 
 class Wormholedb  {
-  private _db: any
+  private _url: any
   async init() {
-    const host = process.env.WORMHOLEDB_HOST ? process.env.WORMHOLEDB_HOST : "localhost"
-    const username = process.env.WORMHOLEDB_USERNAME
-    const password = process.env.WORMHOLEDB_PASSWORD
-    const credentials = username && password ? `${username}:${password}@` : ""
-    const url = `mongodb://${credentials}${host}:27017`
-    const client = new MongoClient(
-      url,
-      { useNewUrlParser: true }
-    )
-    await client.connect()
-    this._db = client.db("wormholedb")
+    this._url = process.env.WORMHOLEDB_URL ? process.env.WORMHOLEDB_URL : "http://localhost"
   }
 
   async getConfirmedTransactions(address: string, pageSize: number, currentPage: number) {
     const query = {
-      valid: true, // Only valid transactions
-      type_int: 0, // Simple Send type
-      $or: [
-        { sendingaddress: address }, // From address
-        { referenceaddress: address }, // Receiving address
-      ]
+      v: 3,
+      q: {
+        db: ["c"],
+        aggregate: [
+          {
+            $match: {
+              valid: true, // Only valid transactions
+              type_int: 0, // Simple Send type
+              $or: [
+                { sendingaddress: address }, // From address
+                { referenceaddress: address }, // Receiving address
+              ]
+            }
+          },
+          {
+           $project: {
+              _id: 0,
+              blk: 0,
+              confirmations: 0,
+              ismine: 0,
+              tx: 0
+            }
+          },
+          {
+            $sort: {
+              block: 1,
+              positioninblock: 1
+            }
+          },
+          {
+            $facet: {
+              metadata: [ { $count: "count" } ],
+              data: [
+                { $skip: currentPage * pageSize },
+                { $limit: pageSize }
+              ]
+            }
+          }
+        ]
+      }
     }
-    const result = await this._db.collection('confirmed').find(query).project({
-      _id: 0,
-      blk: 0,
-      confirmations: 0,
-      ismine: 0,
-      tx: 0,
-    })
-    .sort({
-      block: 1,
-      positioninblock: 1,
-    })
-    .skip(currentPage * pageSize)
-    .limit(pageSize)
-    .toArray()
+    const s = JSON.stringify(query);
+    const b64 = Buffer.from(s).toString('base64')
+    const url = `${this._url}/q/${b64}`
+    const result = await axios.get(url)
 
-    const resultCount = await this._db.collection('confirmed').countDocuments(query)
+    const resultTxs = result.data.c[0].data
+    const resultCount = result.data.c[0].metadata[0].count
     const pagesTotal = Math.ceil(resultCount / pageSize)
 
     return {
       currentPage: currentPage,
       pagesTotal: pagesTotal,
-      txs: result,
+      txs: resultTxs,
     }
   }
 }
