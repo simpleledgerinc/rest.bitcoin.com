@@ -791,14 +791,14 @@ describe("#AddressRouter", () => {
     })
   })
 
-  describe("#AddressTransactions", () => {
+  describe("#AddressTransactionsBulk", () => {
     // unconfirmed route handler.
-    const transactions = addressRoute.testableComponents.transactions
+    const transactionsBulk = addressRoute.testableComponents.transactionsBulk
 
     it("should throw an error for an empty body", async () => {
       req.body = {}
 
-      const result = await transactions(req, res)
+      const result = await transactionsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -813,7 +813,7 @@ describe("#AddressRouter", () => {
         address: `qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
       }
 
-      const result = await transactions(req, res)
+      const result = await transactionsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -828,7 +828,7 @@ describe("#AddressRouter", () => {
         addresses: [`02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
       }
 
-      const result = await transactions(req, res)
+      const result = await transactionsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -843,7 +843,7 @@ describe("#AddressRouter", () => {
         addresses: [`bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`]
       }
 
-      const result = await transactions(req, res)
+      const result = await transactionsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(result.error, "Invalid network", "Proper error message")
@@ -860,7 +860,7 @@ describe("#AddressRouter", () => {
         // Switch the Insight URL to something that will error out.
         process.env.BITCOINCOM_BASEURL = "http://fakeurl/api"
 
-        const result = await transactions(req, res)
+        const result = await transactionsBulk(req, res)
 
         // Restore the saved URL.
         process.env.BITCOINCOM_BASEURL = savedUrl
@@ -888,7 +888,7 @@ describe("#AddressRouter", () => {
       }
 
       // Call the details API.
-      const result = await transactions(req, res)
+      const result = await transactionsBulk(req, res)
 
       assert.isArray(result, "result should be an array")
 
@@ -923,7 +923,7 @@ describe("#AddressRouter", () => {
       }
 
       // Call the details API.
-      const result = await transactions(req, res)
+      const result = await transactionsBulk(req, res)
 
       assert.isArray(result, "result should be an array")
 

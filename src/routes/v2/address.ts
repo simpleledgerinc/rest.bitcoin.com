@@ -60,7 +60,8 @@ router.post("/utxo", config.addressRateLimit3, utxoBulk)
 router.get("/utxo/:address", config.addressRateLimit3, utxoSingle)
 router.post("/unconfirmed", config.addressRateLimit4, unconfirmedBulk)
 router.get("/unconfirmed/:address", config.addressRateLimit4, unconfirmedSingle)
-router.post("/transactions/:address", config.addressRateLimit5, transactions)
+router.post("/transactions", config.addressRateLimit5, transactionsBulk)
+//router.get("/transactions/:address", config.addressRateLimit5, transactionsSingle)
 
 // Root API endpoint. Simply acknowledges that it exists.
 function root(
@@ -546,7 +547,7 @@ async function unconfirmedSingle(
 }
 
 // Get an array of TX information for a given address.
-async function transactions(
+async function transactionsBulk(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -630,6 +631,6 @@ module.exports = {
     utxoSingle,
     unconfirmedBulk,
     unconfirmedSingle,
-    transactions
+    transactionsBulk
   }
 }
