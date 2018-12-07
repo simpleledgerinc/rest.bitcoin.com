@@ -73,16 +73,7 @@ class Wormholedb  {
     const b64 = Buffer.from(s).toString('base64')
     const url = `${this._url}/q/${b64}`
     const result = await axios.get(url)
-
-    const resultTxs = result.data.c[0].data
-    const resultCount = result.data.c[0].metadata[0].count
-    const pagesTotal = Math.ceil(resultCount / pageSize)
-
-    return {
-      currentPage: currentPage,
-      pagesTotal: pagesTotal,
-      txs: resultTxs,
-    }
+    return result
   }
 }
 

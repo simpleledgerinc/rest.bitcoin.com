@@ -2,8 +2,6 @@
 
 import * as express from "express"
 const router = express.Router()
-import axios from "axios"
-import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
 const logger = require("./logging.js")
 const routeUtils = require("./route-utils")
@@ -105,8 +103,15 @@ async function confirmed(
 
       try {
         const result = await whdb.getConfirmedTransactions(thisAddress, pageSize, currentPage)
+        const resultTxs = result.data.c[0].data
+        const resultCount = result.data.c[0].metadata[0].count
+        const pagesTotal = Math.ceil(resultCount / pageSize)
 
-        retArray.push(result)
+        retArray.push({
+          currentPage: currentPage,
+          pagesTotal: pagesTotal,
+          txs: resultTxs,
+        })
       } catch (err) {
         console.log(err)
         res.status(400)
