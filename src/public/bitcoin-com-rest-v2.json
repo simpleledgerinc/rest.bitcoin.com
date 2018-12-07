@@ -395,49 +395,6 @@
         }
       }
     },
-    "/blockchain/getBlockHash/{height}": {
-      "get": {
-        "tags": ["blockchain"],
-        "summary": "Hash of block in best-block-chain at height provided.",
-        "description": "Returns hash of block in best-block-chain at height provided.",
-        "operationId": "getBlockHash",
-        "parameters": [
-          {
-            "name": "height",
-            "in": "path",
-            "description": "the height index",
-            "required": true,
-            "example": 500000,
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BlockHash"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Block not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "status": 500,
-                  "message": "Block not found"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/blockchain/getBlockHeader/{hash}": {
       "get": {
         "tags": ["blockchain"],

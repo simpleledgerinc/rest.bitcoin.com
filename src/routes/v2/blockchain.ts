@@ -205,7 +205,7 @@ async function getBlockCount(
   }
 }
 
-// redundant. Same call is in block.tx/detailsByHash
+// redundant. Same call is in block.ts/detailsByHeight
 /*
 router.get(
   "/getBlockHash/:height",
