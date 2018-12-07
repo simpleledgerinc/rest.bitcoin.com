@@ -930,4 +930,99 @@ describe("#AddressRouter", () => {
       assert.equal(result.length, 2, "Array should have 2 elements")
     })
   })
+
+  describe("#AddressTransactionsSingle", () => {
+    // details route handler.
+    const transactionsSingle =
+      addressRoute.testableComponents.transactionsSingle
+
+    it("should throw 400 if address is empty", async () => {
+      const result = await transactionsSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "address can not be empty")
+    })
+
+    it("should error on an array", async () => {
+      req.params.address = [`qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
+
+      const result = await transactionsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "address can not be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw an error for an invalid address", async () => {
+      req.params.address = `02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
+
+      const result = await transactionsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "Invalid BCH address",
+        "Proper error message"
+      )
+    })
+
+    it("should detect a network mismatch", async () => {
+      req.params.address = `bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`
+
+      const result = await transactionsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "Invalid network", "Proper error message")
+    })
+
+    it("should throw 500 when network issues", async () => {
+      const savedUrl = process.env.BITCOINCOM_BASEURL
+
+      try {
+        req.params.address = `qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
+
+        // Switch the Insight URL to something that will error out.
+        process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
+
+        const result = await transactionsSingle(req, res)
+
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+
+        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.include(result.error, "ENOTFOUND", "Error message expected")
+      } catch (err) {
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+      }
+    })
+
+    it("should get details for a single address", async () => {
+      req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+          )
+          .reply(200, mockData.mockTransactions)
+      }
+
+      // Call the details API.
+      const result = await transactionsSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Assert that required fields exist in the returned object.
+      assert.exists(result.pagesTotal)
+      assert.exists(result.txs)
+      assert.isArray(result.txs)
+      assert.exists(result.legacyAddress)
+      assert.exists(result.cashAddress)
+    })
+  })
 })

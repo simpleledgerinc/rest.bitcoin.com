@@ -61,7 +61,7 @@ router.get("/utxo/:address", config.addressRateLimit3, utxoSingle)
 router.post("/unconfirmed", config.addressRateLimit4, unconfirmedBulk)
 router.get("/unconfirmed/:address", config.addressRateLimit4, unconfirmedSingle)
 router.post("/transactions", config.addressRateLimit5, transactionsBulk)
-//router.get("/transactions/:address", config.addressRateLimit5, transactionsSingle)
+router.get("/transactions/:address", config.addressRateLimit5, transactionsSingle)
 
 // Root API endpoint. Simply acknowledges that it exists.
 function root(
@@ -546,6 +546,27 @@ async function unconfirmedSingle(
   }
 }
 
+// Retrieve transaction data from the Insight API
+async function transactionsFromInsight(thisAddress: string) {
+  try {
+    const path = `${
+      process.env.BITCOINCOM_BASEURL
+    }txs/?address=${thisAddress}`
+
+    // Query the Insight server.
+    const response = await axios.get(path)
+
+    // Append different address formats to the return data.
+    const retData = response.data
+    retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
+    retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+
+    return retData
+  } catch (err) {
+    throw err
+  }
+}
+
 // Get an array of TX information for a given address.
 async function transactionsBulk(
   req: express.Request,
@@ -587,17 +608,7 @@ async function transactionsBulk(
         })
       }
 
-      const path = `${
-        process.env.BITCOINCOM_BASEURL
-      }txs/?address=${thisAddress}`
-
-      // Query the Insight server.
-      const response = await axios.get(path)
-
-      // Append different address formats to the return data.
-      const retData = response.data
-      retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
-      retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+      const retData = await transactionsFromInsight(thisAddress)
 
       retArray.push(retData)
     }
@@ -605,6 +616,82 @@ async function transactionsBulk(
     // Return the array of retrieved address information.
     res.status(200)
     return res.json(retArray)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// GET handler. Retrieve any unconfirmed TX information for a given address.
+async function transactionsSingle(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    // Reject if address is an array.
+    if (Array.isArray(address)) {
+      res.status(400)
+      return res.json({
+        error: "address can not be an array. Use POST for bulk upload."
+      })
+    }
+
+    logger.debug(`Executing address/transactionsSingle with this address: `, address)
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+/*
+    interface Iutxo {
+      address: String
+      txid: String
+      vout: Number,
+      scriptPubKey: String
+      amount: Number,
+      satoshis: Number,
+      height: Number,
+      confirmations: Number
+    }
+*/
+    // Query the Insight API.
+    const retData = await transactionsFromInsight(address)
+    //console.log(`retData: ${JSON.stringify(retData,null,2)}`)
+
+    // Return the array of retrieved address information.
+    res.status(200)
+    return res.json(retData)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -631,6 +718,7 @@ module.exports = {
     utxoSingle,
     unconfirmedBulk,
     unconfirmedSingle,
-    transactionsBulk
+    transactionsBulk,
+    transactionsSingle
   }
 }
