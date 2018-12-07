@@ -86,13 +86,13 @@ describe("#Transactions", () => {
     })
   })
 
-  describe("#details", async () => {
-    const details = transactionRoute.testableComponents.details
+  describe("#detailsBulk", async () => {
+    const detailsBulk = transactionRoute.testableComponents.detailsBulk
 
     it("should throw an error for an empty body", async () => {
       req.body = {}
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -107,7 +107,7 @@ describe("#Transactions", () => {
         txids: `6f235bd3a689f03c11969cd649ccad592462ca958bc519a30194e7a67b349a40`
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -133,7 +133,7 @@ describe("#Transactions", () => {
         txids: [fakeTXID]
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
@@ -153,7 +153,7 @@ describe("#Transactions", () => {
         txids: [txid]
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
@@ -197,7 +197,7 @@ describe("#Transactions", () => {
         txids: [txid1, txid2]
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)

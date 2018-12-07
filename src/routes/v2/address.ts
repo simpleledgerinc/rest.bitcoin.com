@@ -673,18 +673,7 @@ async function transactionsSingle(
         error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
       })
     }
-/*
-    interface Iutxo {
-      address: String
-      txid: String
-      vout: Number,
-      scriptPubKey: String
-      amount: Number,
-      satoshis: Number,
-      height: Number,
-      confirmations: Number
-    }
-*/
+
     // Query the Insight API.
     const retData = await transactionsFromInsight(address)
     //console.log(`retData: ${JSON.stringify(retData,null,2)}`)
