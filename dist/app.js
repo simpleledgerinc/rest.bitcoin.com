@@ -159,6 +159,7 @@ server.on("listening", onListening);
 // Set the time before a timeout error is generated. This impacts testing and
 // the handling of timeout errors. Is 10 seconds too agressive?
 server.setTimeout(10000);
+console.log("BITBOX REST started on port " + port);
 /**
  * Normalize a port into a number, string, or false.
  */
