@@ -63,7 +63,7 @@ while (i < 3) {
 
 router.get("/", config.transactionRateLimit1, root)
 router.post("/details", config.transactionRateLimit1, detailsBulk)
-//router.get("/details/:txid", config.transactionRateLimit1, detailsSingle)
+router.get("/details/:txid", config.transactionRateLimit1, detailsSingle)
 
 function root(
   req: express.Request,
@@ -134,11 +134,57 @@ async function detailsBulk(
   }
 }
 
+// GET handler. Retrieve any unconfirmed TX information for a given address.
+async function detailsSingle(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    // Reject if address is an array.
+    if (Array.isArray(txid)) {
+      res.status(400)
+      return res.json({
+        error: "txid can not be an array. Use POST for bulk upload."
+      })
+    }
+
+    logger.debug(`Executing transaction.ts/detailsSingle with this txid: `, txid)
+
+    // Query the Insight API.
+    const retData = await transactionsFromInsight(txid)
+    //console.log(`retData: ${JSON.stringify(retData,null,2)}`)
+
+    // Return the array of retrieved address information.
+    res.status(200)
+    return res.json(retData)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
 module.exports = {
   router,
   testableComponents: {
     root,
     detailsBulk,
-    //detailsSingle
+    detailsSingle
   }
 }
