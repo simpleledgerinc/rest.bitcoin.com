@@ -77,6 +77,9 @@ router.get("/getBestBlockHash", config.blockchainRateLimit2, getBestBlockHash)
 //router.get("/getBlock/:hash", config.blockchainRateLimit3, getBlock) // Same as block/getBlockByHash
 router.get("/getBlockchainInfo", config.blockchainRateLimit4, getBlockchainInfo)
 router.get("/getBlockCount", config.blockchainRateLimit5, getBlockCount)
+router.get(
+  "/getBlockHeader/:hash",
+  config.blockchainRateLimit7,getBlockHeader)
 router.get("/getChainTips", config.blockchainRateLimit8, getChainTips)
 router.get("/getDifficulty", config.blockchainRateLimit9, getDifficulty)
 //router.post("/getMempoolAncestors/:txid", config.blockchainRateLimit10, getMempoolAncestors)
@@ -287,19 +290,55 @@ router.get(
 )
 */
 
-/*
-router.get(
-  "/getBlockHeader/:hash",
-  config.blockchainRateLimit7,
-  async (
+
+
+  async function getBlockHeader(
     req: express.Request,
     res: express.Response,
     next: express.NextFunction
-  ) => {
-    let verbose = false
-    if (req.query.verbose && req.query.verbose === "true") verbose = true
-
+  ) {
     try {
+
+      let verbose = false
+      if (req.query.verbose && req.query.verbose.toString() === "true") verbose = true
+
+      const hash = req.params.hash
+      if(!hash || hash === "") {
+        res.status(400)
+        return res.json({ error: "hash can not be empty" })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "getblockheader"
+      requestConfig.data.method = "getblockheader"
+      requestConfig.data.params = [hash, verbose]
+
+      const response = await BitboxHTTP(requestConfig)
+
+      return res.json(response.data.result)
+
+    } catch (err) {
+      // Attempt to decode the error message.
+      const { msg, status } = routeUtils.decodeError(err)
+      if (msg) {
+        res.status(status)
+        return res.json({ error: msg })
+      }
+
+      // Write out error to error log.
+      //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+      res.status(500)
+      return res.json({ error: util.inspect(err) })
+    }
+
+    /*
       let hashes = JSON.parse(req.params.hash)
       if (hashes.length > 20) {
         res.json({
@@ -367,9 +406,10 @@ router.get(
           res.send(error.response.data.error.message)
         })
     }
+    */
   }
-)
-*/
+
+
 
 async function getChainTips(
   req: express.Request,
@@ -921,6 +961,7 @@ module.exports = {
     //getBlock,
     getBlockchainInfo,
     getBlockCount,
+    getBlockHeader,
     getChainTips,
     getDifficulty,
     getMempoolInfo,

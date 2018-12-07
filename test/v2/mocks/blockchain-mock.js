@@ -217,10 +217,31 @@ const mockRawMempool = [
   "6b3df7febf2b9834f1409155f88b866dd516b36376eae00e2b455df82e290405"
 ]
 
+const mockBlockHeader = {
+  hash: "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900",
+  confirmations: 7,
+  height: 1272859,
+  version: 2147418112,
+  versionHex: "7fff0000",
+  merkleroot:
+    "846f45604ec6cde2528933305dba80971e9ff0874f74d2811c7c690b2c32706d",
+  time: 1544207139,
+  mediantime: 1544202884,
+  nonce: 641041470,
+  bits: "1a09faea",
+  difficulty: 1681035.704111868,
+  chainwork: "00000000000000000000000000000000000000000000003fc4752e608403be04",
+  previousblockhash:
+    "0000000000003e467ebcb7e906645676c2f71b9ac520d6508bea45789b7c217d",
+  nextblockhash:
+    "00000000000006899041cdfd6c0b73a97730c362346dde479b77414ad7f25ace"
+}
+
 module.exports = {
   mockBlockHash,
   mockBlockchainInfo,
   mockChainTips,
   mockMempoolInfo,
-  mockRawMempool
+  mockRawMempool,
+  mockBlockHeader
 }

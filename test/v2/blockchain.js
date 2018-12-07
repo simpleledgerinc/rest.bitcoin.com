@@ -6,12 +6,6 @@
 
 "use strict"
 
-//const chai = require("chai");
-//const assert = require("assert")
-//const httpMocks = require("node-mocks-http")
-//const panda = require("./helpers/panda")
-//process.env.RPC_BASEURL = "http://localhost:48332/"
-
 const chai = require("chai")
 const assert = chai.assert
 const nock = require("nock") // HTTP mocking
@@ -212,6 +206,99 @@ describe("#BlockchainRouter", () => {
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isNumber(result)
+    })
+  })
+
+  describe("getBlockHeader()", async () => {
+    const getBlockHeader = blockchainRoute.testableComponents.getBlockHeader
+
+    it("should throw 400 error if hash is missing", async () => {
+      const result = await getBlockHeader(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "hash can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.hash =
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+
+      const result = await getBlockHeader(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should GET block header", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, {
+            result:
+              "0000ff7f7d217c9b7845ea8b50d620c59a1bf7c276566406e9b7bc7e463e0000000000006d70322c0b697c1c81d2744f87f09f1e9780ba5d30338952e2cdc64e60456f8423bb0a5ceafa091a3e843526"
+          })
+      }
+
+      req.params.hash =
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+
+      const result = await getBlockHeader(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(
+        result,
+        "0000ff7f7d217c9b7845ea8b50d620c59a1bf7c276566406e9b7bc7e463e0000000000006d70322c0b697c1c81d2744f87f09f1e9780ba5d30338952e2cdc64e60456f8423bb0a5ceafa091a3e843526"
+      )
+    })
+
+    it("should GET verbose block header", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBlockHeader })
+      }
+
+      req.query.verbose = true
+      req.params.hash =
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+
+      const result = await getBlockHeader(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, [
+        "hash",
+        "confirmations",
+        "height",
+        "version",
+        "versionHex",
+        "merkleroot",
+        "time",
+        "mediantime",
+        "nonce",
+        "bits",
+        "difficulty",
+        "chainwork",
+        "previousblockhash",
+        "nextblockhash"
+      ])
     })
   })
 
