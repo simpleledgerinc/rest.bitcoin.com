@@ -171,6 +171,7 @@ app.use((err: IError, req: express.Request, res: express.Response) => {
  */
 const port = normalizePort(process.env.PORT || "3000")
 app.set("port", port)
+console.log(`rest.bitcoin.com started on port ${port}`)
 
 /**
  * Create HTTP server.

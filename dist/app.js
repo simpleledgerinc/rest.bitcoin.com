@@ -123,6 +123,7 @@ app.use(function (err, req, res) {
  */
 var port = normalizePort(process.env.PORT || "3000");
 app.set("port", port);
+console.log("rest.bitcoin.com started on port " + port);
 /**
  * Create HTTP server.
  */
