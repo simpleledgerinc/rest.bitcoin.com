@@ -14,7 +14,7 @@ var BitcoinCashZMQDecoder = require("bitcoincash-zmq-decoder");
 var zmq = require("zeromq");
 var sock = zmq.socket("sub");
 var swStats = require("swagger-stats");
-var apiSpec = require("./public/bitcoin-com-rest-v1.json");
+var apiSpec = require("./public/bitcoin-com-rest-v2.json");
 // v1
 var indexV1 = require("./routes/v1/index");
 var healthCheckV1 = require("./routes/v1/health-check");

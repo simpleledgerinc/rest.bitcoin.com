@@ -20,7 +20,7 @@ const zmq = require("zeromq")
 const sock: any = zmq.socket("sub")
 
 const swStats = require("swagger-stats")
-const apiSpec = require("./public/bitcoin-com-rest-v1.json")
+const apiSpec = require("./public/bitcoin-com-rest-v2.json")
 
 // v1
 const indexV1 = require("./routes/v1/index")
