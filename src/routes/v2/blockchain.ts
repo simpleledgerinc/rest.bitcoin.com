@@ -133,34 +133,6 @@ async function getBestBlockHash(
   }
 }
 
-/*
-// Get a block via the hash. This is a redundant function call. The same function
-// is achieved by the block/detailsByHash() function.
-async function getBlock(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
-  let verbose = false
-  if (req.query.verbose && req.query.verbose === "true") verbose = true
-
-  let showTxs = true
-  if (req.query.txs && req.query.txs === "false") showTxs = false
-
-  requestConfig.data.id = "getblock"
-  requestConfig.data.method = "getblock"
-  requestConfig.data.params = [req.params.hash, verbose]
-
-  try {
-    const response = await BitboxHTTP(requestConfig)
-    if (!showTxs) delete response.data.result.tx
-    res.json(response.data.result)
-  } catch (error) {
-    res.status(500).send(error.response.data.error)
-  }
-}
-*/
-
 async function getBlockchainInfo(
   req: express.Request,
   res: express.Response,
@@ -231,88 +203,6 @@ async function getBlockCount(
     return res.json({ error: util.inspect(err) })
   }
 }
-
-// redundant. Same call is in block.ts/detailsByHeight
-/*
-router.get(
-  "/getBlockHash/:height",
-  config.blockchainRateLimit6,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    try {
-      let heights = JSON.parse(req.params.height)
-      if (heights.length > 20) {
-        res.json({
-          error: "Array too large. Max 20 heights"
-        })
-      }
-      const result: any[] = []
-      heights = heights.map((height: any) =>
-        BitboxHTTP({
-          method: "post",
-          auth: {
-            username: username,
-            password: password
-          },
-          data: {
-            jsonrpc: "1.0",
-            id: "getblockhash",
-            method: "getblockhash",
-            params: [height]
-          }
-        }).catch(error => {
-          try {
-            return {
-              data: {
-                result: error.response.data.error.message
-              }
-            }
-          } catch (ex) {
-            return {
-              data: {
-                result: "unknown error"
-              }
-            }
-          }
-        })
-      )
-      axios.all(heights).then(
-        axios.spread((...args) => {
-          for (let i = 0; i < args.length; i++) {
-            let tmp = {} as any
-            const parsed = tmp.data.result
-            result.push(parsed)
-          }
-          res.json(result)
-        })
-      )
-    } catch (error) {
-      BitboxHTTP({
-        method: "post",
-        auth: {
-          username: username,
-          password: password
-        },
-        data: {
-          jsonrpc: "1.0",
-          id: "getblockhash",
-          method: "getblockhash",
-          params: [parseInt(req.params.height)]
-        }
-      })
-        .then(response => {
-          res.json(response.data.result)
-        })
-        .catch(error => {
-          res.send(error.response.data.error.message)
-        })
-    }
-  }
-)
-*/
 
 async function getBlockHeader(
   req: express.Request,
