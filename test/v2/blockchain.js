@@ -2,6 +2,8 @@
   TODO:
   -getRawMempool
   --Add tests for 'verbos' input values
+  -getMempoolEntry
+  --Needs e2e test to create unconfirmed tx, for real-world test.
 */
 
 "use strict"
@@ -343,7 +345,7 @@ describe("#BlockchainRouter", () => {
     // block route handler.
     const getDifficulty = blockchainRoute.testableComponents.getDifficulty
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -356,8 +358,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
     })
 
     it("should GET /getDifficulty", async () => {
@@ -451,6 +457,60 @@ describe("#BlockchainRouter", () => {
 
       assert.isArray(result)
       // Not sure what other assertions should be made here.
+    })
+  })
+
+  describe("getMempoolEntry()", () => {
+    // block route handler.
+    const getMempoolEntry = blockchainRoute.testableComponents.getMempoolEntry
+
+    it("should throw 400 if txid is empty", async () => {
+      const result = await getMempoolEntry(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getMempoolEntry(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+
+    it("should GET /getMempoolEntry", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: { error: "Transaction not in mempool" } })
+      }
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getMempoolEntry(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.isString(result.error)
+      assert.equal(result.error, "Transaction not in mempool")
     })
   })
 })

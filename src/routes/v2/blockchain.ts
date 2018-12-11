@@ -77,11 +77,15 @@ router.get("/getBestBlockHash", config.blockchainRateLimit2, getBestBlockHash)
 //router.get("/getBlock/:hash", config.blockchainRateLimit3, getBlock) // Same as block/getBlockByHash
 router.get("/getBlockchainInfo", config.blockchainRateLimit4, getBlockchainInfo)
 router.get("/getBlockCount", config.blockchainRateLimit5, getBlockCount)
-router.get(
-  "/getBlockHeader/:hash",
-  config.blockchainRateLimit7,getBlockHeader)
+router.get("/getBlockHeader/:hash", config.blockchainRateLimit7, getBlockHeader)
+
 router.get("/getChainTips", config.blockchainRateLimit8, getChainTips)
 router.get("/getDifficulty", config.blockchainRateLimit9, getDifficulty)
+router.get(
+  "/getMempoolEntry/:txid",
+  config.blockchainRateLimit12,
+  getMempoolEntry
+)
 router.get("/getMempoolInfo", config.blockchainRateLimit13, getMempoolInfo)
 router.get("/getRawMempool", config.blockchainRateLimit14, getRawMempool)
 
@@ -289,126 +293,51 @@ router.get(
 )
 */
 
+async function getBlockHeader(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let verbose = false
+    if (req.query.verbose && req.query.verbose.toString() === "true")
+      verbose = true
 
-
-  async function getBlockHeader(
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) {
-    try {
-
-      let verbose = false
-      if (req.query.verbose && req.query.verbose.toString() === "true") verbose = true
-
-      const hash = req.params.hash
-      if(!hash || hash === "") {
-        res.status(400)
-        return res.json({ error: "hash can not be empty" })
-      }
-
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
-
-      requestConfig.data.id = "getblockheader"
-      requestConfig.data.method = "getblockheader"
-      requestConfig.data.params = [hash, verbose]
-
-      const response = await BitboxHTTP(requestConfig)
-
-      return res.json(response.data.result)
-
-    } catch (err) {
-      // Attempt to decode the error message.
-      const { msg, status } = routeUtils.decodeError(err)
-      if (msg) {
-        res.status(status)
-        return res.json({ error: msg })
-      }
-
-      // Write out error to error log.
-      //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
-
-      res.status(500)
-      return res.json({ error: util.inspect(err) })
+    const hash = req.params.hash
+    if (!hash || hash === "") {
+      res.status(400)
+      return res.json({ error: "hash can not be empty" })
     }
 
-    /*
-      let hashes = JSON.parse(req.params.hash)
-      if (hashes.length > 20) {
-        res.json({
-          error: "Array too large. Max 20 hashes"
-        })
-      }
-      const result = [] as any
-      hashes = hashes.map((hash: any) =>
-        BitboxHTTP({
-          method: "post",
-          auth: {
-            username: username,
-            password: password
-          },
-          data: {
-            jsonrpc: "1.0",
-            id: "getblockheader",
-            method: "getblockheader",
-            params: [hash, verbose]
-          }
-        }).catch(error => {
-          try {
-            return {
-              data: {
-                result: error.response.data.error.message
-              }
-            }
-          } catch (ex) {
-            return {
-              data: {
-                result: "unknown error"
-              }
-            }
-          }
-        })
-      )
-      axios.all(hashes).then(
-        axios.spread((...args) => {
-          for (let i = 0; i < args.length; i++) {
-            let tmp = {} as any
-            const parsed = tmp.data.result
-            result.push(parsed)
-          }
-          res.json(result)
-        })
-      )
-    } catch (error) {
-      BitboxHTTP({
-        method: "post",
-        auth: {
-          username: username,
-          password: password
-        },
-        data: {
-          jsonrpc: "1.0",
-          id: "getblockheader",
-          method: "getblockheader",
-          params: [req.params.hash, verbose]
-        }
-      })
-        .then(response => {
-          res.json(response.data.result)
-        })
-        .catch(error => {
-          res.send(error.response.data.error.message)
-        })
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    requestConfig.data.id = "getblockheader"
+    requestConfig.data.method = "getblockheader"
+    requestConfig.data.params = [hash, verbose]
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-    */
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-
-
+}
 
 async function getChainTips(
   req: express.Request,
@@ -457,99 +386,68 @@ async function getDifficulty(
     requestConfig.data.params = []
 
     const response = await BitboxHTTP(requestConfig)
+
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
-
-/*
-
-
-router.get(
-  "/getMempoolEntry/:txid",
-  config.blockchainRateLimit12,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    try {
-      let txids = JSON.parse(req.params.txid)
-      if (txids.length > 20) {
-        res.json({
-          error: "Array too large. Max 20 txids"
-        })
-      }
-      const result = [] as any
-      txids = txids.map((txid: any) =>
-        BitboxHTTP({
-          method: "post",
-          auth: {
-            username: username,
-            password: password
-          },
-          data: {
-            jsonrpc: "1.0",
-            id: "getmempoolentry",
-            method: "getmempoolentry",
-            params: [txid]
-          }
-        }).catch(error => {
-          try {
-            return {
-              data: {
-                result: error.response.data.error.message
-              }
-            }
-          } catch (ex) {
-            return {
-              data: {
-                result: "unknown error"
-              }
-            }
-          }
-        })
-      )
-      axios.all(txids).then(
-        axios.spread((...args) => {
-          for (let i = 0; i < args.length; i++) {
-            let tmp = {} as any
-            const parsed = tmp.data.result
-            result.push(parsed)
-          }
-          res.json(result)
-        })
-      )
-    } catch (error) {
-      BitboxHTTP({
-        method: "post",
-        auth: {
-          username: username,
-          password: password
-        },
-        data: {
-          jsonrpc: "1.0",
-          id: "getmempoolentry",
-          method: "getmempoolentry",
-          params: [req.params.txid]
-        }
-      })
-        .then(response => {
-          res.json(response.data.result)
-        })
-        .catch(error => {
-          res.send(error.response.data.error.message)
-        })
+// Returns mempool data for given transaction. TXID must be in mempool (unconfirmed)
+async function getMempoolEntry(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameter
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
     }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    requestConfig.data.id = "getmempoolentry"
+    requestConfig.data.method = "getmempoolentry"
+    requestConfig.data.params = [txid]
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+    
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
-*/
+}
 
 async function getMempoolInfo(
   req: express.Request,
@@ -764,6 +662,7 @@ module.exports = {
     getChainTips,
     getDifficulty,
     getMempoolInfo,
-    getRawMempool
+    getRawMempool,
+    getMempoolEntry
   }
 }
