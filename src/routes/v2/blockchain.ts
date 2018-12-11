@@ -117,12 +117,19 @@ async function getBestBlockHash(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -174,12 +181,19 @@ async function getBlockchainInfo(
     const response = await BitboxHTTP(requestConfig)
 
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -202,12 +216,19 @@ async function getBlockCount(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -358,12 +379,19 @@ async function getChainTips(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -432,7 +460,7 @@ async function getMempoolEntry(
     const response = await BitboxHTTP(requestConfig)
 
     return res.json(response.data.result)
-    
+
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -468,12 +496,19 @@ async function getMempoolInfo(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -499,12 +534,19 @@ async function getRawMempool(
   try {
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
     // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -538,6 +580,7 @@ router.get(
   }
 )
 
+/*
 router.get(
   "/getTxOutProof/:txids",
   config.blockchainRateLimit16,
