@@ -88,6 +88,7 @@ router.get(
 )
 router.get("/getMempoolInfo", config.blockchainRateLimit13, getMempoolInfo)
 router.get("/getRawMempool", config.blockchainRateLimit14, getRawMempool)
+router.get("/getTxOut/:txid/:n", config.blockchainRateLimit15, getTxOut)
 
 function root(
   req: express.Request,
@@ -350,7 +351,6 @@ async function getMempoolEntry(
     const response = await BitboxHTTP(requestConfig)
 
     return res.json(response.data.result)
-
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -407,22 +407,23 @@ async function getRawMempool(
   res: express.Response,
   next: express.NextFunction
 ) {
-  const {
-    BitboxHTTP,
-    username,
-    password,
-    requestConfig
-  } = routeUtils.setEnvVars()
-
-  let verbose = false
-  if (req.query.verbose && req.query.verbose === "true") verbose = true
-
-  requestConfig.data.id = "getrawmempool"
-  requestConfig.data.method = "getrawmempool"
-  requestConfig.data.params = [verbose]
-
   try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    let verbose = false
+    if (req.query.verbose && req.query.verbose === "true") verbose = true
+
+    requestConfig.data.id = "getrawmempool"
+    requestConfig.data.method = "getrawmempool"
+    requestConfig.data.params = [verbose]
+
     const response = await BitboxHTTP(requestConfig)
+
     return res.json(response.data.result)
   } catch (err) {
     // Attempt to decode the error message.
@@ -440,35 +441,60 @@ async function getRawMempool(
   }
 }
 
-/*
-router.get(
-  "/getTxOut/:txid/:n",
-  config.blockchainRateLimit15,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+// Returns details about an unspent transaction output.
+async function getTxOut(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameter
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    let n = req.params.n
+    if (n === undefined || n === "") {
+      res.status(400)
+      return res.json({ error: "n can not be empty" })
+    }
+    n = parseInt(n)
+
     let include_mempool = false
     if (req.query.include_mempool && req.query.include_mempool === "true")
       include_mempool = true
 
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "gettxout"
     requestConfig.data.method = "gettxout"
-    requestConfig.data.params = [
-      req.params.txid,
-      parseInt(req.params.n),
-      include_mempool
-    ]
+    requestConfig.data.params = [txid, n, include_mempool]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 /*
 router.get(
@@ -596,6 +622,7 @@ module.exports = {
     getDifficulty,
     getMempoolInfo,
     getRawMempool,
-    getMempoolEntry
+    getMempoolEntry,
+    getTxOut
   }
 }

@@ -237,11 +237,27 @@ const mockBlockHeader = {
     "00000000000006899041cdfd6c0b73a97730c362346dde479b77414ad7f25ace"
 }
 
+const mockTxOut = {
+  bestblock: "00000000003a7f19730dd9f172d7466658a5c8833dd03ed8f4ba36e3d857b5e7",
+  confirmations: 10,
+  value: 0.0001,
+  scriptPubKey: {
+    asm:
+      "OP_DUP OP_HASH160 0ee020c07f39526ac5505c54fa1ab98490979b83 OP_EQUALVERIFY OP_CHECKSIG",
+    hex: "76a9140ee020c07f39526ac5505c54fa1ab98490979b8388ac",
+    reqSigs: 1,
+    type: "pubkeyhash",
+    addresses: ["bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf"]
+  },
+  coinbase: false
+}
+
 module.exports = {
   mockBlockHash,
   mockBlockchainInfo,
   mockChainTips,
   mockMempoolInfo,
   mockRawMempool,
-  mockBlockHeader
+  mockBlockHeader,
+  mockTxOut
 }

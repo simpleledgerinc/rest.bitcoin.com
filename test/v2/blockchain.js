@@ -14,7 +14,7 @@ const nock = require("nock") // HTTP mocking
 const blockchainRoute = require("../../dist/routes/v2/blockchain")
 
 const util = require("util")
-util.inspect.defaultOptions = { depth: 2 }
+util.inspect.defaultOptions = { depth: 5 }
 
 // Mocking data.
 const { mockReq, mockRes } = require("./mocks/express-mocks")
@@ -535,6 +535,83 @@ describe("#BlockchainRouter", () => {
       assert.hasAllKeys(result, ["error"])
       assert.isString(result.error)
       assert.equal(result.error, "Transaction not in mempool")
+    })
+  })
+
+  describe("getTxOut()", () => {
+    // block route handler.
+    const getTxOut = blockchainRoute.testableComponents.getTxOut
+
+    it("should throw 400 if txid is empty", async () => {
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 400 if n is empty", async () => {
+      req.params.txid = `sometxid`
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "n can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      req.params.n = 0
+
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+
+    it("should GET /getTxOut", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockTxOut })
+      }
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      req.params.n = 0
+
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.hasAllKeys(result, [
+        "bestblock",
+        "confirmations",
+        "value",
+        "scriptPubKey",
+        "coinbase"
+      ])
+      assert.hasAllKeys(result.scriptPubKey, [
+        "asm",
+        "hex",
+        "reqSigs",
+        "type",
+        "addresses"
+      ])
+      assert.isArray(result.scriptPubKey.addresses)
     })
   })
 })
