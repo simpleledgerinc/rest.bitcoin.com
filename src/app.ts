@@ -217,8 +217,6 @@ server.on("listening", onListening)
 // the handling of timeout errors. Is 10 seconds too agressive?
 server.setTimeout(10000)
 
-console.log(`BITBOX REST started on port ${port}`)
-
 /**
  * Normalize a port into a number, string, or false.
  */
