@@ -71,7 +71,7 @@ class Wormholedb  {
     }
     const s = JSON.stringify(query);
     const b64 = Buffer.from(s).toString('base64')
-    const url = `${this._url}/q/${b64}`
+    const url = `${this._url}q/${b64}`
     const result = await axios.get(url)
     return result
   }
