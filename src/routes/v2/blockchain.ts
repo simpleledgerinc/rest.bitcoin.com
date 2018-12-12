@@ -89,7 +89,7 @@ router.get(
 router.get("/getMempoolInfo", config.blockchainRateLimit13, getMempoolInfo)
 router.get("/getRawMempool", config.blockchainRateLimit14, getRawMempool)
 router.get("/getTxOut/:txid/:n", config.blockchainRateLimit15, getTxOut)
-router.get("/getTxOutProof/:txids", config.blockchainRateLimit16, getTxOutProof)
+router.get("/getTxOutProof/:txid", config.blockchainRateLimit16, getTxOutProof)
 
 function root(
   req: express.Request,

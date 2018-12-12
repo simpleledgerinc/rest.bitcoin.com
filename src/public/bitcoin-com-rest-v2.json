@@ -619,26 +619,9 @@
           {
             "name": "txids",
             "in": "path",
-            "description": "a json array of txids to filter [ 'txid' string A transaction hash ,... ]",
+            "description": "a txid string",
+            "example": "d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "blockhash",
-            "in": "query",
-            "description": "if specified, looks for txid in the block with this hash",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "data",
-            "in": "query",
-            "description": "a string that is a serialized, hex-encoded data for the proof.",
-            "required": false,
             "schema": {
               "type": "string"
             }
