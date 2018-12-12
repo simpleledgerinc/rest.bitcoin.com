@@ -4,6 +4,11 @@
   This test file uses the environment variable TEST to switch between unit
   and integration tests. By default, TEST is set to 'unit'. Set this variable
   to 'integration' to run the tests against BCH mainnet.
+
+  TODO:
+  -See "should throw an error for an invalid txid" for detailsSingle:
+  --The error handler should be refactored to return an intelligent error message,
+  instead of the 503 error it is returning now.
 */
 
 "use strict"
@@ -86,13 +91,13 @@ describe("#Transactions", () => {
     })
   })
 
-  describe("#details", async () => {
-    const details = transactionRoute.testableComponents.details
+  describe("#detailsBulk", async () => {
+    const detailsBulk = transactionRoute.testableComponents.detailsBulk
 
     it("should throw an error for an empty body", async () => {
       req.body = {}
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -107,7 +112,7 @@ describe("#Transactions", () => {
         txids: `6f235bd3a689f03c11969cd649ccad592462ca958bc519a30194e7a67b349a40`
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -133,7 +138,7 @@ describe("#Transactions", () => {
         txids: [fakeTXID]
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
@@ -153,7 +158,7 @@ describe("#Transactions", () => {
         txids: [txid]
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
@@ -197,7 +202,7 @@ describe("#Transactions", () => {
         txids: [txid1, txid2]
       }
 
-      const result = await details(req, res)
+      const result = await detailsBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
@@ -217,6 +222,108 @@ describe("#Transactions", () => {
         "valueIn",
         "fees"
       ])
+    })
+  })
+
+  describe("#detailsSingle", () => {
+    // details route handler.
+    const detailsSingle = transactionRoute.testableComponents.detailsSingle
+
+    it("should throw 400 if txid is empty", async () => {
+      const result = await detailsSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should error on an array", async () => {
+      req.params.txid = [`qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
+
+      const result = await detailsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txid can not be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw an error for an invalid txid", async () => {
+      if (process.env.TEST !== "unit") {
+        req.params.txid = `02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
+
+        const result = await detailsSingle(req, res)
+        //console.log(`result: ${util.inspect(result)}`)
+
+        // The error handling code should probably be updated to respond with a better
+        // error message.
+        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.include(
+          result.error,
+          "parameter 1 must be hexadecimal string",
+          "Proper error message"
+        )
+      }
+    })
+
+    it("should throw 500 when network issues", async () => {
+      const savedUrl = process.env.BITCOINCOM_BASEURL
+
+      try {
+        req.params.txid = `6f235bd3a689f03c11969cd649ccad592462ca958bc519a30194e7a67b349a40`
+
+        // Switch the Insight URL to something that will error out.
+        process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
+
+        const result = await detailsSingle(req, res)
+
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+
+        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.include(result.error, "ENOTFOUND", "Error message expected")
+      } catch (err) {
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+      }
+    })
+
+    it("should get details for a single address", async () => {
+      const txid = `6f235bd3a689f03c11969cd649ccad592462ca958bc519a30194e7a67b349a40`
+      req.params.txid = txid
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/tx/${txid}`)
+          .reply(200, mockData.mockDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Assert that required fields exist in the returned object.
+      assert.hasAllKeys(result, [
+        "txid",
+        "version",
+        "locktime",
+        "vin",
+        "vout",
+        "blockhash",
+        "blockheight",
+        "confirmations",
+        "time",
+        "blocktime",
+        "valueOut",
+        "size",
+        "valueIn",
+        "fees"
+      ])
+      assert.isArray(result.vin)
+      assert.isArray(result.vout)
     })
   })
 })
