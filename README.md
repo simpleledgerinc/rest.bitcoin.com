@@ -9,6 +9,7 @@ More info: [developer.bitcoin.com](https://developer.bitcoin.com). Chatroom [htt
 Testnet available at [trest.bitcoin.com](https://trest.bitcoin.com)
 
 ## Usage
+
 You can also run an instance of REST for your own full node
 
 ### Prerequesites
@@ -69,6 +70,7 @@ npm install
 ```
 
 #### Build REST
+
 ```bash
 npm run build
 ```
@@ -91,15 +93,12 @@ Here's how the final command would look
 BITCOINCOM_BASEURL=https://bch-insight.bitpay.com/api/ RPC_BASEURL=http://your.nodes.ip.address:8332/ RPC_PASSWORD=rpcPasssword RPC_USERNAME=rpcUsername ZEROMQ_PORT=28332 ZEROMQ_URL=your.nodes.ip.address NETWORK=mainnet npm run dev
 ```
 
-
 Starting in the regtest mode (partly working since the bitcoincom_baseurl does not work with local nodes):
+
 ```bash
 PORT=3000 BITCOINCOM_BASEURL=http://localhost:3000/api/ RPC_BASEURL=http://localhost:18332/ RPC_PASSWORD=regtest RPC_USERNAME=regtest ZEROMQ_PORT=0 ZEROMQ_URL=0 NETWORK=local npm start
 ```
 
-
 #### View in browser
 
 Finally open `http://localhost:3000/` and confirm you see the GUI
-
-#### Deploy
