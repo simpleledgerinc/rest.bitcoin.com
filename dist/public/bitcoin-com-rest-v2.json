@@ -731,7 +731,7 @@
             "required": false,
             "schema": {
               "type": "number",
-              "default": 1
+              "default": -1
             }
           }
         ],
