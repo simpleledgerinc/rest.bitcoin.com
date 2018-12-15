@@ -90,6 +90,11 @@ router.get("/getMempoolInfo", config.blockchainRateLimit13, getMempoolInfo)
 router.get("/getRawMempool", config.blockchainRateLimit14, getRawMempool)
 router.get("/getTxOut/:txid/:n", config.blockchainRateLimit15, getTxOut)
 router.get("/getTxOutProof/:txid", config.blockchainRateLimit16, getTxOutProof)
+router.get(
+  "/verifyTxOutProof/:proof",
+  config.blockchainRateLimit17,
+  verifyTxOutProof
+)
 
 function root(
   req: express.Request,
@@ -611,28 +616,50 @@ async function getTxOutProof(
 //     res.send(error.response.data.error.message);
 //   });
 // });
+*/
 
-router.get(
-  "/verifyTxOutProof/:proof",
-  config.blockchainRateLimit17,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+async function verifyTxOutProof(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Validate input parameter
+    const proof = req.params.proof
+    if (!proof || proof === "") {
+      res.status(400)
+      return res.json({ error: "proof can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "verifytxoutproof"
     requestConfig.data.method = "verifytxoutproof"
     requestConfig.data.params = [req.params.proof]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+    
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
-*/
+}
 
 module.exports = {
   router,
@@ -649,6 +676,7 @@ module.exports = {
     getRawMempool,
     getMempoolEntry,
     getTxOut,
-    getTxOutProof
+    getTxOutProof,
+    verifyTxOutProof
   }
 }
