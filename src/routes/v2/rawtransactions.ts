@@ -610,27 +610,13 @@ async function whCreateTx(
       res.status(400)
       return res.json({ error: "inputs can not be empty" })
     }
-/*
-    try {
-      inputs = JSON.parse(inputs)
-    } catch (err) {
-      res.status(400)
-      return res.json({ error: "could not parse inputs" })
-    }
-*/
+
     let outputs = req.body.outputs
     if (!outputs || outputs === "") {
       res.status(400)
       return res.json({ error: "outputs can not be empty" })
     }
-/*
-    try {
-      outputs = JSON.parse(outputs)
-    } catch (err) {
-      res.status(400)
-      return res.json({ error: "could not parse outputs" })
-    }
-*/
+
     const {
       BitboxHTTP,
       username,
