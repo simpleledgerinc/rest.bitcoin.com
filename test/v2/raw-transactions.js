@@ -556,7 +556,7 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if payload is empty", async () => {
-      req.params.rawtx = "fakeTX"
+      req.body.rawtx = "fakeTX"
 
       const result = await whOpReturn(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -576,8 +576,8 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.rawtx = "01000000000000000000"
-      req.params.payload = "00000000000000020000000006dac2c0"
+      req.body.rawtx = "01000000000000000000"
+      req.body.payload = "00000000000000020000000006dac2c0"
 
       const result = await whOpReturn(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -765,7 +765,7 @@ describe("#Raw-Transactions", () => {
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "inputs can not be empty")
     })
-  
+
     it("should throw 400 error if outputs are empty", async () => {
       req.body.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
       const result = await whCreateTx(req, res)

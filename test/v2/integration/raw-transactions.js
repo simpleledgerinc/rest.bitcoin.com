@@ -15,7 +15,7 @@ util.inspect.defaultOptions = { depth: 1 }
 const mockData = require("../mocks/raw-transactions-mocks")
 
 describe("#Raw-Transactions", () => {
-  describe("#whCreateTx", () => {
+  describe("#root", () => {
     it(`should return root`, async () => {
       const options = {
         method: "GET",
@@ -29,7 +29,9 @@ describe("#Raw-Transactions", () => {
 
       assert.equal(result.body.status, "rawtransactions")
     })
+  })
 
+  describe("#whCreateTx", () => {
     it(`should return tx hex`, async () => {
       const minIn = {
         txid:
@@ -55,6 +57,30 @@ describe("#Raw-Transactions", () => {
       assert.equal(
         result.body,
         "0200000001b29af9aaf74f82ad7ff181fcc6f3d2cf5fa701a1c969620f9185ee3df29cedf70100000000ffffffff0000000000"
+      )
+    })
+  })
+
+  describe("#whOpReturn", () => {
+    it(`should return tx hex`, async () => {
+
+      const options = {
+        method: "PUT",
+        uri: `http://localhost:3000/v2/rawtransactions/opreturn`,
+        resolveWithFullResponse: true,
+        json: true,
+        body: {
+          rawtx: "01000000000000000000",
+          payload: "00000000000000020000000006dac2c0"
+        }
+      }
+
+      const result = await rp(options)
+      //console.log(`result.body: ${JSON.stringify(result.body, null, 0)}`)
+
+      assert.equal(
+        result.body,
+        "0100000000010000000000000000166a140877686300000000000000020000000006dac2c000000000"
       )
     })
   })

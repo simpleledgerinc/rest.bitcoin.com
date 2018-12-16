@@ -100,11 +100,7 @@ router.post(
   whChangeOutput
 )
 router.post("/input/:rawtx/:txid/:n", config.rawTransactionsRateLimit7, whInput)
-router.post(
-  "/opReturn/:rawtx/:payload",
-  config.rawTransactionsRateLimit8,
-  whOpReturn
-)
+router.put("/opreturn", config.rawTransactionsRateLimit8, whOpReturn)
 router.post(
   "/reference/:rawtx/:destination",
   config.rawTransactionsRateLimit9,
@@ -115,11 +111,7 @@ router.post(
   config.rawTransactionsRateLimit10,
   whDecodeTx
 )
-router.put(
-  "/create",
-  config.rawTransactionsRateLimit11,
-  whCreateTx
-)
+router.put("/create", config.rawTransactionsRateLimit11, whCreateTx)
 
 function root(
   req: express.Request,
@@ -464,13 +456,13 @@ async function whOpReturn(
   next: express.NextFunction
 ) {
   try {
-    const rawtx = req.params.rawtx
+    const rawtx = req.body.rawtx
     if (!rawtx || rawtx === "") {
       res.status(400)
       return res.json({ error: "rawtx can not be empty" })
     }
 
-    const payload = req.params.payload
+    const payload = req.body.payload
     if (!payload || payload === "") {
       res.status(400)
       return res.json({ error: "payload can not be empty" })
