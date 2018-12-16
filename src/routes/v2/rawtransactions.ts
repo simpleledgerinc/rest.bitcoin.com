@@ -115,8 +115,8 @@ router.post(
   config.rawTransactionsRateLimit10,
   whDecodeTx
 )
-router.post(
-  "/create/:inputs/:outputs",
+router.put(
+  "/create",
   config.rawTransactionsRateLimit11,
   whCreateTx
 )
@@ -605,7 +605,7 @@ async function whCreateTx(
 ) {
   try {
     // Validate input parameters
-    let inputs = req.params.inputs
+    let inputs = req.body.inputs
     if (!inputs || inputs === "") {
       res.status(400)
       return res.json({ error: "inputs can not be empty" })
@@ -618,7 +618,7 @@ async function whCreateTx(
       return res.json({ error: "could not parse inputs" })
     }
 
-    let outputs = req.params.outputs
+    let outputs = req.body.outputs
     if (!outputs || outputs === "") {
       res.status(400)
       return res.json({ error: "outputs can not be empty" })
@@ -639,7 +639,7 @@ async function whCreateTx(
     } = routeUtils.setEnvVars()
 
     const params = [inputs, outputs]
-    if (req.query.locktime) params.push(req.query.locktime)
+    if (req.body.locktime) params.push(req.body.locktime)
 
     requestConfig.data.id = "createrawtransaction"
     requestConfig.data.method = "createrawtransaction"

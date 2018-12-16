@@ -767,7 +767,7 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if inputs are not parsable JSON", async () => {
-      req.params.inputs = "fakeTx"
+      req.body.inputs = "fakeTx"
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -777,7 +777,7 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if outputs are empty", async () => {
-      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
+      req.body.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
@@ -786,8 +786,8 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if outputs are not parsable JSON", async () => {
-      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
-      req.params.outputs = "fakeTx"
+      req.body.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
+      req.body.outputs = "fakeTx"
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -803,8 +803,8 @@ describe("#Raw-Transactions", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.inputs = JSON.stringify([mockData.mockWHCreateInput])
-      req.params.outputs = JSON.stringify({})
+      req.body.inputs = JSON.stringify([mockData.mockWHCreateInput])
+      req.body.outputs = JSON.stringify({})
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -830,8 +830,8 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
-      req.params.outputs = JSON.stringify({})
+      req.body.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
+      req.body.outputs = JSON.stringify({})
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -855,8 +855,8 @@ describe("#Raw-Transactions", () => {
           .reply(200, { result: expected })
       }
 
-      req.params.inputs = JSON.stringify([mockData.mockWHCreateInput])
-      req.params.outputs = JSON.stringify({})
+      req.body.inputs = JSON.stringify([mockData.mockWHCreateInput])
+      req.body.outputs = JSON.stringify({})
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
