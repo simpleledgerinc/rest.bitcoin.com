@@ -962,8 +962,8 @@
         }
       }
     },
-    "/rawtransactions/create/{inputs}/{outputs}": {
-      "post": {
+    "/rawtransactions/create": {
+      "put": {
         "tags": ["rawtransactions"],
         "summary": "createRawTxChange",
         "description": "Create a transaction spending the given inputs and creating new outputs. API Reference: https://developer.bitcoin.com/wormhole/docs/rawTransactions",
@@ -971,32 +971,32 @@
         "parameters": [
           {
             "name": "inputs",
-            "in": "path",
+            "in": "body",
             "description": "A json array of json objects",
             "required": true,
-            "example": "[{\"txid\":\"myid\",\"vout\":0}]",
             "schema": {
-              "type": "string"
+              "type": "object",
+              "example": [{"txid": "myid", "vout": 0}]
             }
           },
           {
             "name": "outputs",
-            "in": "path",
+            "in": "body",
             "description": "A json object with outputs",
             "required": true,
-            "example": "{}",
             "schema": {
-              "type": "string"
+              "type": "object",
+              "example": {}
             }
           },
           {
             "name": "locktime",
-            "in": "query",
+            "in": "body",
             "description": "Raw locktime. Non-0 value also locktime-activates inputs",
             "required": false,
-            "example": 0,
             "schema": {
-              "type": "number"
+              "type": "number",
+              "example": 0
             }
           }
         ],
