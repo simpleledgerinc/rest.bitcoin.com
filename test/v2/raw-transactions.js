@@ -765,7 +765,7 @@ describe("#Raw-Transactions", () => {
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "inputs can not be empty")
     })
-
+    /*
     it("should throw 400 error if inputs are not parsable JSON", async () => {
       req.body.inputs = "fakeTx"
 
@@ -775,7 +775,7 @@ describe("#Raw-Transactions", () => {
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "could not parse inputs")
     })
-
+*/
     it("should throw 400 error if outputs are empty", async () => {
       req.body.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
       const result = await whCreateTx(req, res)
@@ -784,7 +784,7 @@ describe("#Raw-Transactions", () => {
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "outputs can not be empty")
     })
-
+    /*
     it("should throw 400 error if outputs are not parsable JSON", async () => {
       req.body.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
       req.body.outputs = "fakeTx"
@@ -795,7 +795,7 @@ describe("#Raw-Transactions", () => {
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "could not parse outputs")
     })
-
+*/
     it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
@@ -830,8 +830,8 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.body.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
-      req.body.outputs = JSON.stringify({})
+      req.body.inputs = [{ txid: "myid", vout: 0 }]
+      req.body.outputs = {}
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -855,8 +855,8 @@ describe("#Raw-Transactions", () => {
           .reply(200, { result: expected })
       }
 
-      req.body.inputs = JSON.stringify([mockData.mockWHCreateInput])
-      req.body.outputs = JSON.stringify({})
+      req.body.inputs = [mockData.mockWHCreateInput]
+      req.body.outputs = {}
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
