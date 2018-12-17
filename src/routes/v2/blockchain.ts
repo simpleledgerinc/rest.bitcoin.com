@@ -45,7 +45,11 @@ const config: IRLConfig = {
   blockchainRateLimit10: undefined,
   blockchainRateLimit11: undefined,
   blockchainRateLimit12: undefined,
-  blockchainRateLimit13: undefined
+  blockchainRateLimit13: undefined,
+  blockchainRateLimit14: undefined,
+  blockchainRateLimit15: undefined,
+  blockchainRateLimit16: undefined,
+  blockchainRateLimit17: undefined
 }
 
 let i = 1
