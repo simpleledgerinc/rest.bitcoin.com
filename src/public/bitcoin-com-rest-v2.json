@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "description": "rest.bitcoin.com is the REST layer for Bitcoin.com's Cloud. More info: [developer.bitcoin.com](https://developer.bitcoin.com). Chatroom [geni.us/CashDev](http://geni.us/CashDev)",
-    "version": "1.5.10",
+    "version": "2.0.0",
     "title": "REST",
     "license": {
       "name": "MIT",
@@ -102,7 +102,7 @@
           {
             "name": "address",
             "in": "path",
-            "description": "the address or array of addresses in cashAddr or legacy",
+            "description": "the address in cashAddr or legacy",
             "required": true,
             "example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
             "schema": {
