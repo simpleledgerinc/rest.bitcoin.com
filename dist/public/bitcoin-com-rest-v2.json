@@ -1901,7 +1901,7 @@
 						"in": "path",
 						"description": "The address",
 						"required": true,
-						"example": "",
+						"example": "bitcoincash:qq0j0nsc5mfvzhccawgkgv7g3umspezdvupfjg7ze3",
 						"schema": {
 							"type": "string"
 						}
