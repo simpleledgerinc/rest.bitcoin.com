@@ -45,7 +45,7 @@ const processInputs = (tx: any) => {
 }
 
 let i = 1
-while (i < 3) {
+while (i < 4) {
   config[`transactionRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached

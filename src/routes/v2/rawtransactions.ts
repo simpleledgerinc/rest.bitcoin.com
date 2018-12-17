@@ -61,7 +61,7 @@ const config: IRLConfig = {
 
 let i = 1
 
-while (i < 12) {
+while (i < 13) {
   config[`rawTransactionsRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
