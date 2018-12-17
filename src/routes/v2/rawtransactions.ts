@@ -85,41 +85,30 @@ router.get(
 )
 router.get("/decodeScript/:hex", config.rawTransactionsRateLimit3, decodeScript)
 router.post(
+  "/getRawTransaction",
+  config.rawTransactionsRateLimit4,
+  getRawTransactionBulk
+)
+router.get(
   "/getRawTransaction/:txid",
   config.rawTransactionsRateLimit4,
-  getRawTransaction
+  getRawTransactionSingle
 )
 router.post(
   "/sendRawTransaction/:hex",
   config.rawTransactionsRateLimit5,
   sendRawTransaction
 )
-router.post(
-  "/change/:rawtx/:prevtxs/:destination/:fee",
-  config.rawTransactionsRateLimit6,
-  whChangeOutput
-)
-router.post("/input/:rawtx/:txid/:n", config.rawTransactionsRateLimit7, whInput)
-router.post(
-  "/opReturn/:rawtx/:payload",
-  config.rawTransactionsRateLimit8,
-  whOpReturn
-)
-router.post(
-  "/reference/:rawtx/:destination",
-  config.rawTransactionsRateLimit9,
-  whReference
-)
-router.post(
+router.put("/change", config.rawTransactionsRateLimit6, whChangeOutput)
+router.put("/input", config.rawTransactionsRateLimit7, whInput)
+router.put("/opreturn", config.rawTransactionsRateLimit8, whOpReturn)
+router.put("/reference", config.rawTransactionsRateLimit9, whReference)
+router.get(
   "/decodeTransaction/:rawtx",
   config.rawTransactionsRateLimit10,
   whDecodeTx
 )
-router.post(
-  "/create/:inputs/:outputs",
-  config.rawTransactionsRateLimit11,
-  whCreateTx
-)
+router.put("/create", config.rawTransactionsRateLimit11, whCreateTx)
 
 function root(
   req: express.Request,
@@ -219,9 +208,31 @@ async function decodeScript(
   }
 }
 
+// Retrieve raw transactions details from the full node.
+async function getRawTransactionsFromNode(txid: string, verbose: number) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    requestConfig.data.id = "getrawtransaction"
+    requestConfig.data.method = "getrawtransaction"
+    requestConfig.data.params = [txid, verbose]
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return response.data.result
+  } catch (err) {
+    throw err
+  }
+}
+
 // Get a JSON object breakdown of transaction details.
 // POST
-async function getRawTransaction(
+async function getRawTransactionBulk(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -240,16 +251,6 @@ async function getRawTransaction(
       return res.json({ error: "Array too large. Max 20 txids" })
     }
 
-    const {
-      BitboxHTTP,
-      username,
-      password,
-      requestConfig
-    } = routeUtils.setEnvVars()
-
-    requestConfig.data.id = "getrawtransaction"
-    requestConfig.data.method = "getrawtransaction"
-
     const results = []
 
     // Loop through each txid in the array
@@ -261,10 +262,9 @@ async function getRawTransaction(
         return res.json({ error: "Encountered empty TXID" })
       }
 
-      requestConfig.data.params = [txid, verbose]
+      const data = await getRawTransactionsFromNode(txid, verbose)
 
-      const response = await BitboxHTTP(requestConfig)
-      results.push(response.data.result)
+      results.push(data)
     }
 
     return res.json(results)
@@ -283,6 +283,43 @@ async function getRawTransaction(
     return res.json({ error: util.inspect(err) })
   }
 }
+
+// Get a JSON object breakdown of transaction details.
+// GET
+async function getRawTransactionSingle(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let verbose = 0
+    if (req.query.verbose) verbose = 1
+
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    const data = await getRawTransactionsFromNode(txid, verbose)
+
+    return res.json(data)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/getRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
 
 // Transmit a raw transaction to the BCH network.
 async function sendRawTransaction(
@@ -352,27 +389,25 @@ async function whChangeOutput(
   try {
     // TODO: What kind of validations should go here?
 
-    const rawTx = req.params.rawtx
+    const rawTx = req.body.rawtx
     if (!rawTx || rawTx === "") {
       res.status(400)
       return res.json({ error: "rawtx can not be empty" })
     }
 
-    let prevTxs
-    try {
-      prevTxs = JSON.parse(req.params.prevtxs)
-    } catch (err) {
+    const prevTxs = req.body.prevtxs
+    if (!prevTxs || prevTxs === "") {
       res.status(400)
-      return res.json({ error: "could not parse prevtxs" })
+      return res.json({ error: "prevtxs can not be empty" })
     }
 
-    const destination = req.params.destination
+    const destination = req.body.destination
     if (!destination || destination === "") {
       res.status(400)
       return res.json({ error: "destination can not be empty" })
     }
 
-    let fee = req.params.fee
+    let fee = req.body.fee
     if (!fee || fee === "") {
       res.status(400)
       return res.json({ error: "fee can not be empty" })
@@ -380,7 +415,7 @@ async function whChangeOutput(
     fee = parseFloat(fee)
 
     const params = [rawTx, prevTxs, destination, fee]
-    if (req.query.position) params.push(parseInt(req.query.position))
+    if (req.body.position) params.push(parseInt(req.body.position))
 
     const {
       BitboxHTTP,
@@ -404,7 +439,7 @@ async function whChangeOutput(
     }
 
     res.status(500)
-    return res.json({ error: `Error in /change: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -415,15 +450,15 @@ async function whInput(
   next: express.NextFunction
 ) {
   try {
-    const rawtx = req.params.rawtx
+    const rawtx = req.body.rawtx
 
-    const txid = req.params.txid
+    const txid = req.body.txid
     if (!txid || txid === "") {
       res.status(400)
       return res.json({ error: "txid can not be empty" })
     }
 
-    let n = req.params.n
+    let n = req.body.n
     if (n === undefined || n === "") {
       res.status(400)
       return res.json({ error: "n can not be empty" })
@@ -453,7 +488,7 @@ async function whInput(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whInput: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -464,13 +499,13 @@ async function whOpReturn(
   next: express.NextFunction
 ) {
   try {
-    const rawtx = req.params.rawtx
+    const rawtx = req.body.rawtx
     if (!rawtx || rawtx === "") {
       res.status(400)
       return res.json({ error: "rawtx can not be empty" })
     }
 
-    const payload = req.params.payload
+    const payload = req.body.payload
     if (!payload || payload === "") {
       res.status(400)
       return res.json({ error: "payload can not be empty" })
@@ -499,7 +534,7 @@ async function whOpReturn(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whOpReturn: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -509,20 +544,20 @@ async function whReference(
   next: express.NextFunction
 ) {
   try {
-    const rawtx = req.params.rawtx
+    const rawtx = req.body.rawtx
     if (!rawtx || rawtx === "") {
       res.status(400)
       return res.json({ error: "rawtx can not be empty" })
     }
 
-    const destination = req.params.destination
+    const destination = req.body.destination
     if (!destination || destination === "") {
       res.status(400)
       return res.json({ error: "destination can not be empty" })
     }
 
     const params = [rawtx, destination]
-    if (req.query.amount) params.push(req.query.amount)
+    if (req.body.amount) params.push(req.body.amount)
 
     const {
       BitboxHTTP,
@@ -547,7 +582,7 @@ async function whReference(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whReference: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -593,7 +628,7 @@ async function whDecodeTx(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whDecodeTx: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -605,30 +640,16 @@ async function whCreateTx(
 ) {
   try {
     // Validate input parameters
-    let inputs = req.params.inputs
+    let inputs = req.body.inputs
     if (!inputs || inputs === "") {
       res.status(400)
       return res.json({ error: "inputs can not be empty" })
     }
 
-    try {
-      inputs = JSON.parse(inputs)
-    } catch (err) {
-      res.status(400)
-      return res.json({ error: "could not parse inputs" })
-    }
-
-    let outputs = req.params.outputs
+    let outputs = req.body.outputs
     if (!outputs || outputs === "") {
       res.status(400)
       return res.json({ error: "outputs can not be empty" })
-    }
-
-    try {
-      outputs = JSON.parse(outputs)
-    } catch (err) {
-      res.status(400)
-      return res.json({ error: "could not parse outputs" })
     }
 
     const {
@@ -639,7 +660,7 @@ async function whCreateTx(
     } = routeUtils.setEnvVars()
 
     const params = [inputs, outputs]
-    if (req.query.locktime) params.push(req.query.locktime)
+    if (req.body.locktime) params.push(req.body.locktime)
 
     requestConfig.data.id = "createrawtransaction"
     requestConfig.data.method = "createrawtransaction"
@@ -657,7 +678,7 @@ async function whCreateTx(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whCreateTx: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -667,7 +688,8 @@ module.exports = {
     root,
     decodeRawTransaction,
     decodeScript,
-    getRawTransaction,
+    getRawTransactionBulk,
+    getRawTransactionSingle,
     sendRawTransaction,
     whChangeOutput,
     whInput,
