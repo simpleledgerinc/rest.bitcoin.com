@@ -84,7 +84,7 @@ router.get(
   decodeRawTransaction
 )
 router.get("/decodeScript/:hex", config.rawTransactionsRateLimit3, decodeScript)
-router.post(
+router.get(
   "/getRawTransaction/:txid",
   config.rawTransactionsRateLimit4,
   getRawTransaction
@@ -94,19 +94,11 @@ router.post(
   config.rawTransactionsRateLimit5,
   sendRawTransaction
 )
-router.put(
-  "/change",
-  config.rawTransactionsRateLimit6,
-  whChangeOutput
-)
+router.put("/change", config.rawTransactionsRateLimit6, whChangeOutput)
 router.put("/input", config.rawTransactionsRateLimit7, whInput)
 router.put("/opreturn", config.rawTransactionsRateLimit8, whOpReturn)
-router.put(
-  "/reference",
-  config.rawTransactionsRateLimit9,
-  whReference
-)
-router.post(
+router.put("/reference", config.rawTransactionsRateLimit9, whReference)
+router.get(
   "/decodeTransaction/:rawtx",
   config.rawTransactionsRateLimit10,
   whDecodeTx
@@ -351,7 +343,7 @@ async function whChangeOutput(
     }
 
     const prevTxs = req.body.prevtxs
-    if(!prevTxs || prevTxs === "") {
+    if (!prevTxs || prevTxs === "") {
       res.status(400)
       return res.json({ error: "prevtxs can not be empty" })
     }
