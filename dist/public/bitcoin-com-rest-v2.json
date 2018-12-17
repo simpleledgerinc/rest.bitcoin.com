@@ -1991,7 +1991,7 @@
 						"in": "path",
 						"description": "The identifier of the crowdsale",
 						"required": true,
-						"example": 1,
+						"example": 197,
 						"schema": {
 							"type": "number"
 						}
@@ -2001,8 +2001,10 @@
 						"in": "query",
 						"description": "List crowdsale participants (default: false)",
 						"required": false,
-						"type": "boolean",
-						"default": false
+						"default": false,
+						"schema": {
+							"type": "boolean"
+						}
 					}
 				],
 				"responses": {
