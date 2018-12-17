@@ -119,145 +119,147 @@ describe("#Wormhole/transaction", () => {
       )
     })
 
-    it("should default to page 0", async () => {
-      req.body = {
-        addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"]
-      }
+    if (process.env.TEST !== "integration") {
+      it("should default to page 0", async () => {
+        req.body = {
+          addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"]
+        }
 
-      const result = await endpoint(req, res)
+        const result = await endpoint(req, res)
 
-      assert.equal(result[0].currentPage, 0)
-    })
+        assert.equal(result[0].currentPage, 0)
+      })
 
-    it("should process the requested page", async () => {
-      req.body = {
-        addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"],
-        page: 5
-      }
+      it("should process the requested page", async () => {
+        req.body = {
+          addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"],
+          page: 5
+        }
 
-      const result = await endpoint(req, res)
+        const result = await endpoint(req, res)
 
-      assert.equal(result[0].currentPage, 5)
-    })
+        assert.equal(result[0].currentPage, 5)
+      })
 
-    it("should calculate the total number of pages", async () => {
-      req.body = {
-        addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"]
-      }
+      it("should calculate the total number of pages", async () => {
+        req.body = {
+          addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"]
+        }
 
-      const result = await endpoint(req, res)
+        const result = await endpoint(req, res)
 
-      assert.equal(result[0].pagesTotal, 1)
-    })
+        assert.equal(result[0].pagesTotal, 1)
+      })
 
-    it("should process a single address in an array", async () => {
-      req.body = {
-        addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"]
-      }
+      it("should process a single address in an array", async () => {
+        req.body = {
+          addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"]
+        }
 
-      const result = await endpoint(req, res)
+        const result = await endpoint(req, res)
 
-      assert(Array.isArray(result), "result not an array")
-      assert.equal(result.length, 1)
-      assert.hasAllKeys(
-        result[0],
-        ["currentPage", "pagesTotal", "txs"],
-        "invalid result data"
-      )
-      assert(Array.isArray(result[0].txs), "result txs not an array")
-      assert.hasAllKeys(
-        result[0].txs[0],
-        [
-          "txid",
-          "fee",
-          "sendingaddress",
-          "referenceaddress",
-          "version",
-          "type_int",
-          "type",
-          "propertyid",
-          "precision",
-          "amount",
-          "valid",
-          "blockhash",
-          "blocktime",
-          "positioninblock",
-          "block"
-        ],
-        "invalid result data"
-      )
-    })
+        assert(Array.isArray(result), "result not an array")
+        assert.equal(result.length, 1)
+        assert.hasAllKeys(
+          result[0],
+          ["currentPage", "pagesTotal", "txs"],
+          "invalid result data"
+        )
+        assert(Array.isArray(result[0].txs), "result txs not an array")
+        assert.hasAllKeys(
+          result[0].txs[0],
+          [
+            "txid",
+            "fee",
+            "sendingaddress",
+            "referenceaddress",
+            "version",
+            "type_int",
+            "type",
+            "propertyid",
+            "precision",
+            "amount",
+            "valid",
+            "blockhash",
+            "blocktime",
+            "positioninblock",
+            "block"
+          ],
+          "invalid result data"
+        )
+      })
 
-    it("should process multiple addresses in an array", async () => {
-      req.body = {
-        addresses: [
-          "bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4",
-          "bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr"
-        ]
-      }
+      it("should process multiple addresses in an array", async () => {
+        req.body = {
+          addresses: [
+            "bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4",
+            "bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr"
+          ]
+        }
 
-      const result = await endpoint(req, res)
+        const result = await endpoint(req, res)
 
-      assert(Array.isArray(result), "result not an array")
-      assert.equal(result.length, 2)
+        assert(Array.isArray(result), "result not an array")
+        assert.equal(result.length, 2)
 
-      // validate first result object in array
-      assert.hasAllKeys(
-        result[0],
-        ["currentPage", "pagesTotal", "txs"],
-        "invalid result data"
-      )
-      assert(Array.isArray(result[0].txs), "result txs not an array")
-      assert.hasAllKeys(
-        result[0].txs[0],
-        [
-          "txid",
-          "fee",
-          "sendingaddress",
-          "referenceaddress",
-          "version",
-          "type_int",
-          "type",
-          "propertyid",
-          "precision",
-          "amount",
-          "valid",
-          "blockhash",
-          "blocktime",
-          "positioninblock",
-          "block"
-        ],
-        "invalid result data"
-      )
+        // validate first result object in array
+        assert.hasAllKeys(
+          result[0],
+          ["currentPage", "pagesTotal", "txs"],
+          "invalid result data"
+        )
+        assert(Array.isArray(result[0].txs), "result txs not an array")
+        assert.hasAllKeys(
+          result[0].txs[0],
+          [
+            "txid",
+            "fee",
+            "sendingaddress",
+            "referenceaddress",
+            "version",
+            "type_int",
+            "type",
+            "propertyid",
+            "precision",
+            "amount",
+            "valid",
+            "blockhash",
+            "blocktime",
+            "positioninblock",
+            "block"
+          ],
+          "invalid result data"
+        )
 
-      // validate second result object in array
-      assert.hasAllKeys(
-        result[1],
-        ["currentPage", "pagesTotal", "txs"],
-        "invalid result data"
-      )
-      assert(Array.isArray(result[1].txs), "result txs not an array")
-      assert.hasAllKeys(
-        result[1].txs[0],
-        [
-          "txid",
-          "fee",
-          "sendingaddress",
-          "referenceaddress",
-          "version",
-          "type_int",
-          "type",
-          "propertyid",
-          "precision",
-          "amount",
-          "valid",
-          "blockhash",
-          "blocktime",
-          "positioninblock",
-          "block"
-        ],
-        "invalid result data"
-      )
-    })
+        // validate second result object in array
+        assert.hasAllKeys(
+          result[1],
+          ["currentPage", "pagesTotal", "txs"],
+          "invalid result data"
+        )
+        assert(Array.isArray(result[1].txs), "result txs not an array")
+        assert.hasAllKeys(
+          result[1].txs[0],
+          [
+            "txid",
+            "fee",
+            "sendingaddress",
+            "referenceaddress",
+            "version",
+            "type_int",
+            "type",
+            "propertyid",
+            "precision",
+            "amount",
+            "valid",
+            "blockhash",
+            "blocktime",
+            "positioninblock",
+            "block"
+          ],
+          "invalid result data"
+        )
+      })
+    }
   })
 })
