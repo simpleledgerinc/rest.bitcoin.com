@@ -1,5 +1,13 @@
 /*
- */
+  These integration tests are intended to be run against a live local copy of
+  rest.bitcoin.com. They exercise the endpoints in the same way the SDK or
+  end-user application would. These tests were created to replace the parts
+  removed from the swagger UI, that otherwise would have excersiced these endpoints.
+
+  TODO:
+  -/rawtransactions/sendRawTransaction is more appropropriate for an e2e test,
+  so it is omitted here.
+*/
 
 "use strict"
 
@@ -84,7 +92,7 @@ describe("#Raw-Transactions", () => {
     })
   })
 
-  describe("#whOpReference", () => {
+  describe("#whReference", () => {
     it(`should return tx hex`, async () => {
       const options = {
         method: "PUT",
