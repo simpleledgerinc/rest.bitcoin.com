@@ -864,34 +864,6 @@
         }
       }
     },
-    "/rawtransactions/sendRawTransaction/{hex}": {
-      "post": {
-        "tags": ["rawtransactions"],
-        "summary": "Submits raw transaction to local node and network.",
-        "description": "Submits raw transaction (serialized, hex-encoded) to local node and network. Also see createrawtransaction and signrawtransaction calls.",
-        "operationId": "sendRawTransaction",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "hex",
-            "description": "The hex string of the raw transaction",
-            "required": true,
-            "example": "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation"
-          },
-          "400": {
-            "description": "Transaction not found"
-          }
-        }
-      }
-    },
     "/transaction/details/{txid}": {
       "get": {
         "tags": ["transaction"],
@@ -974,9 +946,10 @@
             "in": "path",
             "description": "The raw transaction to decode",
             "required": true,
-            "example": "010000000163af14ce6d477e1c793507e32a5b7696288fa89705c0d02a3f66beb3c5b8afee0100000000ffffffff02ac020000000000004751210261ea979f6a06f9dafe00fb1263ea0aca959875a7073556a088cdfadcd494b3752102a3fd0a8a067e06941e066f78d930bfc47746f097fcd3f7ab27db8ddf37168b6b52ae22020000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000",
+            "example": "0200000001ee6dbb4d43427f5e35ecc3b6eeecfffeee22650e1d0a9846be1a09cee1b7e490020000006a47304402204cbf80c5eb831b4276e3bbf5b85bb64a05251e120f6357ca145651bdf97de5e5022037e448281add7144b65f3943e8654a901daf6f285feb6b63cc928cbe64b8a50e412102df0a79c642da671cd17dcd80b1e506f3b42b7c92a40b3067b5754eb40fc85d02ffffffff0329328d00000000001976a914fd542b2f9e06d814dd6c503dc24707e5620d9a7488ac0000000000000000166a1408776863000000000000000100000000b2d05e0022020000000000001976a91472ef3365835cd4e791ea3511d96f1eba32472a9988ac00000000",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "example": "0200000001ee6dbb4d43427f5e35ecc3b6eeecfffeee22650e1d0a9846be1a09cee1b7e490020000006a47304402204cbf80c5eb831b4276e3bbf5b85bb64a05251e120f6357ca145651bdf97de5e5022037e448281add7144b65f3943e8654a901daf6f285feb6b63cc928cbe64b8a50e412102df0a79c642da671cd17dcd80b1e506f3b42b7c92a40b3067b5754eb40fc85d02ffffffff0329328d00000000001976a914fd542b2f9e06d814dd6c503dc24707e5620d9a7488ac0000000000000000166a1408776863000000000000000100000000b2d05e0022020000000000001976a91472ef3365835cd4e791ea3511d96f1eba32472a9988ac00000000"
             }
           },
           {
@@ -984,7 +957,7 @@
             "in": "query",
             "description": "A JSON array of transaction inputs (default: none)",
             "required": false,
-            "example": "[{\"txid\":\"6779a710fcd5f6fb0883ea3306360c3ad8c0a3c5de902768ec57ef3104e65eb1\",\"vout\":4,\"scriptPubKey\":\"76a9147b25205fd98d462880a3e5b0541235831ae959e588ac\",\"value\":0.00068257}]",
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -994,7 +967,6 @@
             "in": "query",
             "description": "The parsing block height (default: 0 for chain height)",
             "required": false,
-            "example": 0,
             "schema": {
               "type": "number"
             }
