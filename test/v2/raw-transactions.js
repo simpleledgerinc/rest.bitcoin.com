@@ -499,7 +499,7 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if n is empty", async () => {
-      req.params.txid = "fakeTXID"
+      req.body.txid = "fakeTXID"
 
       const result = await whInput(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -519,9 +519,9 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.txid =
+      req.body.txid =
         "b006729017df05eda586df9ad3f8ccfee5be340aadf88155b784d1fc0e8342ee"
-      req.params.n = 0
+      req.body.n = 0
 
       const result = await whInput(req, res)
       //console.log(`result: ${util.inspect(result)}`)

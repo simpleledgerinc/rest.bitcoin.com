@@ -137,4 +137,25 @@ describe("#Raw-Transactions", () => {
       assert.isString(result.body)
     })
   })
+
+  describe("#whInput", () => {
+    it(`should return tx hex`, async () => {
+      const options = {
+        method: "PUT",
+        uri: `http://localhost:3000/v2/rawtransactions/input`,
+        resolveWithFullResponse: true,
+        json: true,
+        body: {
+          txid:
+            "b006729017df05eda586df9ad3f8ccfee5be340aadf88155b784d1fc0e8342ee",
+          n: 0
+        }
+      }
+
+      const result = await rp(options)
+      //console.log(`result.body: ${JSON.stringify(result.body, null, 0)}`)
+
+      assert.isString(result.body)
+    })
+  })
 })

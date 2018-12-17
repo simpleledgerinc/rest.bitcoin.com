@@ -99,7 +99,7 @@ router.put(
   config.rawTransactionsRateLimit6,
   whChangeOutput
 )
-router.post("/input/:rawtx/:txid/:n", config.rawTransactionsRateLimit7, whInput)
+router.put("/input", config.rawTransactionsRateLimit7, whInput)
 router.put("/opreturn", config.rawTransactionsRateLimit8, whOpReturn)
 router.put(
   "/reference",
@@ -405,15 +405,15 @@ async function whInput(
   next: express.NextFunction
 ) {
   try {
-    const rawtx = req.params.rawtx
+    const rawtx = req.body.rawtx
 
-    const txid = req.params.txid
+    const txid = req.body.txid
     if (!txid || txid === "") {
       res.status(400)
       return res.json({ error: "txid can not be empty" })
     }
 
-    let n = req.params.n
+    let n = req.body.n
     if (n === undefined || n === "") {
       res.status(400)
       return res.json({ error: "n can not be empty" })
