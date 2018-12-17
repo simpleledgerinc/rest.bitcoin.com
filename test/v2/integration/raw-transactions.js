@@ -63,7 +63,6 @@ describe("#Raw-Transactions", () => {
 
   describe("#whOpReturn", () => {
     it(`should return tx hex`, async () => {
-
       const options = {
         method: "PUT",
         uri: `http://localhost:3000/v2/rawtransactions/opreturn`,
@@ -82,6 +81,28 @@ describe("#Raw-Transactions", () => {
         result.body,
         "0100000000010000000000000000166a140877686300000000000000020000000006dac2c000000000"
       )
+    })
+  })
+
+  describe("#whOpReference", () => {
+    it(`should return tx hex`, async () => {
+      const options = {
+        method: "PUT",
+        uri: `http://localhost:3000/v2/rawtransactions/reference`,
+        resolveWithFullResponse: true,
+        json: true,
+        body: {
+          rawtx:
+            "0100000001a7a9402ecd77f3c9f745793c9ec805bfa2e14b89877581c734c774864247e6f50400000000ffffffff03aa0a0000000000001976a9146d18edfe073d53f84dd491dae1379f8fb0dfe5d488ac5c0d0000000000004751210252ce4bdd3ce38b4ebbc5a6e1343608230da508ff12d23d85b58c964204c4cef3210294cc195fc096f87d0f813a337ae7e5f961b1c8a18f1f8604a909b3a5121f065b52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000",
+          destination: "bitcoincash:qrn60nerx5zug4u4hal06atep3lzhtecvy4pxk75lf",
+          amount: 0.005
+        }
+      }
+
+      const result = await rp(options)
+      //console.log(`result.body: ${JSON.stringify(result.body, null, 0)}`)
+
+      assert.isString(result.body)
     })
   })
 })

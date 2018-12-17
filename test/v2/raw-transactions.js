@@ -602,7 +602,7 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if destination is empty", async () => {
-      req.params.rawtx = "faketx"
+      req.body.rawtx = "faketx"
 
       const result = await whReference(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -624,9 +624,9 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.rawtx =
+      req.body.rawtx =
         "0100000001a7a9402ecd77f3c9f745793c9ec805bfa2e14b89877581c734c774864247e6f50400000000ffffffff03aa0a0000000000001976a9146d18edfe073d53f84dd491dae1379f8fb0dfe5d488ac5c0d0000000000004751210252ce4bdd3ce38b4ebbc5a6e1343608230da508ff12d23d85b58c964204c4cef3210294cc195fc096f87d0f813a337ae7e5f961b1c8a18f1f8604a909b3a5121f065b52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000"
-      req.params.destination =
+      req.body.destination =
         "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg"
 
       const result = await whReference(req, res)
@@ -649,11 +649,11 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.rawtx =
+      req.body.rawtx =
         "0100000001a7a9402ecd77f3c9f745793c9ec805bfa2e14b89877581c734c774864247e6f50400000000ffffffff03aa0a0000000000001976a9146d18edfe073d53f84dd491dae1379f8fb0dfe5d488ac5c0d0000000000004751210252ce4bdd3ce38b4ebbc5a6e1343608230da508ff12d23d85b58c964204c4cef3210294cc195fc096f87d0f813a337ae7e5f961b1c8a18f1f8604a909b3a5121f065b52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000"
-      req.params.destination =
+      req.body.destination =
         "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg"
-      req.query.amount = 0.005
+      req.body.amount = 0.005
 
       const result = await whReference(req, res)
       //console.log(`result: ${util.inspect(result)}`)

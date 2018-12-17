@@ -101,8 +101,8 @@ router.post(
 )
 router.post("/input/:rawtx/:txid/:n", config.rawTransactionsRateLimit7, whInput)
 router.put("/opreturn", config.rawTransactionsRateLimit8, whOpReturn)
-router.post(
-  "/reference/:rawtx/:destination",
+router.put(
+  "/reference",
   config.rawTransactionsRateLimit9,
   whReference
 )
@@ -501,20 +501,20 @@ async function whReference(
   next: express.NextFunction
 ) {
   try {
-    const rawtx = req.params.rawtx
+    const rawtx = req.body.rawtx
     if (!rawtx || rawtx === "") {
       res.status(400)
       return res.json({ error: "rawtx can not be empty" })
     }
 
-    const destination = req.params.destination
+    const destination = req.body.destination
     if (!destination || destination === "") {
       res.status(400)
       return res.json({ error: "destination can not be empty" })
     }
 
     const params = [rawtx, destination]
-    if (req.query.amount) params.push(req.query.amount)
+    if (req.body.amount) params.push(req.body.amount)
 
     const {
       BitboxHTTP,
