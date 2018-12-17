@@ -105,4 +105,36 @@ describe("#Raw-Transactions", () => {
       assert.isString(result.body)
     })
   })
+
+  describe("#whChangeOutput", () => {
+    it(`should return tx hex`, async () => {
+      const options = {
+        method: "PUT",
+        uri: `http://localhost:3000/v2/rawtransactions/change`,
+        resolveWithFullResponse: true,
+        json: true,
+        body: {
+          rawtx:
+            "0100000001b15ee60431ef57ec682790dec5a3c0d83a0c360633ea8308fbf6d5fc10a779670400000000ffffffff025c0d00000000000047512102f3e471222bb57a7d416c82bf81c627bfcd2bdc47f36e763ae69935bba4601ece21021580b888ff56feb27f17f08802ebed26258c23697d6a462d43fc13b565fda2dd52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000",
+          destination: "bitcoincash:qrn60nerx5zug4u4hal06atep3lzhtecvy4pxk75lf",
+          prevtxs: [
+            {
+              txid:
+                "6779a710fcd5f6fb0883ea3306360c3ad8c0a3c5de902768ec57ef3104e65eb1",
+              vout: 4,
+              scriptPubKey:
+                "76a9147b25205fd98d462880a3e5b0541235831ae959e588ac",
+              value: 0.00068257
+            }
+          ],
+          fee: 0.000035
+        }
+      }
+
+      const result = await rp(options)
+      //console.log(`result.body: ${JSON.stringify(result.body, null, 0)}`)
+
+      assert.isString(result.body)
+    })
+  })
 })

@@ -94,8 +94,8 @@ router.post(
   config.rawTransactionsRateLimit5,
   sendRawTransaction
 )
-router.post(
-  "/change/:rawtx/:prevtxs/:destination/:fee",
+router.put(
+  "/change",
   config.rawTransactionsRateLimit6,
   whChangeOutput
 )
@@ -344,27 +344,25 @@ async function whChangeOutput(
   try {
     // TODO: What kind of validations should go here?
 
-    const rawTx = req.params.rawtx
+    const rawTx = req.body.rawtx
     if (!rawTx || rawTx === "") {
       res.status(400)
       return res.json({ error: "rawtx can not be empty" })
     }
 
-    let prevTxs
-    try {
-      prevTxs = JSON.parse(req.params.prevtxs)
-    } catch (err) {
+    const prevTxs = req.body.prevtxs
+    if(!prevTxs || prevTxs === "") {
       res.status(400)
-      return res.json({ error: "could not parse prevtxs" })
+      return res.json({ error: "prevtxs can not be empty" })
     }
 
-    const destination = req.params.destination
+    const destination = req.body.destination
     if (!destination || destination === "") {
       res.status(400)
       return res.json({ error: "destination can not be empty" })
     }
 
-    let fee = req.params.fee
+    let fee = req.body.fee
     if (!fee || fee === "") {
       res.status(400)
       return res.json({ error: "fee can not be empty" })
@@ -372,7 +370,7 @@ async function whChangeOutput(
     fee = parseFloat(fee)
 
     const params = [rawTx, prevTxs, destination, fee]
-    if (req.query.position) params.push(parseInt(req.query.position))
+    if (req.body.position) params.push(parseInt(req.body.position))
 
     const {
       BitboxHTTP,
@@ -396,7 +394,7 @@ async function whChangeOutput(
     }
 
     res.status(500)
-    return res.json({ error: `Error in /change: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -445,7 +443,7 @@ async function whInput(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whInput: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -491,7 +489,7 @@ async function whOpReturn(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whOpReturn: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -539,7 +537,7 @@ async function whReference(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whReference: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -585,7 +583,7 @@ async function whDecodeTx(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whDecodeTx: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
@@ -635,7 +633,7 @@ async function whCreateTx(
     }
 
     res.status(500)
-    return res.json({ error: `Error in whCreateTx: ${err.message}` })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
