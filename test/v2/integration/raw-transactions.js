@@ -158,4 +158,26 @@ describe("#Raw-Transactions", () => {
       assert.isString(result.body)
     })
   })
+
+  describe("#getRawTransaction", () => {
+    it(`should return tx hex`, async () => {
+      const options = {
+        method: "POST",
+        uri: `http://localhost:3000/v2/rawtransactions/getRawTransaction`,
+        resolveWithFullResponse: true,
+        json: true,
+        body: {
+          txids: [
+            "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098"
+          ],
+          verbose: true
+        }
+      }
+
+      const result = await rp(options)
+      console.log(`result.body: ${util.inspect(result.body)}`)
+
+      assert.isArray(result.body)
+    })
+  })
 })
