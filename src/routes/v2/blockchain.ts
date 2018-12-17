@@ -45,15 +45,11 @@ const config: IRLConfig = {
   blockchainRateLimit10: undefined,
   blockchainRateLimit11: undefined,
   blockchainRateLimit12: undefined,
-  blockchainRateLimit13: undefined,
-  blockchainRateLimit14: undefined,
-  blockchainRateLimit15: undefined,
-  blockchainRateLimit16: undefined,
-  blockchainRateLimit17: undefined
+  blockchainRateLimit13: undefined
 }
 
 let i = 1
-while (i < 18) {
+while (i < 14) {
   config[`blockchainRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
@@ -74,25 +70,26 @@ while (i < 18) {
 // Define routes.
 router.get("/", config.blockchainRateLimit1, root)
 router.get("/getBestBlockHash", config.blockchainRateLimit2, getBestBlockHash)
+// TODO: Where is getBlockByHash?
 //router.get("/getBlock/:hash", config.blockchainRateLimit3, getBlock) // Same as block/getBlockByHash
-router.get("/getBlockchainInfo", config.blockchainRateLimit4, getBlockchainInfo)
-router.get("/getBlockCount", config.blockchainRateLimit5, getBlockCount)
-router.get("/getBlockHeader/:hash", config.blockchainRateLimit7, getBlockHeader)
+router.get("/getBlockchainInfo", config.blockchainRateLimit3, getBlockchainInfo)
+router.get("/getBlockCount", config.blockchainRateLimit4, getBlockCount)
+router.get("/getBlockHeader/:hash", config.blockchainRateLimit5, getBlockHeader)
 
 router.get("/getChainTips", config.blockchainRateLimit8, getChainTips)
-router.get("/getDifficulty", config.blockchainRateLimit9, getDifficulty)
+router.get("/getDifficulty", config.blockchainRateLimit7, getDifficulty)
 router.get(
   "/getMempoolEntry/:txid",
-  config.blockchainRateLimit12,
+  config.blockchainRateLimit8,
   getMempoolEntry
 )
-router.get("/getMempoolInfo", config.blockchainRateLimit13, getMempoolInfo)
-router.get("/getRawMempool", config.blockchainRateLimit14, getRawMempool)
-router.get("/getTxOut/:txid/:n", config.blockchainRateLimit15, getTxOut)
-router.get("/getTxOutProof/:txid", config.blockchainRateLimit16, getTxOutProof)
+router.get("/getMempoolInfo", config.blockchainRateLimit9, getMempoolInfo)
+router.get("/getRawMempool", config.blockchainRateLimit10, getRawMempool)
+router.get("/getTxOut/:txid/:n", config.blockchainRateLimit11, getTxOut)
+router.get("/getTxOutProof/:txid", config.blockchainRateLimit12, getTxOutProof)
 router.get(
   "/verifyTxOutProof/:proof",
-  config.blockchainRateLimit17,
+  config.blockchainRateLimit13,
   verifyTxOutProof
 )
 
@@ -643,7 +640,7 @@ async function verifyTxOutProof(
     requestConfig.data.params = [req.params.proof]
 
     const response = await BitboxHTTP(requestConfig)
-    
+
     return res.json(response.data.result)
   } catch (err) {
     // Attempt to decode the error message.

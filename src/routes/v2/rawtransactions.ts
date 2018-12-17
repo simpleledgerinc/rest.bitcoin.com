@@ -41,6 +41,7 @@ interface IRLConfig {
   rawTransactionsRateLimit9: any
   rawTransactionsRateLimit10: any
   rawTransactionsRateLimit11: any
+  rawTransactionsRateLimit12: any
 }
 
 const config: IRLConfig = {
@@ -54,7 +55,8 @@ const config: IRLConfig = {
   rawTransactionsRateLimit8: undefined,
   rawTransactionsRateLimit9: undefined,
   rawTransactionsRateLimit10: undefined,
-  rawTransactionsRateLimit11: undefined
+  rawTransactionsRateLimit11: undefined,
+  rawTransactionsRateLimit12: undefined
 }
 
 let i = 1
@@ -91,24 +93,24 @@ router.post(
 )
 router.get(
   "/getRawTransaction/:txid",
-  config.rawTransactionsRateLimit4,
+  config.rawTransactionsRateLimit5,
   getRawTransactionSingle
 )
 router.post(
   "/sendRawTransaction/:hex",
-  config.rawTransactionsRateLimit5,
+  config.rawTransactionsRateLimit6,
   sendRawTransaction
 )
-router.put("/change", config.rawTransactionsRateLimit6, whChangeOutput)
-router.put("/input", config.rawTransactionsRateLimit7, whInput)
-router.put("/opreturn", config.rawTransactionsRateLimit8, whOpReturn)
-router.put("/reference", config.rawTransactionsRateLimit9, whReference)
+router.put("/change", config.rawTransactionsRateLimit7, whChangeOutput)
+router.put("/input", config.rawTransactionsRateLimit8, whInput)
+router.put("/opreturn", config.rawTransactionsRateLimit9, whOpReturn)
+router.put("/reference", config.rawTransactionsRateLimit10, whReference)
 router.get(
   "/decodeTransaction/:rawtx",
-  config.rawTransactionsRateLimit10,
+  config.rawTransactionsRateLimit11,
   whDecodeTx
 )
-router.put("/create", config.rawTransactionsRateLimit11, whCreateTx)
+router.put("/create", config.rawTransactionsRateLimit12, whCreateTx)
 
 function root(
   req: express.Request,
@@ -319,7 +321,6 @@ async function getRawTransactionSingle(
     return res.json({ error: util.inspect(err) })
   }
 }
-
 
 // Transmit a raw transaction to the BCH network.
 async function sendRawTransaction(

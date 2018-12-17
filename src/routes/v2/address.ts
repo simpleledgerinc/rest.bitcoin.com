@@ -30,11 +30,15 @@ const config: IRLConfig = {
   addressRateLimit2: undefined,
   addressRateLimit3: undefined,
   addressRateLimit4: undefined,
-  addressRateLimit5: undefined
+  addressRateLimit5: undefined,
+  addressRateLimit6: undefined,
+  addressRateLimit7: undefined,
+  addressRateLimit8: undefined,
+  addressRateLimit9: undefined
 }
 
 let i = 1
-while (i < 6) {
+while (i < 10) {
   config[`addressRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
@@ -55,13 +59,17 @@ while (i < 6) {
 // Connect the route endpoints to their handler functions.
 router.get("/", config.addressRateLimit1, root)
 router.post("/details", config.addressRateLimit2, detailsBulk)
-router.get("/details/:address", config.addressRateLimit2, detailsSingle)
-router.post("/utxo", config.addressRateLimit3, utxoBulk)
-router.get("/utxo/:address", config.addressRateLimit3, utxoSingle)
-router.post("/unconfirmed", config.addressRateLimit4, unconfirmedBulk)
-router.get("/unconfirmed/:address", config.addressRateLimit4, unconfirmedSingle)
-router.post("/transactions", config.addressRateLimit5, transactionsBulk)
-router.get("/transactions/:address", config.addressRateLimit5, transactionsSingle)
+router.get("/details/:address", config.addressRateLimit3, detailsSingle)
+router.post("/utxo", config.addressRateLimit4, utxoBulk)
+router.get("/utxo/:address", config.addressRateLimit5, utxoSingle)
+router.post("/unconfirmed", config.addressRateLimit6, unconfirmedBulk)
+router.get("/unconfirmed/:address", config.addressRateLimit7, unconfirmedSingle)
+router.post("/transactions", config.addressRateLimit8, transactionsBulk)
+router.get(
+  "/transactions/:address",
+  config.addressRateLimit9,
+  transactionsSingle
+)
 
 // Root API endpoint. Simply acknowledges that it exists.
 function root(
@@ -504,11 +512,11 @@ async function unconfirmedSingle(
     interface Iutxo {
       address: String
       txid: String
-      vout: Number,
+      vout: Number
       scriptPubKey: String
-      amount: Number,
-      satoshis: Number,
-      height: Number,
+      amount: Number
+      satoshis: Number
+      height: Number
       confirmations: Number
     }
 
@@ -549,9 +557,7 @@ async function unconfirmedSingle(
 // Retrieve transaction data from the Insight API
 async function transactionsFromInsight(thisAddress: string) {
   try {
-    const path = `${
-      process.env.BITCOINCOM_BASEURL
-    }txs/?address=${thisAddress}`
+    const path = `${process.env.BITCOINCOM_BASEURL}txs/?address=${thisAddress}`
 
     // Query the Insight server.
     const response = await axios.get(path)
@@ -653,7 +659,10 @@ async function transactionsSingle(
       })
     }
 
-    logger.debug(`Executing address/transactionsSingle with this address: `, address)
+    logger.debug(
+      `Executing address/transactionsSingle with this address: `,
+      address
+    )
 
     // Ensure the input is a valid BCH address.
     try {

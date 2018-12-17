@@ -49,7 +49,7 @@ while (i < 4) {
 
 router.get("/", config.blockRateLimit1, root)
 router.get("/detailsByHash/:hash", config.blockRateLimit2, detailsByHash)
-router.get("/detailsByHeight/:height", config.blockRateLimit2, detailsByHeight)
+router.get("/detailsByHeight/:height", config.blockRateLimit3, detailsByHeight)
 
 function root(
   req: express.Request,
@@ -110,7 +110,12 @@ async function detailsByHeight(
       return res.json({ error: "height must not be empty" })
     }
 
-    const {BitboxHTTP, username, password, requestConfig} = routeUtils.setEnvVars()
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
     requestConfig.data.id = "getblockhash"
     requestConfig.data.method = "getblockhash"
