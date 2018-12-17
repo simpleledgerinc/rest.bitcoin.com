@@ -841,9 +841,9 @@
             "name": "verbose",
             "description": "If false, return a string, otherwise return a json object",
             "required": true,
+            "default": true,
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "boolean"
             }
           }
         ],

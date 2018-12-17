@@ -84,10 +84,10 @@ router.get(
   decodeRawTransaction
 )
 router.get("/decodeScript/:hex", config.rawTransactionsRateLimit3, decodeScript)
-router.get(
+router.post(
   "/getRawTransaction/:txid",
   config.rawTransactionsRateLimit4,
-  getRawTransaction
+  getRawTransactionBulk
 )
 router.post(
   "/sendRawTransaction/:hex",
@@ -203,9 +203,31 @@ async function decodeScript(
   }
 }
 
+// Retrieve raw transactions details from the full node.
+async function getRawTransactionsFromNode(txid: string, verbose: number) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    requestConfig.data.id = "getrawtransaction"
+    requestConfig.data.method = "getrawtransaction"
+    requestConfig.data.params = [txid, verbose]
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return response.data.result
+  } catch (err) {
+    throw err
+  }
+}
+
 // Get a JSON object breakdown of transaction details.
 // POST
-async function getRawTransaction(
+async function getRawTransactionBulk(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -224,16 +246,6 @@ async function getRawTransaction(
       return res.json({ error: "Array too large. Max 20 txids" })
     }
 
-    const {
-      BitboxHTTP,
-      username,
-      password,
-      requestConfig
-    } = routeUtils.setEnvVars()
-
-    requestConfig.data.id = "getrawtransaction"
-    requestConfig.data.method = "getrawtransaction"
-
     const results = []
 
     // Loop through each txid in the array
@@ -245,10 +257,9 @@ async function getRawTransaction(
         return res.json({ error: "Encountered empty TXID" })
       }
 
-      requestConfig.data.params = [txid, verbose]
+      const data = await getRawTransactionsFromNode(txid, verbose)
 
-      const response = await BitboxHTTP(requestConfig)
-      results.push(response.data.result)
+      results.push(data)
     }
 
     return res.json(results)
@@ -635,7 +646,7 @@ module.exports = {
     root,
     decodeRawTransaction,
     decodeScript,
-    getRawTransaction,
+    getRawTransactionBulk,
     sendRawTransaction,
     whChangeOutput,
     whInput,

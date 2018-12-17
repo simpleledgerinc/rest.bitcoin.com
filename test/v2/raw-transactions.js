@@ -207,13 +207,13 @@ describe("#Raw-Transactions", () => {
     })
   })
 
-  describe("getRawTransaction()", () => {
+  describe("getRawTransactionBulk()", () => {
     // block route handler.
-    const getRawTransaction =
-      rawtransactions.testableComponents.getRawTransaction
+    const getRawTransactionBulk =
+      rawtransactions.testableComponents.getRawTransactionBulk
 
     it("should throw 400 error if txids array is missing", async () => {
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
@@ -226,7 +226,7 @@ describe("#Raw-Transactions", () => {
 
       req.body.txids = testArray
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
@@ -236,7 +236,7 @@ describe("#Raw-Transactions", () => {
     it("should throw 400 error if txid is empty", async () => {
       req.body.txids = [""]
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
@@ -255,7 +255,7 @@ describe("#Raw-Transactions", () => {
 
       req.body.txids = ["abc123"]
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
@@ -275,7 +275,7 @@ describe("#Raw-Transactions", () => {
         "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
       ]
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
@@ -295,7 +295,7 @@ describe("#Raw-Transactions", () => {
       ]
       req.body.verbose = true
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
