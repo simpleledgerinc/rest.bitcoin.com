@@ -85,9 +85,14 @@ router.get(
 )
 router.get("/decodeScript/:hex", config.rawTransactionsRateLimit3, decodeScript)
 router.post(
-  "/getRawTransaction/:txid",
+  "/getRawTransaction",
   config.rawTransactionsRateLimit4,
   getRawTransactionBulk
+)
+router.get(
+  "/getRawTransaction/:txid",
+  config.rawTransactionsRateLimit4,
+  getRawTransactionSingle
 )
 router.post(
   "/sendRawTransaction/:hex",
@@ -278,6 +283,43 @@ async function getRawTransactionBulk(
     return res.json({ error: util.inspect(err) })
   }
 }
+
+// Get a JSON object breakdown of transaction details.
+// GET
+async function getRawTransactionSingle(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let verbose = 0
+    if (req.query.verbose) verbose = 1
+
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    const data = await getRawTransactionsFromNode(txid, verbose)
+
+    return res.json(data)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/getRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
 
 // Transmit a raw transaction to the BCH network.
 async function sendRawTransaction(
@@ -647,6 +689,7 @@ module.exports = {
     decodeRawTransaction,
     decodeScript,
     getRawTransactionBulk,
+    getRawTransactionSingle,
     sendRawTransaction,
     whChangeOutput,
     whInput,

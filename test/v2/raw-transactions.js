@@ -318,6 +318,90 @@ describe("#Raw-Transactions", () => {
     })
   })
 
+  describe("getRawTransactionSingle()", () => {
+    // block route handler.
+    const getRawTransactionSingle =
+      rawtransactions.testableComponents.getRawTransactionSingle
+
+    it("should throw 400 error if txid is missing", async () => {
+      const result = await getRawTransactionSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 400 error if txid is invalid", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(500, {
+            error: { message: "parameter 1 must be of length 64 (not 6)" }
+          })
+      }
+
+      req.params.txid = "abc123"
+
+      const result = await getRawTransactionSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "parameter 1 must be of length 64 (not 6)")
+    })
+
+    it("should get concise transaction data", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockRawTransactionConcise })
+      }
+
+      req.params.txid =
+        "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
+
+      const result = await getRawTransactionSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+    })
+
+    it("should get verbose transaction data", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockRawTransactionVerbose })
+      }
+
+      req.params.txid =
+        "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
+      req.query.verbose = true
+
+      const result = await getRawTransactionSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAnyKeys(result, [
+        "hex",
+        "txid",
+        "hash",
+        "size",
+        "version",
+        "locktime",
+        "vin",
+        "vout",
+        "blockhash",
+        "confirmations",
+        "time",
+        "blocktime"
+      ])
+      assert.isArray(result.vin)
+      assert.isArray(result.vout)
+    })
+  })
+
   describe("sendRawTransaction()", () => {
     // block route handler.
     const sendRawTransaction =
