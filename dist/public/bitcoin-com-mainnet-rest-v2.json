@@ -965,7 +965,7 @@
 						"in": "path",
 						"description": "the address or an array of addresses in cashAddr or legacy",
 						"required": true,
-						"example": "bitcoincash:qzstp4swtxg40rkn0j769vta3vkwyw4jj5fmdl2vtm",
+						"example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
 						"schema": {
 							"type": "string"
 						}
@@ -1251,9 +1251,9 @@
 						"in": "query",
 						"description": "true for a json object, false for the hex encoded data",
 						"required": false,
+						"example": true,
 						"schema": {
-							"type": "boolean",
-							"default": true
+							"type": "boolean"
 						}
 					}
 				],
@@ -1385,9 +1385,9 @@
 						"in": "query",
 						"description": "True for a json object, false for array of transaction ids",
 						"required": false,
+						"example": true,
 						"schema": {
-							"type": "boolean",
-							"default": true
+							"type": "boolean"
 						}
 					}
 				],
@@ -1440,7 +1440,7 @@
 						"in": "query",
 						"description": "Whether to include the mempool",
 						"required": false,
-						"example": false,
+						"example": "false",
 						"schema": {
 							"type": "boolean",
 							"default": false
@@ -1575,9 +1575,9 @@
 						"name": "nblocks",
 						"description": "the number of blocks, or -1 for blocks since last difficulty change.",
 						"required": false,
+						"example": 120,
 						"schema": {
-							"type": "number",
-							"default": 120
+							"type": "number"
 						}
 					},
 					{
@@ -1585,9 +1585,9 @@
 						"name": "height",
 						"description": "to estimate at the time of the given height.",
 						"required": false,
+						"example": -1,
 						"schema": {
-							"type": "number",
-							"default": -1
+							"type": "number"
 						}
 					}
 				],
@@ -1693,7 +1693,7 @@
 						"name": "txid",
 						"description": "The transaction id",
 						"required": true,
-						"example": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098",
+						"example": "fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33",
 						"schema": {
 							"type": "string"
 						}
@@ -1703,7 +1703,7 @@
 						"name": "verbose",
 						"description": "If false, return a string, otherwise return a json object",
 						"required": true,
-						"default": true,
+						"example": true,
 						"schema": {
 							"type": "boolean"
 						}
@@ -1740,7 +1740,7 @@
 						"name": "txid",
 						"description": "single txid or url encoded array of txids",
 						"required": true,
-						"example": "0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098",
+						"example": "fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33",
 						"schema": {
 							"type": "string"
 						}
@@ -1816,8 +1816,7 @@
 						"required": true,
 						"example": "0200000001ee6dbb4d43427f5e35ecc3b6eeecfffeee22650e1d0a9846be1a09cee1b7e490020000006a47304402204cbf80c5eb831b4276e3bbf5b85bb64a05251e120f6357ca145651bdf97de5e5022037e448281add7144b65f3943e8654a901daf6f285feb6b63cc928cbe64b8a50e412102df0a79c642da671cd17dcd80b1e506f3b42b7c92a40b3067b5754eb40fc85d02ffffffff0329328d00000000001976a914fd542b2f9e06d814dd6c503dc24707e5620d9a7488ac0000000000000000166a1408776863000000000000000100000000b2d05e0022020000000000001976a91472ef3365835cd4e791ea3511d96f1eba32472a9988ac00000000",
 						"schema": {
-							"type": "string",
-							"example": "0200000001ee6dbb4d43427f5e35ecc3b6eeecfffeee22650e1d0a9846be1a09cee1b7e490020000006a47304402204cbf80c5eb831b4276e3bbf5b85bb64a05251e120f6357ca145651bdf97de5e5022037e448281add7144b65f3943e8654a901daf6f285feb6b63cc928cbe64b8a50e412102df0a79c642da671cd17dcd80b1e506f3b42b7c92a40b3067b5754eb40fc85d02ffffffff0329328d00000000001976a914fd542b2f9e06d814dd6c503dc24707e5620d9a7488ac0000000000000000166a1408776863000000000000000100000000b2d05e0022020000000000001976a91472ef3365835cd4e791ea3511d96f1eba32472a9988ac00000000"
+							"type": "string"
 						}
 					},
 					{
@@ -1835,6 +1834,7 @@
 						"in": "query",
 						"description": "The parsing block height (default: 0 for chain height)",
 						"required": false,
+						"example": 0,
 						"schema": {
 							"type": "number"
 						}
@@ -1861,7 +1861,7 @@
 						"in": "path",
 						"description": "The address",
 						"required": true,
-						"example": "bitcoincash:qq0j0nsc5mfvzhccawgkgv7g3umspezdvupfjg7ze3",
+						"example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
 						"schema": {
 							"type": "string"
 						}
@@ -1871,7 +1871,7 @@
 						"in": "path",
 						"description": "The property identifier",
 						"required": true,
-						"example": 1,
+						"example": "1",
 						"schema": {
 							"type": "number"
 						}
@@ -1901,7 +1901,7 @@
 						"in": "path",
 						"description": "The address",
 						"required": true,
-						"example": "bitcoincash:qq0j0nsc5mfvzhccawgkgv7g3umspezdvupfjg7ze3",
+						"example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
 						"schema": {
 							"type": "string"
 						}
@@ -1991,7 +1991,7 @@
 						"in": "path",
 						"description": "The identifier of the crowdsale",
 						"required": true,
-						"example": 197,
+						"example": 1,
 						"schema": {
 							"type": "number"
 						}
@@ -2001,10 +2001,8 @@
 						"in": "query",
 						"description": "List crowdsale participants (default: false)",
 						"required": false,
-						"default": false,
-						"schema": {
-							"type": "boolean"
-						}
+						"type": "boolean",
+						"example": true
 					}
 				],
 				"responses": {
@@ -2046,7 +2044,7 @@
 						"in": "path",
 						"description": "The identifier of the managed tokens to lookup",
 						"required": true,
-						"example": 3,
+						"example": 1,
 						"schema": {
 							"type": "number"
 						}
@@ -2161,7 +2159,7 @@
 						"in": "path",
 						"description": "The last block to look for Omni transactions (inclusive)",
 						"required": true,
-						"example": 300000,
+						"example": "",
 						"schema": {
 							"type": "number"
 						}
@@ -2291,7 +2289,7 @@
 						"in": "query",
 						"description": "Address filter (default: '' for no filter)",
 						"required": false,
-						"example": "",
+						"example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
 						"schema": {
 							"type": "string"
 						}
@@ -2388,7 +2386,7 @@
 						"in": "path",
 						"description": "the address",
 						"required": true,
-						"example": "qqxyplcfuxnm9z4usma2wmnu4kw9mexeug580mc3lx",
+						"example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
 						"schema": {
 							"type": "string"
 						}
@@ -2425,7 +2423,7 @@
 						"in": "path",
 						"description": "the address",
 						"required": true,
-						"example": "qqxyplcfuxnm9z4usma2wmnu4kw9mexeug580mc3lx",
+						"example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
 						"schema": {
 							"type": "string"
 						}
@@ -2785,7 +2783,7 @@
 						"in": "path",
 						"description": "The ecosystem to create the tokens in, must be 1",
 						"required": true,
-						"example": "1",
+						"example": "",
 						"schema": {
 							"type": "string"
 						}
@@ -2795,7 +2793,7 @@
 						"in": "path",
 						"description": "The precision of the tokens to create:[0, 8]",
 						"required": true,
-						"example": 1,
+						"example": "",
 						"schema": {
 							"type": "number"
 						}
@@ -2805,7 +2803,7 @@
 						"in": "path",
 						"description": "An identifier of a predecessor token (use 0 for new tokens)",
 						"required": true,
-						"example": 0,
+						"example": "",
 						"schema": {
 							"type": "number"
 						}
@@ -2815,7 +2813,7 @@
 						"in": "path",
 						"description": "A category for the new tokens",
 						"required": true,
-						"example": "Companies",
+						"example": "",
 						"schema": {
 							"type": "string"
 						}
@@ -2825,7 +2823,7 @@
 						"in": "path",
 						"description": "A subcategory for the new tokens",
 						"required": true,
-						"example": "Bitcoin Mining",
+						"example": "",
 						"schema": {
 							"type": "string"
 						}
@@ -2835,7 +2833,7 @@
 						"in": "path",
 						"description": "The name of the new tokens to create",
 						"required": true,
-						"example": "Quantum Miner",
+						"example": "",
 						"schema": {
 							"type": "string"
 						}
@@ -2845,7 +2843,7 @@
 						"in": "path",
 						"description": "An URL for further information about the new tokens",
 						"required": true,
-						"example": "www.example.com",
+						"example": "",
 						"schema": {
 							"type": "string"
 						}
@@ -2855,7 +2853,7 @@
 						"in": "path",
 						"description": "A description for the new tokens",
 						"required": true,
-						"example": "Quantum Miner Tokens",
+						"example": "",
 						"schema": {
 							"type": "string"
 						}
@@ -2865,7 +2863,7 @@
 						"in": "path",
 						"description": "The number of tokens to create",
 						"required": true,
-						"example": "1000000",
+						"example": "",
 						"schema": {
 							"type": "string"
 						}
