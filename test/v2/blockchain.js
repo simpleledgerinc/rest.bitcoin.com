@@ -4,8 +4,6 @@
   --Add tests for 'verbos' input values
   -getMempoolEntry
   --Needs e2e test to create unconfirmed tx, for real-world test.
-  -getTxOut
-  --Needs an e2e test to create an unconfirmed TX, for a 'integration' test.
 */
 
 "use strict"
@@ -586,38 +584,36 @@ describe("#BlockchainRouter", () => {
     })
 
     // This test can only run for unit tests. See TODO at the top of this file.
-    if (process.env.TEST === "unit") {
-      it("should GET /getTxOut", async () => {
-        // Mock the RPC call for unit tests.
-        if (process.env.TEST === "unit") {
-          nock(`${process.env.RPC_BASEURL}`)
-            .post(``)
-            .reply(200, { result: mockData.mockTxOut })
-        }
+    it("should GET /getTxOut", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockTxOut })
+      }
 
-        req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
-        req.params.n = 0
+      req.params.txid = `5747e6462e2c452a5d583fd6a5f82866cd8e4a86826c86d9a1842b7d023e0c0c`
+      req.params.n = 0
 
-        const result = await getTxOut(req, res)
-        //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-        assert.hasAllKeys(result, [
-          "bestblock",
-          "confirmations",
-          "value",
-          "scriptPubKey",
-          "coinbase"
-        ])
-        assert.hasAllKeys(result.scriptPubKey, [
-          "asm",
-          "hex",
-          "reqSigs",
-          "type",
-          "addresses"
-        ])
-        assert.isArray(result.scriptPubKey.addresses)
-      })
-    }
+      assert.hasAllKeys(result, [
+        "bestblock",
+        "confirmations",
+        "value",
+        "scriptPubKey",
+        "coinbase"
+      ])
+      assert.hasAllKeys(result.scriptPubKey, [
+        "asm",
+        "hex",
+        "reqSigs",
+        "type",
+        "addresses"
+      ])
+      assert.isArray(result.scriptPubKey.addresses)
+    })
   })
 
   describe("getTxOutProof()", () => {
