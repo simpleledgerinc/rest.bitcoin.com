@@ -53,6 +53,7 @@ describe("#AddressRouter", () => {
     // Explicitly reset the parmas and body.
     req.params = {}
     req.body = {}
+    req.query = {}
 
     // Activate nock if it's inactive.
     if (!nock.isActive()) nock.activate()
@@ -161,6 +162,63 @@ describe("#AddressRouter", () => {
       }
     })
 
+    it("should default to page 0", async () => {
+      req.body = {
+        addresses: [`bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`]
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .reply(200, mockData.mockAddressDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsBulk(req, res)
+
+      // Assert current page defaults to 0
+      assert.equal(result[0].currentPage, 0)
+    })
+
+    it("should process the requested page", async () => {
+      req.body = {
+        addresses: [`bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`],
+        page: 5
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .reply(200, mockData.mockAddressDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsBulk(req, res)
+
+      // Assert current page is same as requested
+      assert.equal(result[0].currentPage, 5)
+    })
+
+    it("should calculate the total number of pages", async () => {
+      req.body = {
+        addresses: [`bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`]
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .reply(200, mockData.mockAddressDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsBulk(req, res)
+
+      assert.equal(result[0].pagesTotal, 1)
+    })
+
     it("should get details for a single address", async () => {
       req.body = {
         addresses: [`bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`]
@@ -169,7 +227,7 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
           .reply(200, mockData.mockAddressDetails)
       }
 
@@ -193,6 +251,8 @@ describe("#AddressRouter", () => {
       assert.isArray(result[0].transactions)
       assert.exists(result[0].legacyAddress)
       assert.exists(result[0].cashAddress)
+      assert.exists(result[0].currentPage)
+      assert.exists(result[0].pagesTotal)
     })
 
     it("should get details for multiple addresses", async () => {
@@ -206,11 +266,11 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
           .reply(200, mockData.mockAddressDetails)
 
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(`/addr/mwJnEzXzKkveF2q5Af9jxi9j1zrtWAnPU8`)
+          .get(/addr\/mwJnEzXzKkveF2q5Af9jxi9j1zrtWAnPU8.*/)
           .reply(200, mockData.mockAddressDetails)
       }
 
@@ -292,13 +352,64 @@ describe("#AddressRouter", () => {
       }
     })
 
+    it("should default to page 0", async () => {
+      req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .reply(200, mockData.mockAddressDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsSingle(req, res)
+
+      // Assert current page defaults to 0
+      assert.equal(result.currentPage, 0)
+    })
+
+    it("should process the requested page", async () => {
+      req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+      req.query.page = 5
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .reply(200, mockData.mockAddressDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsSingle(req, res)
+
+      // Assert current page is same as requested
+      assert.equal(result.currentPage, 5)
+    })
+
+    it("should calculate the total number of pages", async () => {
+      req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .reply(200, mockData.mockAddressDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsSingle(req, res)
+
+      assert.equal(result.pagesTotal, 1)
+    })
+
     it("should get details for a single address", async () => {
       req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
 
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz`)
+          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
           .reply(200, mockData.mockAddressDetails)
       }
 
@@ -321,7 +432,9 @@ describe("#AddressRouter", () => {
         "txApperances",
         "transactions",
         "legacyAddress",
-        "cashAddress"
+        "cashAddress",
+        "currentPage",
+        "pagesTotal"
       ])
     })
   })
@@ -873,6 +986,49 @@ describe("#AddressRouter", () => {
       }
     })
 
+    it("should default to page 0", async () => {
+      req.body = {
+        addresses: [`bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`]
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(
+            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+          )
+          .reply(200, mockData.mockTransactions)
+      }
+
+      // Call the endpoint
+      const result = await transactionsBulk(req, res)
+
+      // Assert current page defaults to 0
+      assert.equal(result[0].currentPage, 0)
+    })
+
+    it("should process the requested page", async () => {
+      req.body = {
+        addresses: [`bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`],
+        page: 5
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(
+            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+          )
+          .reply(200, mockData.mockTransactions)
+      }
+
+      // Call the endpoint
+      const result = await transactionsBulk(req, res)
+
+      // Assert current page is same as requested
+      assert.equal(result[0].currentPage, 5)
+    })
+
     it("should get transactions for a single address", async () => {
       req.body = {
         addresses: [`bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`]
@@ -882,7 +1038,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -893,6 +1049,7 @@ describe("#AddressRouter", () => {
       assert.isArray(result, "result should be an array")
 
       assert.exists(result[0].pagesTotal)
+      assert.exists(result[0].currentPage)
       assert.exists(result[0].txs)
       assert.isArray(result[0].txs)
       assert.exists(result[0].legacyAddress)
@@ -911,13 +1068,13 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
           )
           .reply(200, mockData.mockTransactions)
 
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            `/txs/?address=bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr`
+            /\/txs\/\?address=bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr.*/
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1001,6 +1158,45 @@ describe("#AddressRouter", () => {
       }
     })
 
+    it("should default to page 0", async () => {
+      req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(
+            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+          )
+          .reply(200, mockData.mockTransactions)
+      }
+
+      // Call the endpoint
+      const result = await transactionsSingle(req, res)
+
+      // Assert current page defaults to 0
+      assert.equal(result.currentPage, 0)
+    })
+
+    it("should process the requested page", async () => {
+      req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+      req.query.page = 5
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(
+            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+          )
+          .reply(200, mockData.mockTransactions)
+      }
+
+      // Call the endpoint
+      const result = await transactionsSingle(req, res)
+
+      // Assert current page is same as requested
+      assert.equal(result.currentPage, 5)
+    })
+
     it("should get details for a single address", async () => {
       req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
 
@@ -1008,7 +1204,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
+            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1019,6 +1215,7 @@ describe("#AddressRouter", () => {
 
       // Assert that required fields exist in the returned object.
       assert.exists(result.pagesTotal)
+      assert.exists(result.currentPage)
       assert.exists(result.txs)
       assert.isArray(result.txs)
       assert.exists(result.legacyAddress)
