@@ -2151,7 +2151,7 @@
 						"in": "path",
 						"description": "The first block to look for Omni transactions (inclusive)",
 						"required": true,
-						"example": 290000,
+						"example": 560000,
 						"schema": {
 							"type": "number"
 						}
@@ -2161,7 +2161,7 @@
 						"in": "path",
 						"description": "The last block to look for Omni transactions (inclusive)",
 						"required": true,
-						"example": "",
+						"example": 560100,
 						"schema": {
 							"type": "number"
 						}

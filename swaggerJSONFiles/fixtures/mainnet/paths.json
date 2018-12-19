@@ -182,12 +182,12 @@
   {
     "key": "/dataRetrieval/seedBlocks/{startBlock}/{endBlock}",
     "name": "startBlock",
-    "value": 290000
+    "value": 560000
   },
   {
     "key": "/dataRetrieval/seedBlocks/{startBlock}/{endBlock}",
-    "name": "endblock",
-    "value": 300000
+    "name": "endBlock",
+    "value": 560100
   },
   {
     "key": "/dataRetrieval/STO/{txid}/{recipientFilter}",
