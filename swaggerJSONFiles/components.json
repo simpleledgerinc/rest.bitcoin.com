@@ -1,6 +1,21 @@
 {
   "components": {
     "schemas": {
+      "Address": {
+        "type": "string"
+      },
+      "Addresses": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            },
+            "example": []
+          }
+        }
+      },
       "AddressDetails": {
         "type": "object",
         "properties": {
@@ -57,11 +72,24 @@
           }
         }
       },
+      "AddressDetailsArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AddressDetails"
+        }
+      },
       "AddressUtxo": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Utxo"
         }
+      },
+      "AddressUtxoArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AddressUtxo"
+        },
+        "example": []
       },
       "Utxo": {
         "type": "object",
@@ -101,6 +129,13 @@
         "items": {
           "$ref": "#/components/schemas/Unconfirmed"
         }
+      },
+      "AddressUnconfirmedArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AddressUnconfirmed"
+        },
+        "example": []
       },
       "Unconfirmed": {
         "type": "object",
