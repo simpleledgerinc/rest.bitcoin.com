@@ -995,7 +995,7 @@
 						"in": "path",
 						"description": "The address",
 						"required": true,
-						"example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
+						"example": "bitcoincash:qpew7vm9sdwdfeu3ag63rkt0r6ary3e2ny5p8lsfpn",
 						"schema": {
 							"type": "string"
 						}
@@ -1085,7 +1085,7 @@
 						"in": "path",
 						"description": "The identifier of the crowdsale",
 						"required": true,
-						"example": 1,
+						"example": 197,
 						"schema": {
 							"type": "number"
 						}
@@ -1095,7 +1095,9 @@
 						"in": "query",
 						"description": "List crowdsale participants (default: false)",
 						"required": false,
-						"type": "boolean",
+						"schema": {
+							"type": "boolean"
+						},
 						"example": true
 					}
 				],

@@ -1031,7 +1031,9 @@
             "in": "query",
             "description": "List crowdsale participants (default: false)",
             "required": false,
-            "type": "boolean",
+            "schema": {
+              "type": "boolean"
+            },
             "example": ""
           }
         ],

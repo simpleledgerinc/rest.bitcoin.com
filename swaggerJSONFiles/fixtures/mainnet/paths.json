@@ -142,7 +142,7 @@
   {
     "key": "/dataRetrieval/balancesForAddress/{address}",
     "name": "address",
-    "value": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c"
+    "value": "bitcoincash:qpew7vm9sdwdfeu3ag63rkt0r6ary3e2ny5p8lsfpn"
   },
   {
     "key": "/dataRetrieval/balancesForId/{propertyId}",
@@ -157,7 +157,7 @@
   {
     "key": "/dataRetrieval/crowdSale/{propertyId}",
     "name": "propertyId",
-    "value": 1
+    "value": 197
   },
   {
     "key": "/dataRetrieval/crowdSale/{propertyId}",
