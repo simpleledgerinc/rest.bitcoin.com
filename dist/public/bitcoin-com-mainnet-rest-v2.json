@@ -2091,7 +2091,7 @@
 						"in": "path",
 						"description": "The hash of the transaction to retrieve payload",
 						"required": true,
-						"example": "fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33",
+						"example": "bbda45af0ba57e28866995c67a53c225336fddd14eb3dc87f2f3500fd61c8585",
 						"schema": {
 							"type": "string"
 						}
