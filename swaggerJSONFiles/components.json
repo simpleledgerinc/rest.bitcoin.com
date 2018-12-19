@@ -1,6 +1,21 @@
 {
   "components": {
     "schemas": {
+      "Address": {
+        "type": "string"
+      },
+      "Addresses": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            },
+            "example": []
+          }
+        }
+      },
       "AddressDetails": {
         "type": "object",
         "properties": {
@@ -55,6 +70,12 @@
           "cashAddress": {
             "type": "string"
           }
+        }
+      },
+      "AddressDetailsArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AddressDetails"
         }
       },
       "AddressUtxo": {
