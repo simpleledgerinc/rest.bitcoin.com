@@ -103,4 +103,3 @@ PORT=3000 BITCOINCOM_BASEURL=http://localhost:3000/api/ RPC_BASEURL=http://local
 
 Finally open `http://localhost:3000/` and confirm you see the GUI
 
-#### Update
