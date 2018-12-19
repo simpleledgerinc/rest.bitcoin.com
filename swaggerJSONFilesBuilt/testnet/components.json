@@ -87,6 +87,13 @@
 					"$ref": "#/components/schemas/Utxo"
 				}
 			},
+			"AddressUtxoArray": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/AddressUtxo"
+				},
+				"example": []
+			},
 			"Utxo": {
 				"type": "object",
 				"properties": {
@@ -125,6 +132,13 @@
 				"items": {
 					"$ref": "#/components/schemas/Unconfirmed"
 				}
+			},
+			"AddressUnconfirmedArray": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/AddressUnconfirmed"
+				},
+				"example": []
 			},
 			"Unconfirmed": {
 				"type": "object",

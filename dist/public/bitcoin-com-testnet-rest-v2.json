@@ -87,6 +87,13 @@
 					"$ref": "#/components/schemas/Utxo"
 				}
 			},
+			"AddressUtxoArray": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/AddressUtxo"
+				},
+				"example": []
+			},
 			"Utxo": {
 				"type": "object",
 				"properties": {
@@ -125,6 +132,13 @@
 				"items": {
 					"$ref": "#/components/schemas/Unconfirmed"
 				}
+			},
+			"AddressUnconfirmedArray": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/AddressUnconfirmed"
+				},
+				"example": []
 			},
 			"Unconfirmed": {
 				"type": "object",
@@ -935,7 +949,7 @@
 				"tags": [
 					"address"
 				],
-				"summary": "Address details",
+				"summary": "Address details single",
 				"description": "Returns the details of an address including balance",
 				"operationId": "detailsSingle",
 				"parameters": [
@@ -980,11 +994,11 @@
 				"tags": [
 					"address"
 				],
-				"summary": "Address details",
+				"summary": "Address details bulk",
 				"description": "Returns the details of multiple addresses",
 				"operationId": "detailsBulk",
 				"requestBody": {
-					"description": "Optional description in *Markdown*",
+					"description": "Array of addresses",
 					"required": true,
 					"content": {
 						"application/json": {
@@ -1024,9 +1038,9 @@
 				"tags": [
 					"address"
 				],
-				"summary": "Address utxos",
+				"summary": "Address utxos single",
 				"description": "Returns the list of utxo for an address",
-				"operationId": "utxo",
+				"operationId": "utxoSingle",
 				"parameters": [
 					{
 						"name": "address",
@@ -1064,6 +1078,50 @@
 				}
 			}
 		},
+		"/address/utxo": {
+			"post": {
+				"tags": [
+					"address"
+				],
+				"summary": "Address utxo bulk",
+				"description": "Returns the utxo of multiple addresses",
+				"operationId": "utxoBulk",
+				"requestBody": {
+					"description": "Array of addresses",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Addresses"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddressUtxoArray"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Received an invalid Bitcoin Cash address as input.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Received an invalid Bitcoin Cash address as input."
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/address/unconfirmed/{address}": {
 			"get": {
 				"tags": [
@@ -1071,7 +1129,7 @@
 				],
 				"summary": "Unconfirmed transactions for an address",
 				"description": "Returns the list of unconfirmed transactions for an address",
-				"operationId": "unconfirmed",
+				"operationId": "unconfirme  dSingle",
 				"parameters": [
 					{
 						"name": "address",
@@ -1109,6 +1167,50 @@
 				}
 			}
 		},
+		"/address/unconfirmed": {
+			"post": {
+				"tags": [
+					"address"
+				],
+				"summary": "Unconfirmed transactions for array of addresses",
+				"description": "Returns the list of unconfirmed transactions for an array of addresses",
+				"operationId": "unconfirmedBulk",
+				"requestBody": {
+					"description": "Array of addresses",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Addresses"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddressUtxoArray"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Received an invalid Bitcoin Cash address as input.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Received an invalid Bitcoin Cash address as input."
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/address/transactions/{address}": {
 			"get": {
 				"tags": [
@@ -1116,7 +1218,7 @@
 				],
 				"summary": "Transactions for an address",
 				"description": "Returns the list of transactions for an address",
-				"operationId": "transactions",
+				"operationId": "transactionsSingle",
 				"parameters": [
 					{
 						"name": "address",
@@ -1135,6 +1237,43 @@
 					},
 					"400": {
 						"description": "Invalid value/s - Null"
+					}
+				}
+			}
+		},
+		"/address/transactions": {
+			"post": {
+				"tags": [
+					"address"
+				],
+				"summary": "Transactions for an array of addresses",
+				"description": "Returns the list of transactions for an array of addresses",
+				"operationId": "transactionsBulk",
+				"requestBody": {
+					"description": "Array of addresses",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Addresses"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful operation"
+					},
+					"400": {
+						"description": "Received an invalid Bitcoin Cash address as input.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Received an invalid Bitcoin Cash address as input."
+								}
+							}
+						}
 					}
 				}
 			}
