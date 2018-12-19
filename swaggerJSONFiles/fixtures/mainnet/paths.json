@@ -167,7 +167,7 @@
   {
     "key": "/dataRetrieval/grants/{propertyId}",
     "name": "propertyId",
-    "value": 1
+    "value": 196
   },
   {
     "key": "/dataRetrieval/payload/{txid}",

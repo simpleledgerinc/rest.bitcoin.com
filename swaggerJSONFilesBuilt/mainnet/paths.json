@@ -1140,7 +1140,7 @@
 						"in": "path",
 						"description": "The identifier of the managed tokens to lookup",
 						"required": true,
-						"example": 1,
+						"example": 196,
 						"schema": {
 							"type": "number"
 						}
