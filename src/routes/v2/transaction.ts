@@ -18,11 +18,13 @@ util.inspect.defaultOptions = { depth: 3 }
 interface IRLConfig {
   [transactionRateLimit1: string]: any
   transactionRateLimit2: any
+  transactionRateLimit3: any
 }
 
 const config: IRLConfig = {
   transactionRateLimit1: undefined,
-  transactionRateLimit2: undefined
+  transactionRateLimit2: undefined,
+  transactionRateLimit3: undefined
 }
 
 // Manipulates and formats the raw data comming from Insight API.
@@ -43,7 +45,7 @@ const processInputs = (tx: any) => {
 }
 
 let i = 1
-while (i < 3) {
+while (i < 4) {
   config[`transactionRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
@@ -62,8 +64,8 @@ while (i < 3) {
 }
 
 router.get("/", config.transactionRateLimit1, root)
-router.post("/details", config.transactionRateLimit1, detailsBulk)
-router.get("/details/:txid", config.transactionRateLimit1, detailsSingle)
+router.post("/details", config.transactionRateLimit2, detailsBulk)
+router.get("/details/:txid", config.transactionRateLimit3, detailsSingle)
 
 function root(
   req: express.Request,
@@ -155,7 +157,10 @@ async function detailsSingle(
       })
     }
 
-    logger.debug(`Executing transaction.ts/detailsSingle with this txid: `, txid)
+    logger.debug(
+      `Executing transaction.ts/detailsSingle with this txid: `,
+      txid
+    )
 
     // Query the Insight API.
     const retData = await transactionsFromInsight(txid)

@@ -91,17 +91,17 @@ router.get("/", config.payloadCreationRateLimit1, root)
 router.get("/burnBCH", config.payloadCreationRateLimit2, burnBCH)
 router.post(
   "/changeIssuer/:propertyId",
-  config.payloadCreationRateLimit2,
+  config.payloadCreationRateLimit3,
   changeIssuer
 )
 router.post(
   "/closeCrowdSale/:propertyId",
-  config.payloadCreationRateLimit3,
+  config.payloadCreationRateLimit4,
   closeCrowdSale
 )
 router.post(
   "/grant/:propertyId/:amount",
-  config.payloadCreationRateLimit4,
+  config.payloadCreationRateLimit5,
   grant
 )
 router.post(

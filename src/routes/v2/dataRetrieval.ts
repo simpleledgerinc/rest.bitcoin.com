@@ -106,46 +106,46 @@ router.get(
 )
 router.get(
   "/balancesForId/:propertyId",
-  config.dataRetrievalRateLimit2,
+  config.dataRetrievalRateLimit3,
   balancesForId
 )
 router.get(
   "/balance/:address/:propertyId",
-  config.dataRetrievalRateLimit3,
+  config.dataRetrievalRateLimit4,
   addressPropertyBalance
 )
 router.get(
   "/balancesHash/:propertyId",
-  config.dataRetrievalRateLimit4,
+  config.dataRetrievalRateLimit5,
   balancesHash
 )
-router.get("/crowdSale/:propertyId", config.dataRetrievalRateLimit5, crowdsale)
+router.get("/crowdSale/:propertyId", config.dataRetrievalRateLimit6, crowdsale)
 router.get(
   "/currentConsensusHash",
-  config.dataRetrievalRateLimit6,
+  config.dataRetrievalRateLimit7,
   getCurrentConsensusHash
 )
 router.get("/grants/:propertyId", config.dataRetrievalRateLimit8, grants)
 
 router.get("/info", config.dataRetrievalRateLimit9, info)
 router.get("/payload/:txid", config.dataRetrievalRateLimit10, payload)
-router.get("/properties", config.dataRetrievalRateLimit17, properties)
-router.get("/property/:propertyId", config.dataRetrievalRateLimit11, property)
+router.get("/properties", config.dataRetrievalRateLimit11, properties)
+router.get("/property/:propertyId", config.dataRetrievalRateLimit12, property)
 router.get(
   "/seedBlocks/:startBlock/:endBlock",
-  config.dataRetrievalRateLimit12,
+  config.dataRetrievalRateLimit13,
   seedBlocks
 )
-router.get("/STO/:txid/:recipientFilter", config.dataRetrievalRateLimit13, sto)
-router.get("/transaction/:txid", config.dataRetrievalRateLimit14, transaction)
+router.get("/STO/:txid/:recipientFilter", config.dataRetrievalRateLimit14, sto)
+router.get("/transaction/:txid", config.dataRetrievalRateLimit15, transaction)
 router.get(
   "/blockTransactions/:index",
-  config.dataRetrievalRateLimit15,
+  config.dataRetrievalRateLimit16,
   blockTransactions
 )
 router.get(
   "/pendingTransactions",
-  config.dataRetrievalRateLimit16,
+  config.dataRetrievalRateLimit17,
   pendingTransactions
 )
 router.get(
@@ -1005,7 +1005,7 @@ async function frozenBalanceForId(
     requestConfig.data.params = [propertyId]
 
     const response = await BitboxHTTP(requestConfig)
-    
+
     return res.json(response.data.result)
   } catch (err) {
     // Attempt to decode the error message.

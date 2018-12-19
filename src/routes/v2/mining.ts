@@ -136,6 +136,11 @@ async function getNetworkHashPS(
   next: express.NextFunction
 ) {
   try {
+    let nblocks = 120 // Default
+    let height = -1 // Default
+    if (req.query.nblocks) nblocks = parseInt(req.query.nblocks)
+    if (req.query.height) height = parseInt(req.query.height)
+
     const {
       BitboxHTTP,
       username,
@@ -145,7 +150,7 @@ async function getNetworkHashPS(
 
     requestConfig.data.id = "getnetworkhashps"
     requestConfig.data.method = "getnetworkhashps"
-    requestConfig.data.params = []
+    requestConfig.data.params = [nblocks, height]
 
     const response = await BitboxHTTP(requestConfig)
 

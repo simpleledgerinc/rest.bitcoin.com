@@ -2,15 +2,11 @@
   TODO:
   -getRawMempool
   --Add tests for 'verbos' input values
+  -getMempoolEntry
+  --Needs e2e test to create unconfirmed tx, for real-world test.
 */
 
 "use strict"
-
-//const chai = require("chai");
-//const assert = require("assert")
-//const httpMocks = require("node-mocks-http")
-//const panda = require("./helpers/panda")
-//process.env.RPC_BASEURL = "http://localhost:48332/"
 
 const chai = require("chai")
 const assert = chai.assert
@@ -18,7 +14,7 @@ const nock = require("nock") // HTTP mocking
 const blockchainRoute = require("../../dist/routes/v2/blockchain")
 
 const util = require("util")
-util.inspect.defaultOptions = { depth: 2 }
+util.inspect.defaultOptions = { depth: 5 }
 
 // Mocking data.
 const { mockReq, mockRes } = require("./mocks/express-mocks")
@@ -97,7 +93,7 @@ describe("#BlockchainRouter", () => {
     // block route handler.
     const getBestBlockHash = blockchainRoute.testableComponents.getBestBlockHash
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -110,8 +106,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
     })
 
     it("should GET /getBestBlockHash", async () => {
@@ -135,7 +135,7 @@ describe("#BlockchainRouter", () => {
     const getBlockchainInfo =
       blockchainRoute.testableComponents.getBlockchainInfo
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -148,8 +148,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
     })
 
     it("should GET /getBlockchainInfo", async () => {
@@ -183,7 +187,7 @@ describe("#BlockchainRouter", () => {
     // block route handler.
     const getBlockCount = blockchainRoute.testableComponents.getBlockCount
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -196,8 +200,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
     })
 
     it("should GET /getBlockCount", async () => {
@@ -215,11 +223,104 @@ describe("#BlockchainRouter", () => {
     })
   })
 
+  describe("getBlockHeader()", async () => {
+    const getBlockHeader = blockchainRoute.testableComponents.getBlockHeader
+
+    it("should throw 400 error if hash is missing", async () => {
+      const result = await getBlockHeader(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "hash can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.hash =
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+
+      const result = await getBlockHeader(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node.",
+        "Error message expected"
+      )
+    })
+
+    it("should GET block header", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, {
+            result:
+              "0000ff7f7d217c9b7845ea8b50d620c59a1bf7c276566406e9b7bc7e463e0000000000006d70322c0b697c1c81d2744f87f09f1e9780ba5d30338952e2cdc64e60456f8423bb0a5ceafa091a3e843526"
+          })
+      }
+
+      req.params.hash =
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+
+      const result = await getBlockHeader(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(
+        result,
+        "0000ff7f7d217c9b7845ea8b50d620c59a1bf7c276566406e9b7bc7e463e0000000000006d70322c0b697c1c81d2744f87f09f1e9780ba5d30338952e2cdc64e60456f8423bb0a5ceafa091a3e843526"
+      )
+    })
+
+    it("should GET verbose block header", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBlockHeader })
+      }
+
+      req.query.verbose = true
+      req.params.hash =
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+
+      const result = await getBlockHeader(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, [
+        "hash",
+        "confirmations",
+        "height",
+        "version",
+        "versionHex",
+        "merkleroot",
+        "time",
+        "mediantime",
+        "nonce",
+        "bits",
+        "difficulty",
+        "chainwork",
+        "previousblockhash",
+        "nextblockhash"
+      ])
+    })
+  })
+
   describe("getChainTips()", () => {
     // block route handler.
     const getChainTips = blockchainRoute.testableComponents.getChainTips
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -232,8 +333,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
     })
 
     it("should GET /getChainTips", async () => {
@@ -256,7 +361,7 @@ describe("#BlockchainRouter", () => {
     // block route handler.
     const getDifficulty = blockchainRoute.testableComponents.getDifficulty
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -269,8 +374,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
     })
 
     it("should GET /getDifficulty", async () => {
@@ -292,7 +401,7 @@ describe("#BlockchainRouter", () => {
     // block route handler.
     const getMempoolInfo = blockchainRoute.testableComponents.getMempoolInfo
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -305,8 +414,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
     })
 
     it("should GET /getMempoolInfo", async () => {
@@ -334,7 +447,7 @@ describe("#BlockchainRouter", () => {
     // block route handler.
     const getRawMempool = blockchainRoute.testableComponents.getRawMempool
 
-    it("should throw 500 when network issues", async () => {
+    it("should throw 503 when network issues", async () => {
       // Save the existing RPC URL.
       const savedUrl2 = process.env.RPC_BASEURL
 
@@ -347,8 +460,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
     })
 
     it("should GET /getMempoolInfo", async () => {
@@ -364,6 +481,244 @@ describe("#BlockchainRouter", () => {
 
       assert.isArray(result)
       // Not sure what other assertions should be made here.
+    })
+  })
+
+  describe("getMempoolEntry()", () => {
+    // block route handler.
+    const getMempoolEntry = blockchainRoute.testableComponents.getMempoolEntry
+
+    it("should throw 400 if txid is empty", async () => {
+      const result = await getMempoolEntry(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getMempoolEntry(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+
+    it("should GET /getMempoolEntry", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: { error: "Transaction not in mempool" } })
+      }
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getMempoolEntry(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.isString(result.error)
+      assert.equal(result.error, "Transaction not in mempool")
+    })
+  })
+
+  describe("getTxOut()", () => {
+    // block route handler.
+    const getTxOut = blockchainRoute.testableComponents.getTxOut
+
+    it("should throw 400 if txid is empty", async () => {
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 400 if n is empty", async () => {
+      req.params.txid = `sometxid`
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "n can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      req.params.n = 0
+
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+
+    it("should GET /getTxOut", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockTxOut })
+      }
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      req.params.n = 0
+
+      const result = await getTxOut(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.hasAllKeys(result, [
+        "bestblock",
+        "confirmations",
+        "value",
+        "scriptPubKey",
+        "coinbase"
+      ])
+      assert.hasAllKeys(result.scriptPubKey, [
+        "asm",
+        "hex",
+        "reqSigs",
+        "type",
+        "addresses"
+      ])
+      assert.isArray(result.scriptPubKey.addresses)
+    })
+  })
+
+  describe("getTxOutProof()", () => {
+    const getTxOutProof = blockchainRoute.testableComponents.getTxOutProof
+
+    it("should throw 400 if txid is empty", async () => {
+      const result = await getTxOutProof(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getTxOutProof(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+
+    it("should GET /getTxOutProof", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockTxOutProof })
+      }
+
+      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getTxOutProof(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isString(result)
+    })
+  })
+
+  describe("verifyTxOutProof()", () => {
+    const verifyTxOutProof = blockchainRoute.testableComponents.verifyTxOutProof
+
+    it("should throw 400 if proof is empty", async () => {
+      const result = await verifyTxOutProof(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "proof can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing RPC URL.
+      const savedUrl2 = process.env.RPC_BASEURL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.RPC_BASEURL = "http://fakeurl/api/"
+
+      req.params.proof = mockData.mockTxOutProof
+
+      const result = await verifyTxOutProof(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.RPC_BASEURL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+
+    it("should GET /getTxOutProof", async () => {
+      const expected =
+        "d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde"
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: [expected] })
+      }
+
+      req.params.proof = mockData.mockTxOutProof
+
+      const result = await verifyTxOutProof(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.isString(result[0])
+      assert.equal(result[0], expected)
     })
   })
 })
