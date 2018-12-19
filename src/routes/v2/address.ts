@@ -81,24 +81,37 @@ function root(
 }
 
 // Query the Insight API for details on a single BCH address.
-async function detailsFromInsight(thisAddress: string, req: express.Request) {
+async function detailsFromInsight(
+  thisAddress: string,
+  currentPage: number = 0
+) {
   try {
+    // Use the default (and max) page size of 1000
+    // https://github.com/bitpay/insight-api#notes-on-upgrading-from-v03
+    const pageSize = 1000
+
     const legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
 
     let path = `${process.env.BITCOINCOM_BASEURL}addr/${legacyAddr}`
 
-    // Optional query strings limit the number of TXIDs.
+    // Set from and to params based on currentPage and pageSize
     // https://github.com/bitpay/insight-api/blob/master/README.md#notes-on-upgrading-from-v02
-    if (req.body.from && req.body.to)
-      path = `${path}?from=${req.body.from}&to=${req.body.to}`
+    const from = currentPage * pageSize
+    const to = from + pageSize
+    path = `${path}?from=${from}&to=${to}`
 
     // Query the Insight server.
     const response = await axios.get(path)
+
+    // Calculate pagesTotal from response
+    const pagesTotal = Math.ceil(response.data.txApperances / pageSize)
 
     // Append different address formats to the return data.
     const retData = response.data
     retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
     retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+    retData.currentPage = currentPage
+    retData.pagesTotal = pagesTotal
 
     return retData
   } catch (err) {
@@ -116,12 +129,20 @@ async function detailsBulk(
 ) {
   try {
     const addresses = req.body.addresses
+    const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
 
     // Reject if address is not an array.
     if (!Array.isArray(addresses)) {
       res.status(400)
       return res.json({
         error: "addresses needs to be an array. Use GET for single address."
+      })
+    }
+
+    // Enforce no more than 20 addresses.
+    if (addresses.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 addresses"
       })
     }
 
@@ -152,7 +173,7 @@ async function detailsBulk(
       }
 
       // Query the Insight API.
-      const retData = await detailsFromInsight(thisAddress, req)
+      const retData = await detailsFromInsight(thisAddress, currentPage)
 
       retArray.push(retData)
     }
@@ -184,6 +205,8 @@ async function detailsSingle(
 ) {
   try {
     const address = req.params.address
+    const currentPage = req.query.page ? parseInt(req.query.page, 10) : 0
+
     if (!address || address === "") {
       res.status(400)
       return res.json({ error: "address can not be empty" })
@@ -219,7 +242,7 @@ async function detailsSingle(
     }
 
     // Query the Insight API.
-    const retData = await detailsFromInsight(address, req)
+    const retData = await detailsFromInsight(address, currentPage)
 
     // Return the array of retrieved address information.
     res.status(200)
@@ -555,9 +578,14 @@ async function unconfirmedSingle(
 }
 
 // Retrieve transaction data from the Insight API
-async function transactionsFromInsight(thisAddress: string) {
+async function transactionsFromInsight(
+  thisAddress: string,
+  currentPage: number = 0
+) {
   try {
-    const path = `${process.env.BITCOINCOM_BASEURL}txs/?address=${thisAddress}`
+    const path = `${
+      process.env.BITCOINCOM_BASEURL
+    }txs/?address=${thisAddress}&pageNum=${currentPage}`
 
     // Query the Insight server.
     const response = await axios.get(path)
@@ -566,6 +594,7 @@ async function transactionsFromInsight(thisAddress: string) {
     const retData = response.data
     retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
     retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+    retData.currentPage = currentPage
 
     return retData
   } catch (err) {
@@ -581,6 +610,7 @@ async function transactionsBulk(
 ) {
   try {
     const addresses = req.body.addresses
+    const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
 
     // Reject if address is not an array.
     if (!Array.isArray(addresses)) {
@@ -614,7 +644,7 @@ async function transactionsBulk(
         })
       }
 
-      const retData = await transactionsFromInsight(thisAddress)
+      const retData = await transactionsFromInsight(thisAddress, currentPage)
 
       retArray.push(retData)
     }
@@ -646,6 +676,8 @@ async function transactionsSingle(
 ) {
   try {
     const address = req.params.address
+    const currentPage = req.query.page ? parseInt(req.query.page, 10) : 0
+
     if (!address || address === "") {
       res.status(400)
       return res.json({ error: "address can not be empty" })
@@ -684,7 +716,7 @@ async function transactionsSingle(
     }
 
     // Query the Insight API.
-    const retData = await transactionsFromInsight(address)
+    const retData = await transactionsFromInsight(address, currentPage)
     //console.log(`retData: ${JSON.stringify(retData,null,2)}`)
 
     // Return the array of retrieved address information.

@@ -27,8 +27,12 @@ gulp.task("build", () => {
   const testnetPathsJSON = fs.readFileSync(
     "./swaggerJSONFiles/fixtures/testnet/paths.json"
   )
+  const testnetComponentsJSON = fs.readFileSync(
+    "./swaggerJSONFiles/fixtures/testnet/components.json"
+  )
   const testnetInfo = JSON.parse(testnetInfoJSON)
   const testnetPaths = JSON.parse(testnetPathsJSON)
+  const testnetComponents = JSON.parse(testnetComponentsJSON)
 
   gulp
     .src("./swaggerJSONFiles/info.json")
@@ -75,15 +79,33 @@ gulp.task("build", () => {
     .pipe(gulp.dest("./swaggerJSONFilesBuilt"))
 
   gulp
+    .src("./swaggerJSONFiles/components.json")
+    .pipe(
+      merge({
+        fileName: "./testnet/components.json",
+        edit: (parsedJson, file) => {
+          testnetComponents.forEach((item, index) => {
+            Object.keys(parsedJson.components.schemas).forEach(key => {
+              if (key === item.key) {
+                parsedJson.components.schemas[
+                  key
+                ].properties.addresses.example = item.value
+              }
+            })
+          })
+
+          return parsedJson
+        }
+      })
+    )
+    .pipe(gulp.dest("./swaggerJSONFilesBuilt"))
+
+  gulp
     .src(["./swaggerJSONFiles/servers.json"])
     .pipe(gulp.dest("./swaggerJSONFilesBuilt/testnet"))
 
   gulp
     .src(["./swaggerJSONFiles/tags.json"])
-    .pipe(gulp.dest("./swaggerJSONFilesBuilt/testnet"))
-
-  gulp
-    .src(["./swaggerJSONFiles/components.json"])
     .pipe(gulp.dest("./swaggerJSONFilesBuilt/testnet"))
 
   setTimeout(function() {
@@ -104,8 +126,12 @@ gulp.task("build", () => {
   const mainnetPathsJSON = fs.readFileSync(
     "./swaggerJSONFiles/fixtures/mainnet/paths.json"
   )
+  const mainnetComponentsJSON = fs.readFileSync(
+    "./swaggerJSONFiles/fixtures/mainnet/components.json"
+  )
   const mainnetInfo = JSON.parse(mainnetInfoJSON)
   const mainnetPaths = JSON.parse(mainnetPathsJSON)
+  const mainnetComponents = JSON.parse(mainnetComponentsJSON)
 
   gulp
     .src("./swaggerJSONFiles/info.json")
@@ -152,15 +178,33 @@ gulp.task("build", () => {
     .pipe(gulp.dest("./swaggerJSONFilesBuilt"))
 
   gulp
+    .src("./swaggerJSONFiles/components.json")
+    .pipe(
+      merge({
+        fileName: "./mainnet/components.json",
+        edit: (parsedJson, file) => {
+          mainnetComponents.forEach((item, index) => {
+            Object.keys(parsedJson.components.schemas).forEach(key => {
+              if (key === item.key) {
+                parsedJson.components.schemas[
+                  key
+                ].properties.addresses.example = item.value
+              }
+            })
+          })
+
+          return parsedJson
+        }
+      })
+    )
+    .pipe(gulp.dest("./swaggerJSONFilesBuilt"))
+
+  gulp
     .src(["./swaggerJSONFiles/servers.json"])
     .pipe(gulp.dest("./swaggerJSONFilesBuilt/mainnet"))
 
   gulp
     .src(["./swaggerJSONFiles/tags.json"])
-    .pipe(gulp.dest("./swaggerJSONFilesBuilt/mainnet"))
-
-  gulp
-    .src(["./swaggerJSONFiles/components.json"])
     .pipe(gulp.dest("./swaggerJSONFilesBuilt/mainnet"))
 
   setTimeout(function() {
