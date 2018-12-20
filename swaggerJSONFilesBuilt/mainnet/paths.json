@@ -2329,7 +2329,7 @@
 						"in": "path",
 						"description": "The ecosystem of the tokens to send (1 for main ecosystem, 2 for test ecosystem)",
 						"required": true,
-						"example": 2,
+						"example": 1,
 						"schema": {
 							"type": "number"
 						}
