@@ -775,7 +775,7 @@ describe("#DataRetrieval", () => {
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "propertyid can not be empty")
+      assert.include(result.error, "propertyId can not be empty")
     })
 
     it("should throw 503 when network issues", async () => {
@@ -785,7 +785,7 @@ describe("#DataRetrieval", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyid = 111
+      req.params.propertyId = 111
 
       const result = await property(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -813,7 +813,7 @@ describe("#DataRetrieval", () => {
           })
       }
 
-      req.params.propertyid = 111111111111111111111
+      req.params.propertyId = 111111111111111111111
 
       const result = await property(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -831,7 +831,7 @@ describe("#DataRetrieval", () => {
           .reply(200, { result: mockData.mockProperty })
       }
 
-      req.params.propertyid = 111
+      req.params.propertyId = 111
 
       const result = await property(req, res)
       //console.log(`result: ${util.inspect(result)}`)
