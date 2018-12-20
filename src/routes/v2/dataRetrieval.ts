@@ -144,7 +144,7 @@ router.get(
   blockTransactions
 )
 router.get(
-  "/pendingTransactions",
+  "/pendingTransactions/:address",
   config.dataRetrievalRateLimit17,
   pendingTransactions
 )

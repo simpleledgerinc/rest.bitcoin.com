@@ -210,7 +210,7 @@
     "value": 560000
   },
   {
-    "key": "/dataRetrieval/pendingTransactions",
+    "key": "/dataRetrieval/pendingTransactions/{address}",
     "name": "address",
     "value": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c"
   },
@@ -272,7 +272,7 @@
   {
     "key": "/payloadCreation/grant/{propertyId}/{amount}",
     "name": "propertyId",
-    "value": 51
+    "value": 196
   },
   {
     "key": "/payloadCreation/grant/{propertyId}/{amount}",
@@ -377,7 +377,7 @@
   {
     "key": "/payloadCreation/revoke/{propertyId}/{amount}",
     "name": "propertyId",
-    "value": 51
+    "value": 196
   },
   {
     "key": "/payloadCreation/revoke/{propertyId}/{amount}",
@@ -392,7 +392,7 @@
   {
     "key": "/payloadCreation/sendAll/{ecosystem}",
     "name": "ecosystem",
-    "value": 2
+    "value": 1
   },
   {
     "key": "/payloadCreation/simpleSend/{propertyId}/{amount}",

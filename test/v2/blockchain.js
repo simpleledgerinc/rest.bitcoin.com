@@ -593,7 +593,7 @@ describe("#BlockchainRouter", () => {
       }
 
       req.params.txid = `5747e6462e2c452a5d583fd6a5f82866cd8e4a86826c86d9a1842b7d023e0c0c`
-      req.params.n = 0
+      req.params.n = 1
 
       const result = await getTxOut(req, res)
       //console.log(`result: ${JSON.stringify(result, null, 2)}`)

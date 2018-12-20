@@ -1540,7 +1540,7 @@
 				}
 			}
 		},
-		"/dataRetrieval/pendingTransactions": {
+		"/dataRetrieval/pendingTransactions/{address}": {
 			"get": {
 				"tags": [
 					"dataRetrieval"
@@ -1551,7 +1551,7 @@
 				"parameters": [
 					{
 						"name": "address",
-						"in": "query",
+						"in": "path",
 						"description": "Address filter (default: '' for no filter)",
 						"required": false,
 						"example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
