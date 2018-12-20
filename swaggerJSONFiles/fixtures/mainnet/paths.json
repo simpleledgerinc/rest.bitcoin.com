@@ -210,7 +210,7 @@
     "value": 560000
   },
   {
-    "key": "/dataRetrieval/pendingTransactions",
+    "key": "/dataRetrieval/pendingTransactions/{address}",
     "name": "address",
     "value": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c"
   },

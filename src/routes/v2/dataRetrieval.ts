@@ -144,7 +144,7 @@ router.get(
   blockTransactions
 )
 router.get(
-  "/pendingTransactions",
+  "/pendingTransactions/:address",
   config.dataRetrievalRateLimit17,
   pendingTransactions
 )
@@ -777,6 +777,8 @@ async function pendingTransactions(
       return res.json({ error: "address can not be empty" })
     }
 
+    console.log(`address: ${address}`)
+
     // Ensure the input is a valid BCH address.
     try {
       var legacyAddr = BITBOX.Address.toLegacyAddress(address)
@@ -811,6 +813,7 @@ async function pendingTransactions(
 
     return res.json(response.data.result)
   } catch (err) {
+    console.log(`err: `, err)
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {

@@ -1450,7 +1450,7 @@
         }
       }
     },
-    "/dataRetrieval/pendingTransactions": {
+    "/dataRetrieval/pendingTransactions/{address}": {
       "get": {
         "tags": ["dataRetrieval"],
         "summary": "pendingTransactions",
@@ -1459,7 +1459,7 @@
         "parameters": [
           {
             "name": "address",
-            "in": "query",
+            "in": "path",
             "description": "Address filter (default: '' for no filter)",
             "required": false,
             "example": "",
