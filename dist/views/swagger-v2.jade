@@ -39,9 +39,16 @@ html(lang='en')
     script(src='../public/swagger-ui-standalone-preset.js')
     script.
       window.onload = function() {
-      // Build a system
+      let network = "#{env.NETWORK}"
+      let path;
+      if(network === 'mainnet') {
+        path = "../public/bitcoin-com-mainnet-rest-v2.json" 
+      } else {
+        path = "../public/bitcoin-com-testnet-rest-v2.json" 
+      }
       const ui = SwaggerUIBundle({
-      url: "../public/bitcoin-com-rest-v2.json",
+        
+      url: path,
       dom_id: '#swagger-ui',
       deepLinking: true,
       presets: [

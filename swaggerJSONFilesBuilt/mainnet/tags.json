@@ -1,0 +1,84 @@
+{
+  "tags": [
+    {
+      "name": "address",
+      "description": "Address details and utxo",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/bitbox/docs/address"
+      }
+    },
+    {
+      "name": "block",
+      "description": "Block Details",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/bitbox/docs/block"
+      }
+    },
+    {
+      "name": "blockchain",
+      "description": "Interacting w/ the BCH Blockchain",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/bitbox/docs/blockchain"
+      }
+    },
+    {
+      "name": "control",
+      "description": "Control your blockchain",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/bitbox/docs/control"
+      }
+    },
+    {
+      "name": "mining",
+      "description": "Mining w/ the BCH Blockchain",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/bitbox/docs/mining"
+      }
+    },
+    {
+      "name": "rawtransactions",
+      "description": "Create transactions to be transmitted to the network.",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/bitbox/docs/rawtransactions"
+      }
+    },
+    {
+      "name": "transaction",
+      "description": "Transaction details.",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/bitbox/docs/rawtransactions"
+      }
+    },
+    {
+      "name": "util",
+      "description": "Bitcoin Cash utilities.",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/bitbox/docs/util"
+      }
+    },
+    {
+      "name": "dataRetrieval",
+      "description": "dataRetrieval",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/wormhole/docs/dataRetrieval"
+      }
+    },
+    {
+      "name": "payloadCreation",
+      "description": "payloadCreation",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "https://developer.bitcoin.com/wormhole/docs/payloadCreation"
+      }
+    }
+  ]
+}

@@ -81,7 +81,10 @@ function root(
 }
 
 // Query the Insight API for details on a single BCH address.
-async function detailsFromInsight(thisAddress: string, currentPage: number = 0) {
+async function detailsFromInsight(
+  thisAddress: string,
+  currentPage: number = 0
+) {
   try {
     // Use the default (and max) page size of 1000
     // https://github.com/bitpay/insight-api#notes-on-upgrading-from-v03
@@ -133,6 +136,13 @@ async function detailsBulk(
       res.status(400)
       return res.json({
         error: "addresses needs to be an array. Use GET for single address."
+      })
+    }
+
+    // Enforce no more than 20 addresses.
+    if (addresses.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 addresses"
       })
     }
 
@@ -568,9 +578,14 @@ async function unconfirmedSingle(
 }
 
 // Retrieve transaction data from the Insight API
-async function transactionsFromInsight(thisAddress: string, currentPage: number = 0) {
+async function transactionsFromInsight(
+  thisAddress: string,
+  currentPage: number = 0
+) {
   try {
-    const path = `${process.env.BITCOINCOM_BASEURL}txs/?address=${thisAddress}&pageNum=${currentPage}`
+    const path = `${
+      process.env.BITCOINCOM_BASEURL
+    }txs/?address=${thisAddress}&pageNum=${currentPage}`
 
     // Query the Insight server.
     const response = await axios.get(path)

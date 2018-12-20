@@ -144,7 +144,7 @@ router.get(
   blockTransactions
 )
 router.get(
-  "/pendingTransactions",
+  "/pendingTransactions/:address",
   config.dataRetrievalRateLimit17,
   pendingTransactions
 )
@@ -558,10 +558,10 @@ async function property(
   next: express.NextFunction
 ) {
   try {
-    let propertyid = req.params.propertyid
+    let propertyid = req.params.propertyId
     if (!propertyid || propertyid === "") {
       res.status(400)
-      return res.json({ error: "propertyid can not be empty" })
+      return res.json({ error: "propertyId can not be empty" })
     }
     propertyid = parseInt(propertyid)
 
