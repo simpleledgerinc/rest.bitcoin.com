@@ -377,7 +377,7 @@
   {
     "key": "/payloadCreation/revoke/{propertyId}/{amount}",
     "name": "propertyId",
-    "value": 51
+    "value": 196
   },
   {
     "key": "/payloadCreation/revoke/{propertyId}/{amount}",

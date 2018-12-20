@@ -2282,7 +2282,7 @@
 						"in": "path",
 						"description": "The identifier of the tokens to revoke",
 						"required": true,
-						"example": 51,
+						"example": 196,
 						"schema": {
 							"type": "number"
 						}
