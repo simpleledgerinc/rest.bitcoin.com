@@ -1641,24 +1641,23 @@
         }
       }
     },
-    "/payloadCreation/changeIssuer/{propertyId}": {
+    "/payloadCreation/changeIssuer": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "changeIssuer",
         "description": "Creates the payload to change the issuer on record of the given tokens.",
-        "operationId": "payloadCreationChangeIssuer",
-        "parameters": [
-          {
-            "name": "propertyId",
-            "in": "path",
-            "description": "The identifier of the tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
+        "operationId": "changeIssuer",
+        "requestBody": {
+          "description": "The identifier of the tokens",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PropertyId"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -1677,24 +1676,23 @@
         }
       }
     },
-    "/payloadCreation/closeCrowdSale/{propertyId}": {
+    "/payloadCreation/closeCrowdSale": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "closeCrowdSale",
         "description": "Creates the payload to manually close a crowdsale.",
-        "operationId": "payloadCreationCloseCrowdSale",
-        "parameters": [
-          {
-            "name": "propertyId",
-            "in": "path",
-            "description": "The identifier of the crowdsale to close",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
+        "operationId": "closeCrowdSale",
+        "requestBody": {
+          "description": "The identifier of the crowdsale to close",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PropertyId"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -1713,44 +1711,23 @@
         }
       }
     },
-    "/payloadCreation/grant/{propertyId}/{amount}": {
+    "/payloadCreation/grant": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "grant",
         "description": "Creates the payload to issue or grant new units of managed tokens.",
-        "operationId": "payloadCreationGrant",
-        "parameters": [
-          {
-            "name": "propertyId",
-            "in": "path",
-            "description": "The identifier of the tokens to grant",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "amount",
-            "in": "path",
-            "description": "The amount of tokens to create",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "memo",
-            "in": "query",
-            "description": "A text note attached to this transaction (none by default)",
-            "required": false,
-            "example": "",
-            "schema": {
-              "type": "string"
+        "operationId": "grant",
+        "requestBody": {
+          "description": "The identifier of the tokens to grant, amount of tokens to create and text note attached to this transaction",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Grant"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -1769,154 +1746,23 @@
         }
       }
     },
-    "/payloadCreation/crowdsale/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{propertyIdDesired}/{tokensPerUnit}/{deadline}/{earlyBonus}/{undefine}/{totalNumber}": {
+    "/payloadCreation/crowdsale": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "crowdsale",
         "description": "Creates the payload for a new tokens issuance with crowdsale.",
-        "operationId": "payloadCreationCrowdsale",
-        "parameters": [
-          {
-            "name": "ecosystem",
-            "in": "path",
-            "description": "The ecosystem to create the tokens in, must be 1",
-            "required": true,
-            "example": "1",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "propertyPrecision",
-            "in": "path",
-            "description": "The precision of the tokens to create:[0, 8]",
-            "required": true,
-            "example": 1,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "previousId",
-            "in": "path",
-            "description": "An identifier of a predecessor token (0 for new crowdsales)",
-            "required": true,
-            "example": 0,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "category",
-            "in": "path",
-            "description": "A category for the new tokens",
-            "required": true,
-            "example": "Companies",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "subcategory",
-            "in": "path",
-            "description": "A subcategory for the new tokens",
-            "required": true,
-            "example": "Bitcoin Mining",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "path",
-            "description": "The name of the new tokens to create",
-            "required": true,
-            "example": "Quantum Miner",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "url",
-            "in": "path",
-            "description": "An URL for further information about the new tokens",
-            "required": true,
-            "example": "www.example.com",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "data",
-            "in": "path",
-            "description": "A description for the new tokens",
-            "required": true,
-            "example": "Quantum Miner Tokens",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "propertyIdDesired",
-            "in": "path",
-            "description": "The identifier of a token eligible to participate in the crowdsale",
-            "required": true,
-            "example": 1,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "tokensPerUnit",
-            "in": "path",
-            "description": "The amount of tokens granted per unit invested in the crowdsale",
-            "required": true,
-            "example": "100",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "deadline",
-            "in": "path",
-            "description": "The deadline of the crowdsale as Unix timestamp",
-            "required": true,
-            "example": 1483228800,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "earlyBonus",
-            "in": "path",
-            "description": "An early bird bonus for participants in percent per week",
-            "required": true,
-            "example": 30,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "undefine",
-            "in": "path",
-            "description": "The value must be 0",
-            "required": true,
-            "example": 0,
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "totalNumber",
-            "in": "path",
-            "description": "The number of tokens to create",
-            "required": true,
-            "example": "192978657",
-            "schema": {
-              "type": "string"
+        "operationId": "crowdsale",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Crowdsale"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -1924,104 +1770,23 @@
         }
       }
     },
-    "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}": {
+    "/payloadCreation/fixed": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "fixed",
         "description": "Creates the payload for a new tokens issuance with fixed supply.",
-        "operationId": "payloadCreationFixed",
-        "parameters": [
-          {
-            "name": "ecosystem",
-            "in": "path",
-            "description": "The ecosystem to create the tokens in, must be 1",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "propertyPrecision",
-            "in": "path",
-            "description": "The precision of the tokens to create:[0, 8]",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "previousId",
-            "in": "path",
-            "description": "An identifier of a predecessor token (use 0 for new tokens)",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "category",
-            "in": "path",
-            "description": "A category for the new tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "subcategory",
-            "in": "path",
-            "description": "A subcategory for the new tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "path",
-            "description": "The name of the new tokens to create",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "url",
-            "in": "path",
-            "description": "An URL for further information about the new tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "data",
-            "in": "path",
-            "description": "A description for the new tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "amount",
-            "in": "path",
-            "description": "The number of tokens to create",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
+        "operationId": "fixed",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fixed"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -2029,94 +1794,23 @@
         }
       }
     },
-    "/payloadCreation/managed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}": {
+    "/payloadCreation/managed": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "managed",
         "description": "Creates the payload for a new tokens issuance with manageable supply.",
-        "operationId": "payloadCreationManaged",
-        "parameters": [
-          {
-            "name": "ecosystem",
-            "in": "path",
-            "description": "The ecosystem to create the tokens in, must be 1",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "propertyPrecision",
-            "in": "path",
-            "description": "The precision of the tokens to create:[0, 8]",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "previousId",
-            "in": "path",
-            "description": "An identifier of a predecessor token (use 0 for new tokens)",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "category",
-            "in": "path",
-            "description": "A category for the new tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "subcategory",
-            "in": "path",
-            "description": "A subcategory for the new tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "name",
-            "in": "path",
-            "description": "The name of the new tokens to create",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "url",
-            "in": "path",
-            "description": "An URL for further information about the new tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "data",
-            "in": "path",
-            "description": "A description for the new tokens",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
+        "operationId": "managed",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Managed"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -2127,24 +1821,23 @@
         }
       }
     },
-    "/payloadCreation/participateCrowdSale/{amount}": {
+    "/payloadCreation/participateCrowdSale": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "participateCrowdSale",
         "description": "Create the payload for a participate crowdsale transaction",
-        "operationId": "payloadCreationParticipateCrowdSale",
-        "parameters": [
-          {
-            "name": "amount",
-            "in": "path",
-            "description": "The amount of WHC to participateCrowdSale",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
+        "operationId": "participateCrowdSale",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParticipateCrowdSale"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -2152,44 +1845,23 @@
         }
       }
     },
-    "/payloadCreation/revoke/{propertyId}/{amount}": {
+    "/payloadCreation/revoke": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "revoke",
         "description": "Creates the payload to revoke units of managed tokens.",
-        "operationId": "payloadCreationRevoke",
-        "parameters": [
-          {
-            "name": "propertyId",
-            "in": "path",
-            "description": "The identifier of the tokens to revoke",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "amount",
-            "in": "path",
-            "description": "The amount of tokens to revoke",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "memo",
-            "in": "query",
-            "description": "A text note attached to this transaction (none by default)",
-            "required": false,
-            "example": "",
-            "schema": {
-              "type": "string"
+        "operationId": "revoke",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Revoke"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -2197,24 +1869,23 @@
         }
       }
     },
-    "/payloadCreation/sendAll/{ecosystem}": {
+    "/payloadCreation/sendAll": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "sendAll",
         "description": "Create the payload for a send all transaction.",
-        "operationId": "payloadCreationSendAll",
-        "parameters": [
-          {
-            "name": "ecosystem",
-            "in": "path",
-            "description": "The ecosystem of the tokens to send (1 for main ecosystem, 2 for test ecosystem)",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
+        "operationId": "sendAll",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendAll"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -2222,34 +1893,23 @@
         }
       }
     },
-    "/payloadCreation/simpleSend/{propertyId}/{amount}": {
+    "/payloadCreation/simpleSend": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "simpleSend",
         "description": "Create the payload for a simple send transaction.",
-        "operationId": "payloadCreationSimpleSend",
-        "parameters": [
-          {
-            "name": "propertyId",
-            "in": "path",
-            "description": "The identifier of the tokens to send",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "amount",
-            "in": "path",
-            "description": "The amount to send",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
+        "operationId": "simpleSend",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimpleSend"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -2257,44 +1917,23 @@
         }
       }
     },
-    "/payloadCreation/STO/{propertyId}/{amount}": {
+    "/payloadCreation/STO": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "STO",
         "description": "Creates the payload for a send-to-owners transaction",
-        "operationId": "payloadCreationSTO",
-        "parameters": [
-          {
-            "name": "propertyId",
-            "in": "path",
-            "description": "The identifier of the tokens to distribute",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "amount",
-            "in": "path",
-            "description": "The amount to distribute",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "distributionProperty",
-            "in": "query",
-            "description": "The identifier of the property holders to distribute to",
-            "required": false,
-            "example": "",
-            "schema": {
-              "type": "number"
+        "operationId": "STO",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/STO"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -2302,34 +1941,23 @@
         }
       }
     },
-    "/payloadCreation/freeze/{toAddress}/{propertyId}": {
+    "/payloadCreation/freeze": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "freeze",
         "description": "Creates the payload for a freeze transaction",
-        "operationId": "payloadCreationFreeze",
-        "parameters": [
-          {
-            "name": "toAddress",
-            "in": "path",
-            "description": "The to address",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "propertyId",
-            "in": "path",
-            "description": "The identifier of the tokens to freeze",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
+        "operationId": "freeze",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Freeze"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
@@ -2337,34 +1965,23 @@
         }
       }
     },
-    "/payloadCreation/unfreeze/{toAddress}/{propertyId}": {
+    "/payloadCreation/unfreeze": {
       "post": {
         "tags": ["payloadCreation"],
         "summary": "unfreeze",
         "description": "Creates the payload for an unfreeze transaction",
-        "operationId": "payloadCreationUnfreeze",
-        "parameters": [
-          {
-            "name": "toAddress",
-            "in": "path",
-            "description": "The to address",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "propertyId",
-            "in": "path",
-            "description": "The identifier of the tokens to unfreeze",
-            "required": true,
-            "example": "",
-            "schema": {
-              "type": "number"
+        "operationId": "unfreeze",
+        "requestBody": {
+          "description": "",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Unfreeze"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "successful response"
