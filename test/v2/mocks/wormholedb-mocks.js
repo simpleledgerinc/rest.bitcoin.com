@@ -4,7 +4,7 @@
 
 "use strict";
 
-const mockWormholedb = {
+const mockWithTransactions = {
   getConfirmedTransactions: function() {
     return {
       data: {
@@ -64,6 +64,24 @@ const mockWormholedb = {
       }
     }
   }
-};
+}
 
-module.exports = mockWormholedb
+const mockNoTransactions = {
+  getConfirmedTransactions: function() {
+    return {
+      data: {
+        c: [
+          {
+            metadata: [],
+            data: []
+          }
+        ]
+      }
+    }
+  }
+}
+
+module.exports = {
+  mockWithTransactions,
+  mockNoTransactions
+}

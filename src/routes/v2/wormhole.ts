@@ -103,8 +103,9 @@ async function confirmed(
 
       try {
         const result = await whdb.getConfirmedTransactions(thisAddress, pageSize, currentPage)
+
         const resultTxs = result.data.c[0].data
-        const resultCount = result.data.c[0].metadata[0].count
+        const resultCount = result.data.c[0].metadata[0] ? result.data.c[0].metadata[0].count : 0
         const pagesTotal = Math.ceil(resultCount / pageSize)
 
         retArray.push({
