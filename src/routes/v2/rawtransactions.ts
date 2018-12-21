@@ -621,7 +621,7 @@ async function whDecodeTx(
     requestConfig.data.method = "whc_decodetransaction"
     requestConfig.data.params = params
 
-    console.log(`requestConfig.data: ${util.inspect(requestConfig.data)}`)
+    //console.log(`requestConfig.data: ${util.inspect(requestConfig.data)}`)
 
     const response = await BitboxHTTP(requestConfig)
 

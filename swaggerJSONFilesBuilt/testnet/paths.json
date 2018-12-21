@@ -1234,7 +1234,7 @@
 						"in": "path",
 						"description": "The identifier of the crowdsale",
 						"required": true,
-						"example": 1,
+						"example": 542,
 						"schema": {
 							"type": "number"
 						}
