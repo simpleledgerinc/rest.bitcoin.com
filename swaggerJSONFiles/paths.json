@@ -892,7 +892,7 @@
         "tags": ["rawtransactions"],
         "summary": "Return the hex encoded transaction.",
         "description": "Return a JSON object representing the serialized, hex-encoded transaction.",
-        "operationId": "decodeRawTransaction",
+        "operationId": "decodeRawTransactionSingle",
         "parameters": [
           {
             "in": "path",
@@ -905,6 +905,40 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecodeRawTransaction"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "TX decode failed"
+          }
+        }
+      }
+    },
+    "/rawtransactions/decodeRawTransaction": {
+      "post": {
+        "tags": ["rawtransactions"],
+        "summary": "Return bulk hex encoded transaction.",
+        "description": "Return bulk hex encoded transaction.",
+        "operationId": "decodeRawTransactionBulk",
+        "requestBody": {
+          "description": "Array of hexes",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Hexes"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "successful operation",
