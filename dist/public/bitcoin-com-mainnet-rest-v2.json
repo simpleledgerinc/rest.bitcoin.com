@@ -4,6 +4,15 @@
 			"Address": {
 				"type": "string"
 			},
+			"Hash": {
+				"type": "string"
+			},
+			"Txid": {
+				"type": "string"
+			},
+			"Hex": {
+				"type": "string"
+			},
 			"Addresses": {
 				"type": "object",
 				"properties": {
@@ -15,6 +24,55 @@
 						"example": [
 							"bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
 							"bitcoincash:qrehqueqhw629p6e57994436w730t4rzasnly00ht0"
+						]
+					}
+				}
+			},
+			"Hashes": {
+				"type": "object",
+				"properties": {
+					"hashes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Hash"
+						},
+						"example": [
+							"000000000000000005e14d3f9fdfb70745308706615cfa9edca4f4558332b201",
+							"00000000000000000568f0a96bf4348847bc84e455cbfec389f27311037a20f3"
+						]
+					},
+					"verbose": {
+						"type": "boolean",
+						"example": true
+					}
+				}
+			},
+			"Hexes": {
+				"type": "object",
+				"properties": {
+					"hexes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Hex"
+						},
+						"example": [
+							"01000000013ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a000000006a4730440220540986d1c58d6e76f8f05501c520c38ce55393d0ed7ed3c3a82c69af04221232022058ea43ed6c05fec0eccce749a63332ed4525460105346f11108b9c26df93cd72012103083dfc5a0254613941ddc91af39ff90cd711cdcde03a87b144b883b524660c39ffffffff01807c814a000000001976a914d7e7c4e0b70eaa67ceff9d2823d1bbb9f6df9a5188ac00000000",
+							"01000000013ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a000000006a4730440220540986d1c58d6e76f8f05501c520c38ce55393d0ed7ed3c3a82c69af04221232022058ea43ed6c05fec0eccce749a63332ed4525460105346f11108b9c26df93cd72012103083dfc5a0254613941ddc91af39ff90cd711cdcde03a87b144b883b524660c39ffffffff01807c814a000000001976a914d7e7c4e0b70eaa67ceff9d2823d1bbb9f6df9a5188ac00000000"
+						]
+					}
+				}
+			},
+			"Txids": {
+				"type": "object",
+				"properties": {
+					"txids": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Txid"
+						},
+						"example": [
+							"a5f972572ee1753e2fd2457dd61ce5f40fa2f8a30173d417e49feef7542c96a1",
+							"5165dc531aad05d1149bb0f0d9b7bda99c73e2f05e314bcfb5b4bb9ca5e1af5e"
 						]
 					}
 				}
@@ -1709,7 +1767,7 @@
 				],
 				"summary": "Information about blockheader hash",
 				"description": "If verbose is false, returns a string that is serialized, hex-encoded data for blockheader 'hash'. If verbose is true, returns an Object with information about blockheader hash.",
-				"operationId": "getBlockHeader",
+				"operationId": "getBlockHeaderSingle",
 				"parameters": [
 					{
 						"name": "hash",
@@ -1732,6 +1790,50 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BlockHeader"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Block not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Block not found"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/blockchain/getBlockHeader": {
+			"post": {
+				"tags": [
+					"blockchain"
+				],
+				"summary": "Bulk information about blockheader hash",
+				"description": "Bulk information about blockheader hash",
+				"operationId": "getBlockHeaderBulk",
+				"requestBody": {
+					"description": "Array of hashes",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Hashes"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation",
@@ -1801,7 +1903,7 @@
 				],
 				"summary": "Mempool data for transaction",
 				"description": "Returns mempool data for given transaction",
-				"operationId": "getMempoolEntry",
+				"operationId": "getMempoolEntrySingle",
 				"parameters": [
 					{
 						"name": "txid",
@@ -1814,6 +1916,35 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation"
+					},
+					"400": {
+						"description": "Transaction not in mempool"
+					}
+				}
+			}
+		},
+		"/blockchain/getMempoolEntry": {
+			"post": {
+				"tags": [
+					"blockchain"
+				],
+				"summary": "Mempool data for transaction",
+				"description": "Returns mempool data for given transaction",
+				"operationId": "getMempoolEntryBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Txids"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation"
@@ -2087,7 +2218,7 @@
 				],
 				"summary": "Return the hex encoded transaction.",
 				"description": "Return a JSON object representing the serialized, hex-encoded transaction.",
-				"operationId": "decodeRawTransaction",
+				"operationId": "decodeRawTransactionSingle",
 				"parameters": [
 					{
 						"in": "path",
@@ -2100,6 +2231,42 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DecodeRawTransaction"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "TX decode failed"
+					}
+				}
+			}
+		},
+		"/rawtransactions/decodeRawTransaction": {
+			"post": {
+				"tags": [
+					"rawtransactions"
+				],
+				"summary": "Return bulk hex encoded transaction.",
+				"description": "Return bulk hex encoded transaction.",
+				"operationId": "decodeRawTransactionBulk",
+				"requestBody": {
+					"description": "Array of hexes",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Hexes"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation",
@@ -2206,9 +2373,9 @@
 				"tags": [
 					"transaction"
 				],
-				"summary": "Transaction details",
-				"description": "Details about a transaction",
-				"operationId": "transactionDetails",
+				"summary": "Transaction details single",
+				"description": "Details about a single transaction",
+				"operationId": "transactionDetailsSingle",
 				"parameters": [
 					{
 						"in": "path",
@@ -2221,6 +2388,42 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TransactionDetails"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Transaction not found"
+					}
+				}
+			}
+		},
+		"/transaction/details": {
+			"post": {
+				"tags": [
+					"transaction"
+				],
+				"summary": "Transaction details bulk",
+				"description": "Bulk Details about a transaction",
+				"operationId": "transactionDetailsBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Txids"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation",

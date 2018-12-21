@@ -4,6 +4,15 @@
       "Address": {
         "type": "string"
       },
+      "Hash": {
+        "type": "string"
+      },
+      "Txid": {
+        "type": "string"
+      },
+      "Hex": {
+        "type": "string"
+      },
       "Addresses": {
         "type": "object",
         "properties": {
@@ -11,6 +20,46 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Address"
+            },
+            "example": []
+          }
+        }
+      },
+      "Hashes": {
+        "type": "object",
+        "properties": {
+          "hashes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hash"
+            },
+            "example": []
+          },
+          "verbose": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "Hexes": {
+        "type": "object",
+        "properties": {
+          "hexes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hex"
+            },
+            "example": []
+          }
+        }
+      },
+      "Txids": {
+        "type": "object",
+        "properties": {
+          "txids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Txid"
             },
             "example": []
           }
