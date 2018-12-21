@@ -224,7 +224,8 @@ describe("#BlockchainRouter", () => {
   })
 
   describe("getBlockHeader()", async () => {
-    const getBlockHeader = blockchainRoute.testableComponents.getBlockHeader
+    const getBlockHeader =
+      blockchainRoute.testableComponents.getBlockHeaderSingle
 
     it("should throw 400 error if hash is missing", async () => {
       const result = await getBlockHeader(req, res)
@@ -486,7 +487,8 @@ describe("#BlockchainRouter", () => {
 
   describe("getMempoolEntry()", () => {
     // block route handler.
-    const getMempoolEntry = blockchainRoute.testableComponents.getMempoolEntry
+    const getMempoolEntry =
+      blockchainRoute.testableComponents.getMempoolEntrySingle
 
     it("should throw 400 if txid is empty", async () => {
       const result = await getMempoolEntry(req, res)

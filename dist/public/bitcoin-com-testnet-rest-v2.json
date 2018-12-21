@@ -2319,9 +2319,9 @@
 				"tags": [
 					"transaction"
 				],
-				"summary": "Transaction details",
-				"description": "Details about a transaction",
-				"operationId": "transactionDetails",
+				"summary": "Transaction details single",
+				"description": "Details about a single transaction",
+				"operationId": "transactionDetailsSingle",
 				"parameters": [
 					{
 						"in": "path",
@@ -2334,6 +2334,42 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TransactionDetails"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Transaction not found"
+					}
+				}
+			}
+		},
+		"/transaction/details": {
+			"post": {
+				"tags": [
+					"transaction"
+				],
+				"summary": "Transaction details bulk",
+				"description": "Bulk Details about a transaction",
+				"operationId": "transactionDetailsBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Txids"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation",
