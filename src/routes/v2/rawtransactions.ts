@@ -295,7 +295,7 @@ async function getRawTransactionSingle(
 ) {
   try {
     let verbose = 0
-    if (req.query.verbose) verbose = 1
+    if (req.query.verbose === "true") verbose = 1
 
     const txid = req.params.txid
     if (!txid || txid === "") {
