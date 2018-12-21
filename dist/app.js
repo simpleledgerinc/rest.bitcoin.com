@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var express = require("express");
+var route_ratelimit_1 = require("./middleware/route-ratelimit");
 var path = require("path");
 var logger = require("morgan");
 var cookieParser = require("cookie-parser");
@@ -67,6 +68,8 @@ app.use(function (req, res, next) {
     req.io = io;
     next();
 });
+// Rate limit per route
+app.use(route_ratelimit_1.routeRateLimit);
 var v1prefix = "v1";
 var v2prefix = "v2";
 app.use("/", indexV1);
@@ -108,15 +111,14 @@ app.use(function (req, res, next) {
     next(err);
 });
 // error handler
-app.use(function (err, req, res) {
+app.use(function (err, req, res, next) {
     var status = err.status || 500;
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {};
     // render the error page
-    res.status(err.status || 500);
     res.json({
-        status: 500,
+        status: status,
         message: err.message
     });
 });
