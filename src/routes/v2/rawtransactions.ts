@@ -609,13 +609,19 @@ async function whDecodeTx(
 
     const params = [rawtx]
 
-    if (req.query.prevTxs) params.push(JSON.parse(req.query.prevTxs))
+    // 12/21/18 CT - Commenting out this code because the swagger UI is causing
+    // a bug. If height is specified but prevTxs is not, then the full node
+    // will throw an error. Commenting out these extra parameters for now since
+    // my understanding is that its use is a corner case.
+    //if (req.query.prevTxs) params.push(req.query.prevTxs)
 
-    if (req.query.height) params.push(req.query.height)
+    //if (req.query.height) params.push(req.query.height)
 
     requestConfig.data.id = "whc_decodetransaction"
     requestConfig.data.method = "whc_decodetransaction"
     requestConfig.data.params = params
+
+    console.log(`requestConfig.data: ${util.inspect(requestConfig.data)}`)
 
     const response = await BitboxHTTP(requestConfig)
 
