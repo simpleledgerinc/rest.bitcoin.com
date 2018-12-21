@@ -27,12 +27,10 @@ describe("#Wormhole/transaction", () => {
   before(async () => {
     // Set default environment variables for unit tests.
     if (!process.env.TEST) process.env.TEST = "unit"
-    if (process.env.TEST === "unit")
-      await wormholedbService.init(mockWormholedb)
   })
 
   // Setup the mocks before each test.
-  beforeEach(() => {
+  beforeEach(async () => {
     // Mock the req and res objects used by Express routes.
     req = mockReq
     res = mockRes
@@ -41,6 +39,10 @@ describe("#Wormhole/transaction", () => {
     req.params = {}
     req.body = {}
     req.query = {}
+
+    // Initialize whdb service with mock data
+    if (process.env.TEST === "unit")
+      await wormholedbService.init(mockWormholedb.mockWithTransactions)
   })
 
   describe("#root", async () => {
@@ -149,6 +151,23 @@ describe("#Wormhole/transaction", () => {
         const result = await endpoint(req, res)
 
         assert.equal(result[0].pagesTotal, 1)
+      })
+
+      it("should return a valid response if address has no transactions", async () => {
+        // Initialize whdb service with mock data
+        if (process.env.TEST === "unit")
+          await wormholedbService.init(mockWormholedb.mockNoTransactions)
+
+        req.body = {
+          addresses: ["bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4"]
+        }
+
+        const result = await endpoint(req, res)
+
+        assert.equal(result[0].currentPage, 0)
+        assert.equal(result[0].pagesTotal, 0)
+        assert(Array.isArray(result[0].txs), "result txs not an array")
+        assert.equal(result[0].txs.length, 0)
       })
 
       it("should process a single address in an array", async () => {
