@@ -176,13 +176,13 @@
   },
   {
     "key": "/dataRetrieval/seedBlocks/{startBlock}/{endBlock}",
-    "name": "endblock",
+    "name": "endBlock",
     "value": 1275100
   },
   {
     "key": "/dataRetrieval/STO/{txid}/{recipientFilter}",
     "name": "txid",
-    "value": "40112ab9d2b5f98427839272d7a1e23dd2afc6c8355626f373e076c2ab5c2f72"
+    "value": "762eef163b13f96273b9c1efa5cb8302caedc1ba77f682e06e9f655d19d107fd"
   },
   {
     "key": "/dataRetrieval/STO/{txid}/{recipientFilter}",
@@ -192,17 +192,17 @@
   {
     "key": "/dataRetrieval/transaction/{txid}",
     "name": "txid",
-    "value": "40112ab9d2b5f98427839272d7a1e23dd2afc6c8355626f373e076c2ab5c2f72"
+    "value": "762eef163b13f96273b9c1efa5cb8302caedc1ba77f682e06e9f655d19d107fd"
   },
   {
     "key": "/dataRetrieval/blockTransactions/{index}",
     "name": "index",
-    "value": 279007
+    "value": 1275000
   },
   {
-    "key": "/dataRetrieval/pendingTransactions",
+    "key": "/dataRetrieval/pendingTransactions/{address}",
     "name": "address",
-    "value": "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg"
+    "value": "bchtest:qqqqqqqqqqqqqqqqqqqqqqqqqqqqqdmwgvnjkt8whc"
   },
   {
     "key": "/dataRetrieval/properties",
