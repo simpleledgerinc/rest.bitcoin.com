@@ -91,7 +91,7 @@ describe("#Raw-Transactions", () => {
   describe("decodeRawTransaction()", () => {
     // block route handler.
     const decodeRawTransaction =
-      rawtransactions.testableComponents.decodeRawTransaction
+      rawtransactions.testableComponents.decodeRawTransactionSingle
 
     it("should throw error if hex is missing", async () => {
       const result = await decodeRawTransaction(req, res)
