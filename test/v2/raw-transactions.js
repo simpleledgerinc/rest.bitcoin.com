@@ -91,7 +91,7 @@ describe("#Raw-Transactions", () => {
   describe("decodeRawTransaction()", () => {
     // block route handler.
     const decodeRawTransaction =
-      rawtransactions.testableComponents.decodeRawTransaction
+      rawtransactions.testableComponents.decodeRawTransactionSingle
 
     it("should throw error if hex is missing", async () => {
       const result = await decodeRawTransaction(req, res)
@@ -378,7 +378,7 @@ describe("#Raw-Transactions", () => {
 
       req.params.txid =
         "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
-      req.query.verbose = true
+      req.query.verbose = "true"
 
       const result = await getRawTransactionSingle(req, res)
       //console.log(`result: ${util.inspect(result)}`)

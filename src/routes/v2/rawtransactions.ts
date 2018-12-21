@@ -83,7 +83,12 @@ router.get("/", config.rawTransactionsRateLimit1, root)
 router.get(
   "/decodeRawTransaction/:hex",
   config.rawTransactionsRateLimit2,
-  decodeRawTransaction
+  decodeRawTransactionSingle
+)
+router.post(
+  "/decodeRawTransaction",
+  config.rawTransactionsRateLimit2,
+  decodeRawTransactionBulk
 )
 router.get("/decodeScript/:hex", config.rawTransactionsRateLimit3, decodeScript)
 router.post(
@@ -122,7 +127,7 @@ function root(
 
 // Decode transaction hex into a JSON object.
 // GET
-async function decodeRawTransaction(
+async function decodeRawTransactionSingle(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -159,6 +164,65 @@ async function decodeRawTransaction(
 
     // Write out error to error log.
     //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function decodeRawTransactionBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const hexes = req.body.hexes
+    if (!Array.isArray(hexes)) {
+      res.status(400)
+      return res.json({ error: "hexes must be an array" })
+    }
+    if (hexes.length > 20) {
+      res.status(400)
+      return res.json({ error: "Array too large. Max 20 hexes" })
+    }
+
+    const results = []
+
+    // Loop through each hexes in the array
+    for (let i = 0; i < hexes.length; i++) {
+      const hex = hexes[i]
+
+      if (!hex || hex === "") {
+        res.status(400)
+        return res.json({ error: "Encountered empty hex" })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "decoderawtransaction"
+      requestConfig.data.method = "decoderawtransaction"
+      requestConfig.data.params = [hex]
+
+      const response = await BitboxHTTP(requestConfig)
+      results.push(response.data.result)
+    }
+
+    return res.json(results)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/getRawTransaction: `, err)
 
     res.status(500)
     return res.json({ error: util.inspect(err) })
@@ -295,7 +359,7 @@ async function getRawTransactionSingle(
 ) {
   try {
     let verbose = 0
-    if (req.query.verbose) verbose = 1
+    if (req.query.verbose === "true") verbose = 1
 
     const txid = req.params.txid
     if (!txid || txid === "") {
@@ -693,7 +757,8 @@ module.exports = {
   router,
   testableComponents: {
     root,
-    decodeRawTransaction,
+    decodeRawTransactionSingle,
+    decodeRawTransactionBulk,
     decodeScript,
     getRawTransactionBulk,
     getRawTransactionSingle,

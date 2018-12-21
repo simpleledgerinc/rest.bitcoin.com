@@ -10,6 +10,9 @@
       "Txid": {
         "type": "string"
       },
+      "Hex": {
+        "type": "string"
+      },
       "Addresses": {
         "type": "object",
         "properties": {
@@ -35,6 +38,18 @@
           "verbose": {
             "type": "boolean",
             "example": true
+          }
+        }
+      },
+      "Hexes": {
+        "type": "object",
+        "properties": {
+          "hexes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hex"
+            },
+            "example": []
           }
         }
       },
