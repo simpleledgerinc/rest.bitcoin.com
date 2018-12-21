@@ -157,12 +157,12 @@
   {
     "key": "/dataRetrieval/grants/{propertyId}",
     "name": "propertyId",
-    "value": 1
+    "value": 556
   },
   {
     "key": "/dataRetrieval/payload/{txid}",
     "name": "txid",
-    "value": "40112ab9d2b5f98427839272d7a1e23dd2afc6c8355626f373e076c2ab5c2f72"
+    "value": "762eef163b13f96273b9c1efa5cb8302caedc1ba77f682e06e9f655d19d107fd"
   },
   {
     "key": "/dataRetrieval/property/{propertyId}",
@@ -172,12 +172,12 @@
   {
     "key": "/dataRetrieval/seedBlocks/{startBlock}/{endBlock}",
     "name": "startBlock",
-    "value": 290000
+    "value": 1275000
   },
   {
     "key": "/dataRetrieval/seedBlocks/{startBlock}/{endBlock}",
     "name": "endblock",
-    "value": 300000
+    "value": 1275100
   },
   {
     "key": "/dataRetrieval/STO/{txid}/{recipientFilter}",

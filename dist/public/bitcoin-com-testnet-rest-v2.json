@@ -2233,7 +2233,7 @@
 						"in": "path",
 						"description": "The identifier of the managed tokens to lookup",
 						"required": true,
-						"example": 1,
+						"example": 556,
 						"schema": {
 							"type": "number"
 						}
@@ -2278,7 +2278,7 @@
 						"in": "path",
 						"description": "The hash of the transaction to retrieve payload",
 						"required": true,
-						"example": "40112ab9d2b5f98427839272d7a1e23dd2afc6c8355626f373e076c2ab5c2f72",
+						"example": "762eef163b13f96273b9c1efa5cb8302caedc1ba77f682e06e9f655d19d107fd",
 						"schema": {
 							"type": "string"
 						}
@@ -2338,7 +2338,7 @@
 						"in": "path",
 						"description": "The first block to look for Omni transactions (inclusive)",
 						"required": true,
-						"example": 290000,
+						"example": 1275000,
 						"schema": {
 							"type": "number"
 						}
