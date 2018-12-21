@@ -262,7 +262,7 @@
   {
     "key": "/payloadCreation/grant/{propertyId}/{amount}",
     "name": "propertyId",
-    "value": 51
+    "value": 556
   },
   {
     "key": "/payloadCreation/grant/{propertyId}/{amount}",
@@ -320,6 +320,51 @@
     "value": "1000000"
   },
   {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "ecosystem",
+    "value": 1
+  },
+  {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "propertyPrecision",
+    "value": 8
+  },
+  {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "previousId",
+    "value": 0
+  },
+  {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "category",
+    "value": "Bitcoin.com"
+  },
+  {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "subcategory",
+    "value": "Fixed Token"
+  },
+  {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "name",
+    "value": "TST"
+  },
+  {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "url",
+    "value": "developer.bitcoin.com"
+  },
+  {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "data",
+    "value": "Made with BITBOX"
+  },
+  {
+    "key": "/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}",
+    "name": "amount",
+    "value": "1000"
+  },
+  {
     "key": "/payloadCreation/managed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}",
     "name": "ecosystem",
     "value": "1"
@@ -367,7 +412,7 @@
   {
     "key": "/payloadCreation/revoke/{propertyId}/{amount}",
     "name": "propertyId",
-    "value": 51
+    "value": 556
   },
   {
     "key": "/payloadCreation/revoke/{propertyId}/{amount}",
@@ -382,7 +427,7 @@
   {
     "key": "/payloadCreation/sendAll/{ecosystem}",
     "name": "ecosystem",
-    "value": 2
+    "value": 1
   },
   {
     "key": "/payloadCreation/simpleSend/{propertyId}/{amount}",
@@ -412,7 +457,7 @@
   {
     "key": "/payloadCreation/freeze/{toAddress}/{propertyId}",
     "name": "toAddress",
-    "value": 3
+    "value": "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf"
   },
   {
     "key": "/payloadCreation/freeze/{toAddress}/{propertyId}",
@@ -422,7 +467,7 @@
   {
     "key": "/payloadCreation/unfreeze/{toAddress}/{propertyId}",
     "name": "toAddress",
-    "value": 3
+    "value": "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf"
   },
   {
     "key": "/payloadCreation/unfreeze/{toAddress}/{propertyId}",

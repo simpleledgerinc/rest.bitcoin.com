@@ -1534,7 +1534,7 @@
 						"in": "path",
 						"description": "Address filter (default: '' for no filter)",
 						"required": false,
-						"example": "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg",
+						"example": "bchtest:qqqqqqqqqqqqqqqqqqqqqqqqqqqqqdmwgvnjkt8whc",
 						"schema": {
 							"type": "string"
 						}
@@ -1813,7 +1813,7 @@
 						"in": "path",
 						"description": "The identifier of the tokens to grant",
 						"required": true,
-						"example": 51,
+						"example": 556,
 						"schema": {
 							"type": "number"
 						}
@@ -2028,7 +2028,7 @@
 						"in": "path",
 						"description": "The ecosystem to create the tokens in, must be 1",
 						"required": true,
-						"example": "",
+						"example": 1,
 						"schema": {
 							"type": "string"
 						}
@@ -2038,7 +2038,7 @@
 						"in": "path",
 						"description": "The precision of the tokens to create:[0, 8]",
 						"required": true,
-						"example": "",
+						"example": 8,
 						"schema": {
 							"type": "number"
 						}
@@ -2048,7 +2048,7 @@
 						"in": "path",
 						"description": "An identifier of a predecessor token (use 0 for new tokens)",
 						"required": true,
-						"example": "",
+						"example": 0,
 						"schema": {
 							"type": "number"
 						}
@@ -2058,7 +2058,7 @@
 						"in": "path",
 						"description": "A category for the new tokens",
 						"required": true,
-						"example": "",
+						"example": "Bitcoin.com",
 						"schema": {
 							"type": "string"
 						}
@@ -2068,7 +2068,7 @@
 						"in": "path",
 						"description": "A subcategory for the new tokens",
 						"required": true,
-						"example": "",
+						"example": "Fixed Token",
 						"schema": {
 							"type": "string"
 						}
@@ -2078,7 +2078,7 @@
 						"in": "path",
 						"description": "The name of the new tokens to create",
 						"required": true,
-						"example": "",
+						"example": "TST",
 						"schema": {
 							"type": "string"
 						}
@@ -2088,7 +2088,7 @@
 						"in": "path",
 						"description": "An URL for further information about the new tokens",
 						"required": true,
-						"example": "",
+						"example": "developer.bitcoin.com",
 						"schema": {
 							"type": "string"
 						}
@@ -2098,7 +2098,7 @@
 						"in": "path",
 						"description": "A description for the new tokens",
 						"required": true,
-						"example": "",
+						"example": "Made with BITBOX",
 						"schema": {
 							"type": "string"
 						}
@@ -2108,7 +2108,7 @@
 						"in": "path",
 						"description": "The number of tokens to create",
 						"required": true,
-						"example": "",
+						"example": "1000",
 						"schema": {
 							"type": "string"
 						}
@@ -2262,7 +2262,7 @@
 						"in": "path",
 						"description": "The identifier of the tokens to revoke",
 						"required": true,
-						"example": 51,
+						"example": 556,
 						"schema": {
 							"type": "number"
 						}
@@ -2309,7 +2309,7 @@
 						"in": "path",
 						"description": "The ecosystem of the tokens to send (1 for main ecosystem, 2 for test ecosystem)",
 						"required": true,
-						"example": 2,
+						"example": 1,
 						"schema": {
 							"type": "number"
 						}
@@ -2420,7 +2420,7 @@
 						"in": "path",
 						"description": "The to address",
 						"required": true,
-						"example": 3,
+						"example": "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf",
 						"schema": {
 							"type": "string"
 						}
@@ -2457,7 +2457,7 @@
 						"in": "path",
 						"description": "The to address",
 						"required": true,
-						"example": 3,
+						"example": "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf",
 						"schema": {
 							"type": "string"
 						}
