@@ -497,7 +497,7 @@
 				],
 				"summary": "Information about blockheader hash",
 				"description": "If verbose is false, returns a string that is serialized, hex-encoded data for blockheader 'hash'. If verbose is true, returns an Object with information about blockheader hash.",
-				"operationId": "getBlockHeader",
+				"operationId": "getBlockHeaderSingle",
 				"parameters": [
 					{
 						"name": "hash",
@@ -520,6 +520,50 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BlockHeader"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Block not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Block not found"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/blockchain/getBlockHeader": {
+			"post": {
+				"tags": [
+					"blockchain"
+				],
+				"summary": "Bulk information about blockheader hash",
+				"description": "Bulk information about blockheader hash",
+				"operationId": "getBlockHeaderBulk",
+				"requestBody": {
+					"description": "Array of hashes",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Hashes"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation",
@@ -589,7 +633,7 @@
 				],
 				"summary": "Mempool data for transaction",
 				"description": "Returns mempool data for given transaction",
-				"operationId": "getMempoolEntry",
+				"operationId": "getMempoolEntrySingle",
 				"parameters": [
 					{
 						"name": "txid",
@@ -602,6 +646,35 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation"
+					},
+					"400": {
+						"description": "Transaction not in mempool"
+					}
+				}
+			}
+		},
+		"/blockchain/getMempoolEntry": {
+			"post": {
+				"tags": [
+					"blockchain"
+				],
+				"summary": "Mempool data for transaction",
+				"description": "Returns mempool data for given transaction",
+				"operationId": "getMempoolEntryBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Txids"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation"
@@ -994,9 +1067,9 @@
 				"tags": [
 					"transaction"
 				],
-				"summary": "Transaction details",
-				"description": "Details about a transaction",
-				"operationId": "transactionDetails",
+				"summary": "Transaction details single",
+				"description": "Details about a single transaction",
+				"operationId": "transactionDetailsSingle",
 				"parameters": [
 					{
 						"in": "path",
@@ -1009,6 +1082,42 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TransactionDetails"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Transaction not found"
+					}
+				}
+			}
+		},
+		"/transaction/details": {
+			"post": {
+				"tags": [
+					"transaction"
+				],
+				"summary": "Transaction details bulk",
+				"description": "Bulk Details about a transaction",
+				"operationId": "transactionDetailsBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Txids"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation",
