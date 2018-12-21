@@ -1182,6 +1182,22 @@
 						"example": 1
 					}
 				}
+			},
+			"WHConfirmed": {
+				"type": "object",
+				"properties": {
+					"addresses": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Address"
+						},
+						"example": []
+					},
+					"page": {
+						"type": "number",
+						"example": 1
+					}
+				}
 			}
 		}
 	},
@@ -3312,6 +3328,32 @@
 					}
 				}
 			}
+		},
+		"/wormhole/transaction/confirmed": {
+			"post": {
+				"tags": [
+					"wormhole"
+				],
+				"summary": "Confirmed wormhole transactions",
+				"description": "Confirmed wormhole transactions",
+				"operationId": "whTxConfirmed",
+				"requestBody": {
+					"description": "Array of addresses",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/WHConfirmed"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful response"
+					}
+				}
+			}
 		}
 	},
 	"servers": [
@@ -3398,6 +3440,14 @@
 			"externalDocs": {
 				"description": "Find out more",
 				"url": "https://developer.bitcoin.com/rest/docs/payloadCreation"
+			}
+		},
+		{
+			"name": "wormhole",
+			"description": "wormhole",
+			"externalDocs": {
+				"description": "Find out more",
+				"url": "https://developer.bitcoin.com/rest/docs/wormhole"
 			}
 		}
 	]

@@ -1988,6 +1988,30 @@
           }
         }
       }
+    },
+    "/wormhole/transaction/confirmed": {
+      "post": {
+        "tags": ["wormhole"],
+        "summary": "Confirmed wormhole transactions",
+        "description": "Confirmed wormhole transactions",
+        "operationId": "whTxConfirmed",
+        "requestBody": {
+          "description": "Array of addresses",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WHConfirmed"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful response"
+          }
+        }
+      }
     }
   }
 }

@@ -1179,6 +1179,22 @@
             "example": 1
           }
         }
+      },
+      "WHConfirmed": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            },
+            "example": []
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          }
+        }
       }
     }
   }
