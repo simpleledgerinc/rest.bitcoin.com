@@ -2,6 +2,7 @@
 import { Socket } from "net"
 
 import * as express from "express"
+import { routeRateLimit } from "./middleware/route-ratelimit"
 
 const path = require("path")
 const logger = require("morgan")
@@ -105,6 +106,9 @@ app.use(
     next()
   }
 )
+
+// Rate limit per route
+app.use(routeRateLimit)
 
 const v1prefix = "v1"
 const v2prefix = "v2"
