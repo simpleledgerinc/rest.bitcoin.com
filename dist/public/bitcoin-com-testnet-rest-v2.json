@@ -3325,7 +3325,7 @@
 			"description": "Address details and utxo",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/address"
+				"url": "https://developer.bitcoin.com/rest/docs/address"
 			}
 		},
 		{
@@ -3333,7 +3333,7 @@
 			"description": "Block Details",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/block"
+				"url": "https://developer.bitcoin.com/rest/docs/block"
 			}
 		},
 		{
@@ -3341,7 +3341,7 @@
 			"description": "Interacting w/ the BCH Blockchain",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/blockchain"
+				"url": "https://developer.bitcoin.com/rest/docs/blockchain"
 			}
 		},
 		{
@@ -3349,7 +3349,7 @@
 			"description": "Control your blockchain",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/control"
+				"url": "https://developer.bitcoin.com/rest/docs/control"
 			}
 		},
 		{
@@ -3357,7 +3357,7 @@
 			"description": "Mining w/ the BCH Blockchain",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/mining"
+				"url": "https://developer.bitcoin.com/rest/docs/mining"
 			}
 		},
 		{
@@ -3365,7 +3365,7 @@
 			"description": "Create transactions to be transmitted to the network.",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/rawtransactions"
+				"url": "https://developer.bitcoin.com/rest/docs/rawtransactions"
 			}
 		},
 		{
@@ -3373,7 +3373,7 @@
 			"description": "Transaction details.",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/rawtransactions"
+				"url": "https://developer.bitcoin.com/rest/docs/rawtransactions"
 			}
 		},
 		{
@@ -3381,7 +3381,7 @@
 			"description": "Bitcoin Cash utilities.",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/util"
+				"url": "https://developer.bitcoin.com/rest/docs/util"
 			}
 		},
 		{
@@ -3389,7 +3389,7 @@
 			"description": "dataRetrieval",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/wormhole/docs/dataRetrieval"
+				"url": "https://developer.bitcoin.com/rest/docs/dataRetrieval"
 			}
 		},
 		{
@@ -3397,7 +3397,7 @@
 			"description": "payloadCreation",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/wormhole/docs/payloadCreation"
+				"url": "https://developer.bitcoin.com/rest/docs/payloadCreation"
 			}
 		}
 	]

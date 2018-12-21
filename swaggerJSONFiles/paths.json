@@ -175,7 +175,7 @@
         "tags": ["address"],
         "summary": "Unconfirmed transactions for an address",
         "description": "Returns the list of unconfirmed transactions for an address",
-        "operationId": "unconfirme  dSingle",
+        "operationId": "unconfirmedSingle",
         "parameters": [
           {
             "name": "address",
@@ -680,7 +680,7 @@
         }
       }
     },
-    "/blockchain/getTxOutProof/{txids}": {
+    "/blockchain/getTxOutProof/{txid}": {
       "get": {
         "tags": ["blockchain"],
         "summary": "Hex-encoded proof that 'txid' was included.",
@@ -688,7 +688,7 @@
         "operationId": "getTxOutProof",
         "parameters": [
           {
-            "name": "txids",
+            "name": "txid",
             "in": "path",
             "description": "a txid string",
             "example": "",
@@ -1008,7 +1008,7 @@
         "tags": ["rawtransactions"],
         "summary": "decodeTransaction",
         "description": "Decodes an Omni transaction. API Reference: https://developer.bitcoin.com/wormhole/docs/rawTransactions",
-        "operationId": "rawTransactionsDecodeTransaction",
+        "operationId": "decodeTransaction",
         "parameters": [
           {
             "name": "rawTx",
@@ -1053,7 +1053,7 @@
         "tags": ["dataRetrieval"],
         "summary": "balance",
         "description": "Returns the token balance for a given address and property.",
-        "operationId": "dataRetrievalBalance",
+        "operationId": "balance",
         "parameters": [
           {
             "name": "address",
@@ -1091,7 +1091,7 @@
         "tags": ["dataRetrieval"],
         "summary": "balancesForAddress",
         "description": "Returns a list of all token balances for a given address. API reference: https://developer.bitcoin.com/wormhole/docs/dataRetrieval",
-        "operationId": "dataRetrievalBalancesForAddress",
+        "operationId": "balancesForAddress",
         "parameters": [
           {
             "name": "address",
@@ -1119,7 +1119,7 @@
         "tags": ["dataRetrieval"],
         "summary": "balanceForId",
         "description": "Returns a list of token balances for a given currency or property identifier. API Reference: https://developer.bitcoin.com/wormhole/docs/dataRetrieval",
-        "operationId": "dataRetrievalBalancesForId",
+        "operationId": "balancesForId",
         "parameters": [
           {
             "name": "propertyId",
@@ -1147,7 +1147,7 @@
         "tags": ["dataRetrieval"],
         "summary": "balancesHash",
         "description": "Returns a hash of the balances for the property.",
-        "operationId": "dataRetrievalBalancesHash",
+        "operationId": "balancesHash",
         "parameters": [
           {
             "name": "propertyId",
@@ -1175,7 +1175,7 @@
         "tags": ["dataRetrieval"],
         "summary": "crowdSale",
         "description": "Returns information about a crowdsale.",
-        "operationId": "dataRetrievalCrowdSale",
+        "operationId": "crowdSale",
         "parameters": [
           {
             "name": "propertyId",
@@ -1213,7 +1213,7 @@
         "tags": ["dataRetrieval"],
         "summary": "currentConsensusHash",
         "description": "Returns the consensus hash for all balances for the current block.",
-        "operationId": "dataRetrievalCurrentConsensusHash",
+        "operationId": "currentConsensusHash",
         "responses": {
           "200": {
             "description": "successful response"
@@ -1226,7 +1226,7 @@
         "tags": ["dataRetrieval"],
         "summary": "grants",
         "description": "Returns information about granted and revoked units of managed tokens.",
-        "operationId": "dataRetrievalGrants",
+        "operationId": "grants",
         "parameters": [
           {
             "name": "propertyId",
@@ -1254,7 +1254,7 @@
         "tags": ["dataRetrieval"],
         "summary": "info",
         "description": "Returns various state information of the client and protocol.",
-        "operationId": "dataRetrievalInfo",
+        "operationId": "info",
         "responses": {
           "200": {
             "description": "successful response"
@@ -1267,7 +1267,7 @@
         "tags": ["dataRetrieval"],
         "summary": "payload",
         "description": "Get the payload for an Omni transaction.",
-        "operationId": "dataRetrievalPayload",
+        "operationId": "payload",
         "parameters": [
           {
             "name": "txid",
@@ -1295,7 +1295,7 @@
         "tags": ["dataRetrieval"],
         "summary": "property",
         "description": "Returns details for about the tokens or smart property to lookup.",
-        "operationId": "dataRetrievalProperty",
+        "operationId": "property",
         "parameters": [
           {
             "name": "propertyId",
@@ -1323,7 +1323,7 @@
         "tags": ["dataRetrieval"],
         "summary": "seedBlocks",
         "description": "Returns a list of blocks containing Omni transactions for use in seed block filtering.",
-        "operationId": "dataRetrievalSeedBlocks",
+        "operationId": "seedBlocks",
         "parameters": [
           {
             "name": "startBlock",
@@ -1361,7 +1361,7 @@
         "tags": ["dataRetrieval"],
         "summary": "STO",
         "description": "Get information and recipients of a send-to-owners transaction.",
-        "operationId": "dataRetrievalSto",
+        "operationId": "drSTO",
         "parameters": [
           {
             "name": "txid",
@@ -1399,7 +1399,7 @@
         "tags": ["dataRetrieval"],
         "summary": "transaction",
         "description": "Get detailed information about an Omni transaction.",
-        "operationId": "dataRetrievalTransaction",
+        "operationId": "transaction",
         "parameters": [
           {
             "name": "txid",
@@ -1427,7 +1427,7 @@
         "tags": ["dataRetrieval"],
         "summary": "blockTransactions",
         "description": "Lists all Omni transactions in a block.",
-        "operationId": "dataRetrievalBlockTransactions",
+        "operationId": "blockTransactions",
         "parameters": [
           {
             "name": "index",
@@ -1455,7 +1455,7 @@
         "tags": ["dataRetrieval"],
         "summary": "pendingTransactions",
         "description": "Returns a list of unconfirmed Omni transactions, pending in the memory pool.",
-        "operationId": "dataRetrievalPendingTransactions",
+        "operationId": "pendingTransactions",
         "parameters": [
           {
             "name": "address",
@@ -1483,7 +1483,7 @@
         "tags": ["dataRetrieval"],
         "summary": "properties",
         "description": "Lists all tokens or smart properties.",
-        "operationId": "dataRetrievalProperties",
+        "operationId": "properties",
         "parameters": [
           {
             "name": "address",
@@ -1548,7 +1548,7 @@
         "tags": ["dataRetrieval"],
         "summary": "frozenBalance",
         "description": "Returns the frozen token balance for a given address and property.",
-        "operationId": "dataRetrievalFrozenBalance",
+        "operationId": "frozenBalance",
         "parameters": [
           {
             "name": "address",
@@ -1583,7 +1583,7 @@
         "tags": ["dataRetrieval"],
         "summary": "frozenBalanceForAddress",
         "description": "Returns the frozen token balance for a given address and property.",
-        "operationId": "dataRetrievalFrozenBalanceForAddress",
+        "operationId": "frozenBalanceForAddress",
         "parameters": [
           {
             "name": "address",
@@ -1608,7 +1608,7 @@
         "tags": ["dataRetrieval"],
         "summary": "frozenBalanceForId",
         "description": "Returns the frozen token balance for a given property.",
-        "operationId": "dataRetrievalFrozenBalanceForId",
+        "operationId": "frozenBalanceForId",
         "parameters": [
           {
             "name": "propertyId",
@@ -1633,7 +1633,7 @@
         "tags": ["payloadCreation"],
         "summary": "burnBCH",
         "description": "Creates the payload to burn bch to get whc.",
-        "operationId": "payloadCreationBurnBCH",
+        "operationId": "burnBCH",
         "responses": {
           "200": {
             "description": "successful response"
