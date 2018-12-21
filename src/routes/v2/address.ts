@@ -58,18 +58,18 @@ while (i < 10) {
 
 // Connect the route endpoints to their handler functions.
 router.get("/", config.addressRateLimit1, root)
-router.post("/details", config.addressRateLimit2, detailsBulk)
-router.get("/details/:address", config.addressRateLimit3, detailsSingle)
+router.get("/details/:address", config.addressRateLimit2, detailsSingle)
+router.post("/details", config.addressRateLimit3, detailsBulk)
 router.post("/utxo", config.addressRateLimit4, utxoBulk)
 router.get("/utxo/:address", config.addressRateLimit5, utxoSingle)
 router.post("/unconfirmed", config.addressRateLimit6, unconfirmedBulk)
 router.get("/unconfirmed/:address", config.addressRateLimit7, unconfirmedSingle)
-router.post("/transactions", config.addressRateLimit8, transactionsBulk)
 router.get(
   "/transactions/:address",
-  config.addressRateLimit9,
+  config.addressRateLimit8,
   transactionsSingle
 )
+router.post("/transactions", config.addressRateLimit9, transactionsBulk)
 
 // Root API endpoint. Simply acknowledges that it exists.
 function root(

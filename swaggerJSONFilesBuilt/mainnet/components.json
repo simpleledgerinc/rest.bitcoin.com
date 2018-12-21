@@ -13,6 +13,9 @@
 			"Hex": {
 				"type": "string"
 			},
+			"Height": {
+				"type": "number"
+			},
 			"Addresses": {
 				"type": "object",
 				"properties": {
@@ -44,6 +47,30 @@
 					"verbose": {
 						"type": "boolean",
 						"example": true
+					}
+				}
+			},
+			"BlockHashes": {
+				"type": "object",
+				"properties": {
+					"hashes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Hash"
+						},
+						"example": []
+					}
+				}
+			},
+			"BlockHeights": {
+				"type": "object",
+				"properties": {
+					"heights": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Heights"
+						},
+						"example": []
 					}
 				}
 			},

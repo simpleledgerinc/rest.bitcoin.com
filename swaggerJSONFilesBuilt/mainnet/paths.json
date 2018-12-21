@@ -339,9 +339,9 @@
 				"tags": [
 					"block"
 				],
-				"summary": "Block details",
-				"description": "Details about a block by hash",
-				"operationId": "blockDetailsHash",
+				"summary": "Block details single",
+				"description": "Details about a single block by hash",
+				"operationId": "detailsHashSingle",
 				"parameters": [
 					{
 						"name": "hash",
@@ -379,14 +379,58 @@
 				}
 			}
 		},
+		"/block/detailsByHash": {
+			"post": {
+				"tags": [
+					"block"
+				],
+				"summary": "Block details bulk",
+				"description": "Details about multiple blocks by hashes",
+				"operationId": "detailsHashBulk",
+				"requestBody": {
+					"description": "Array of hashes",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BlockHashes"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BlockDetails"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Received an invalid block hash.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Received an invalid block hash."
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/block/detailsByHeight/{height}": {
 			"get": {
 				"tags": [
 					"block"
 				],
-				"summary": "Block details",
-				"description": "Details about a block by height",
-				"operationId": "blockDetailsHeight",
+				"summary": "Block details single",
+				"description": "Details about a single block by height",
+				"operationId": "etailsHeightSingle",
 				"parameters": [
 					{
 						"name": "height",
@@ -399,6 +443,50 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BlockDetails"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Received an invalid block height.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Received an invalid block height."
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/block/detailsByHeight": {
+			"post": {
+				"tags": [
+					"block"
+				],
+				"summary": "Block details bulk",
+				"description": "Bulk details about blocks by heights",
+				"operationId": "detailsHeightBulk",
+				"requestBody": {
+					"description": "Array of heights",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BlockHeights"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful response",
