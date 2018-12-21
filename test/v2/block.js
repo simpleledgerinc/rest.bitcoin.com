@@ -1,8 +1,3 @@
-/*
-
-
-*/
-
 "use strict"
 
 const blockRoute = require("../../dist/routes/v2/block")
