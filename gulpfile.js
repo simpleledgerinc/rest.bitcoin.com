@@ -86,8 +86,12 @@ gulp.task("build", () => {
         edit: (parsedJson, file) => {
           testnetComponents.forEach((item, index) => {
             Object.keys(parsedJson.components.schemas).forEach(key => {
+              // console.log(parsedJson.components.schemas[key].properties)
               if (
                 key === item.key &&
+                parsedJson.components.schemas[key].properties[
+                  key.toLowerCase()
+                ] &&
                 parsedJson.components.schemas[key].properties[key.toLowerCase()]
                   .example
               ) {
@@ -189,11 +193,21 @@ gulp.task("build", () => {
         edit: (parsedJson, file) => {
           mainnetComponents.forEach((item, index) => {
             Object.keys(parsedJson.components.schemas).forEach(key => {
+              // console.log(key, parsedJson.components.schemas[key].properties)
               if (
                 key === item.key &&
+                parsedJson.components.schemas[key].properties &&
+                parsedJson.components.schemas[key].properties[
+                  key.toLowerCase()
+                ] &&
                 parsedJson.components.schemas[key].properties[key.toLowerCase()]
                   .example
               ) {
+                // let tmpKey
+                // console.log(key, item.key)
+                // if (key === "BlockHashes") tmpKey = "hashes"
+                // else tmpKey = key.toLowerCase()
+
                 parsedJson.components.schemas[key].properties[
                   key.toLowerCase()
                 ].example = item.value

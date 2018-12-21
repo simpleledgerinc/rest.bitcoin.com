@@ -304,7 +304,7 @@ async function getBlockHeaderBulk(
       // Ensure the input is a valid BCH hash.
       try {
         if (thisHash.length !== 64) {
-          throw "This is not a hash!"
+          throw "This is not a hash"
         }
       } catch (err) {
         res.status(400)
@@ -498,7 +498,7 @@ async function getMempoolEntryBulk(
 
       try {
         if (thisTxid.length !== 64) {
-          throw "This is not a txid!"
+          throw "This is not a txid"
         }
       } catch (err) {
         res.status(400)

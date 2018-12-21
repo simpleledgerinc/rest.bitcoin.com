@@ -14,6 +14,17 @@
     ]
   },
   {
+    "key": "BlockHashes",
+    "value": [
+      "000000000000014c11d5a6fd30e03e56e55d516f193ff0768c9c81177858d12a",
+      "000000000001a7c0aaa2630fbb2c0e476aafffc60f82177375b2aaa22209f606"
+    ]
+  },
+  {
+    "key": "BlockHeights",
+    "value": [500000, 490000]
+  },
+  {
     "key": "Txids",
     "value": [
       "3ea2767c91d087d14dda8faef736cd39d6c6ebbd5f7d2c7e8de0df3360436bfb",
