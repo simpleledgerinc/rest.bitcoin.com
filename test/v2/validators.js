@@ -20,13 +20,6 @@ const assert = chai.assert
 const addressRoute = require("../../dist/routes/v2/address")
 const nock = require("nock") // HTTP mocking
 
-// Full route testing
-const request = require("supertest")
-const express = require("express")
-const app = express()
-const bodyParser = require("body-parser")
-const routeRateLimit = require("../../dist/middleware/route-ratelimit").routeRateLimit
-
 let originalUrl // Used during transition from integration to unit tests.
 
 // Mocking data.
@@ -42,11 +35,6 @@ describe("#AddressRouter", () => {
 
   before(() => {
     originalUrl = process.env.BITCOINCOM_BASEURL
-
-    app.use(bodyParser.json())
-    app.use(bodyParser.urlencoded({ extended: false }))
-    app.use(routeRateLimit)
-    app.use(addressRoute.router)
 
     // Set default environment variables for unit tests.
     if (!process.env.TEST) process.env.TEST = "unit"
@@ -90,30 +78,6 @@ describe("#AddressRouter", () => {
 
       assert.equal(result.status, "address", "Returns static string")
     })
-
-    it("should reject requests after rate limit exceeded", async () => {
-      for (let i = 0; i < 60; i++) {
-        await request(app)
-          .get("/")
-          .set("Accept", "application/json")
-          .expect(200)
-          .then(response => {
-            assert.include(response.body.status, "address")
-          })
-      }
-
-      return request(app)
-        .get("/")
-        .set("Accept", "application/json")
-        .expect(500)
-        .then(response => {
-          assert.include(
-            response.body.error,
-            "Too many requests. Limits are 60 requests per minute.",
-            "Proper error message"
-          )
-        })
-    })
   })
 
   describe("#AddressDetailsBulk", () => {
@@ -121,70 +85,57 @@ describe("#AddressRouter", () => {
     const detailsBulk = addressRoute.testableComponents.detailsBulk
 
     it("should throw an error for an empty body", async () => {
-      return request(app)
-        .post("/details")
-        .set("Content-Type", "application/json")
-        .set("Accept", "application/json")
-        .expect(400)
-        .then(response => {
-          assert.include(
-            response.body.error,
-            "addresses needs to be an array",
-            "Proper error message"
-          )
-        })
+      req.body = {}
+
+      const result = await detailsBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "addresses needs to be an array",
+        "Proper error message"
+      )
     })
 
     it("should error on non-array single address", async () => {
-      return request(app)
-        .post("/details")
-        .send({ address: "qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c" })
-        .set("Content-Type", "application/json")
-        .set("Accept", "application/json")
-        .expect(400)
-        .then(response => {
-          assert.include(
-            response.body.error,
-            "addresses needs to be an array",
-            "Proper error message"
-          )
-        })
+      req.body = {
+        address: `qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
+      }
+
+      const result = await detailsBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "addresses needs to be an array",
+        "Proper error message"
+      )
     })
 
     it("should throw an error for an invalid address", async () => {
-      return request(app)
-        .post("/details")
-        .send({
-          addresses: ["02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c"]
-        })
-        .set("Content-Type", "application/json")
-        .set("Accept", "application/json")
-        .expect(400)
-        .then(response => {
-          assert.include(
-            response.body.error,
-            "Invalid BCH address",
-            "Proper error message"
-          )
-        })
+      req.body = {
+        addresses: [`02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
+      }
+
+      const result = await detailsBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "Invalid BCH address",
+        "Proper error message"
+      )
     })
 
     it("should detect a network mismatch", async () => {
-      return request(app)
-        .post("/details")
-        .send({
-          addresses: [`bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`]
-        })
-        .set("Content-Type", "application/json")
-        .set("Accept", "application/json")
-        .expect(400)
-        .then(response => {
-          assert.include(
-            response.body.error,
-            "Invalid network",
-            "Proper error message"
-          )
-        })
+      req.body = {
+        addresses: [`bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`]
+      }
+
+      const result = await detailsBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "Invalid network", "Proper error message")
     })
 
     it("should throw 500 when network issues", async () => {
@@ -335,6 +286,49 @@ describe("#AddressRouter", () => {
   describe("#AddressDetailsSingle", () => {
     // details route handler.
     const detailsSingle = addressRoute.testableComponents.detailsSingle
+
+    it("should throw 400 if address is empty", async () => {
+      const result = await detailsSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "address can not be empty")
+    })
+
+    it("should error on an array", async () => {
+      req.params.address = [`qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
+
+      const result = await detailsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "address can not be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw an error for an invalid address", async () => {
+      req.params.address = `02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
+
+      const result = await detailsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "Invalid BCH address",
+        "Proper error message"
+      )
+    })
+
+    it("should detect a network mismatch", async () => {
+      req.params.address = `bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`
+
+      const result = await detailsSingle(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "Invalid network", "Proper error message")
+    })
 
     it("should throw 500 when network issues", async () => {
       const savedUrl = process.env.BITCOINCOM_BASEURL
