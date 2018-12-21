@@ -82,7 +82,7 @@ describe("#Block", () => {
   })
 
   describe("Block Details By Hash", () => {
-    const detailsByHash = blockRoute.testableComponents.detailsByHash
+    const detailsByHash = blockRoute.testableComponents.detailsByHashSingle
 
     it("should throw an error for an empty hash", async () => {
       req.params.hash = ""
@@ -171,7 +171,7 @@ describe("#Block", () => {
 
   describe("Block Details By Height", () => {
     // block route handler.
-    const detailsByHeight = blockRoute.testableComponents.detailsByHeight
+    const detailsByHeight = blockRoute.testableComponents.detailsByHeightSingle
 
     it("should throw an error for an empty height", async () => {
       req.params.height = ""
