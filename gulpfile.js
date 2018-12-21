@@ -86,10 +86,14 @@ gulp.task("build", () => {
         edit: (parsedJson, file) => {
           testnetComponents.forEach((item, index) => {
             Object.keys(parsedJson.components.schemas).forEach(key => {
-              if (key === item.key) {
-                parsedJson.components.schemas[
-                  key
-                ].properties.addresses.example = item.value
+              if (
+                key === item.key &&
+                parsedJson.components.schemas[key].properties[key.toLowerCase()]
+                  .example
+              ) {
+                parsedJson.components.schemas[key].properties[
+                  key.toLowerCase()
+                ].example = item.value
               }
             })
           })
@@ -185,10 +189,14 @@ gulp.task("build", () => {
         edit: (parsedJson, file) => {
           mainnetComponents.forEach((item, index) => {
             Object.keys(parsedJson.components.schemas).forEach(key => {
-              if (key === item.key) {
-                parsedJson.components.schemas[
-                  key
-                ].properties.addresses.example = item.value
+              if (
+                key === item.key &&
+                parsedJson.components.schemas[key].properties[key.toLowerCase()]
+                  .example
+              ) {
+                parsedJson.components.schemas[key].properties[
+                  key.toLowerCase()
+                ].example = item.value
               }
             })
           })

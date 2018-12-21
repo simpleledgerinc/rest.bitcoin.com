@@ -4,6 +4,12 @@
 			"Address": {
 				"type": "string"
 			},
+			"Hash": {
+				"type": "string"
+			},
+			"Txid": {
+				"type": "string"
+			},
 			"Addresses": {
 				"type": "object",
 				"properties": {
@@ -15,6 +21,40 @@
 						"example": [
 							"bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr",
 							"bchtest:qp6hgvevf4gzz6l7pgcte3gaaud9km0l459fa23dul"
+						]
+					}
+				}
+			},
+			"Hashes": {
+				"type": "object",
+				"properties": {
+					"hashes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Hash"
+						},
+						"example": [
+							"000000000000014c11d5a6fd30e03e56e55d516f193ff0768c9c81177858d12a",
+							"000000000001a7c0aaa2630fbb2c0e476aafffc60f82177375b2aaa22209f606"
+						]
+					},
+					"verbose": {
+						"type": "boolean",
+						"example": true
+					}
+				}
+			},
+			"Txids": {
+				"type": "object",
+				"properties": {
+					"txids": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Txid"
+						},
+						"example": [
+							"3ea2767c91d087d14dda8faef736cd39d6c6ebbd5f7d2c7e8de0df3360436bfb",
+							"cce4e8eb4b3160b93ceecb0956cde405d85b42cbcb3fa1b4e9a9bedaf3476f05"
 						]
 					}
 				}
@@ -1709,7 +1749,7 @@
 				],
 				"summary": "Information about blockheader hash",
 				"description": "If verbose is false, returns a string that is serialized, hex-encoded data for blockheader 'hash'. If verbose is true, returns an Object with information about blockheader hash.",
-				"operationId": "getBlockHeader",
+				"operationId": "getBlockHeaderSingle",
 				"parameters": [
 					{
 						"name": "hash",
@@ -1732,6 +1772,50 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BlockHeader"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Block not found",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Block not found"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/blockchain/getBlockHeader": {
+			"post": {
+				"tags": [
+					"blockchain"
+				],
+				"summary": "Bulk information about blockheader hash",
+				"description": "Bulk information about blockheader hash",
+				"operationId": "getBlockHeaderBulk",
+				"requestBody": {
+					"description": "Array of hashes",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Hashes"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation",
@@ -1801,7 +1885,7 @@
 				],
 				"summary": "Mempool data for transaction",
 				"description": "Returns mempool data for given transaction",
-				"operationId": "getMempoolEntry",
+				"operationId": "getMempoolEntrySingle",
 				"parameters": [
 					{
 						"name": "txid",
@@ -1814,6 +1898,35 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation"
+					},
+					"400": {
+						"description": "Transaction not in mempool"
+					}
+				}
+			}
+		},
+		"/blockchain/getMempoolEntry": {
+			"post": {
+				"tags": [
+					"blockchain"
+				],
+				"summary": "Mempool data for transaction",
+				"description": "Returns mempool data for given transaction",
+				"operationId": "getMempoolEntryBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Txids"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation"

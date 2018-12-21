@@ -4,6 +4,12 @@
       "Address": {
         "type": "string"
       },
+      "Hash": {
+        "type": "string"
+      },
+      "Txid": {
+        "type": "string"
+      },
       "Addresses": {
         "type": "object",
         "properties": {
@@ -11,6 +17,34 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Address"
+            },
+            "example": []
+          }
+        }
+      },
+      "Hashes": {
+        "type": "object",
+        "properties": {
+          "hashes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hash"
+            },
+            "example": []
+          },
+          "verbose": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "Txids": {
+        "type": "object",
+        "properties": {
+          "txids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Txid"
             },
             "example": []
           }
