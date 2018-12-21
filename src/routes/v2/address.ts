@@ -307,6 +307,13 @@ async function utxoBulk(
 
     logger.debug(`Executing address/utxoBulk with these addresses: `, addresses)
 
+    // Enforce no more than 20 addresses.
+    if (addresses.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 addresses"
+      })
+    }
+
     // Loop through each address.
     const retArray = []
     for (let i = 0; i < addresses.length; i++) {
@@ -435,6 +442,13 @@ async function unconfirmedBulk(
     }
 
     logger.debug(`Executing address/utxo with these addresses: `, addresses)
+
+    // Enforce no more than 20 addresses.
+    if (addresses.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 addresses"
+      })
+    }
 
     // Loop through each address.
     const retArray = []
@@ -619,6 +633,13 @@ async function transactionsBulk(
     }
 
     logger.debug(`Executing address/utxo with these addresses: `, addresses)
+
+    // Enforce no more than 20 addresses.
+    if (addresses.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 addresses"
+      })
+    }
 
     // Loop through each address.
     const retArray = []

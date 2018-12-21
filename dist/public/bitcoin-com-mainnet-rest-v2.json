@@ -930,6 +930,274 @@
 				"items": {
 					"type": "string"
 				}
+			},
+			"PropertyId": {
+				"type": "object",
+				"properties": {
+					"propertyId": {
+						"type": "number",
+						"example": 10
+					}
+				}
+			},
+			"Grant": {
+				"type": "object",
+				"properties": {
+					"propertyId": {
+						"type": "number",
+						"example": 10
+					},
+					"amount": {
+						"type": "string",
+						"example": "10"
+					},
+					"memo": {
+						"type": "string",
+						"example": ""
+					}
+				}
+			},
+			"Crowdsale": {
+				"type": "object",
+				"properties": {
+					"ecosystem": {
+						"type": "string",
+						"example": "1"
+					},
+					"propertyPrecision": {
+						"type": "number",
+						"example": 1
+					},
+					"previousId": {
+						"type": "number",
+						"example": 1
+					},
+					"category": {
+						"type": "string",
+						"example": "Companies"
+					},
+					"subcategory": {
+						"type": "string",
+						"example": "Bitcoin Mining"
+					},
+					"name": {
+						"type": "string",
+						"example": "Quantum Miner"
+					},
+					"url": {
+						"type": "string",
+						"example": "www.example.com"
+					},
+					"data": {
+						"type": "string",
+						"example": "Quantum Miner Tokens"
+					},
+					"propertyIdDesired": {
+						"type": "number",
+						"example": 1
+					},
+					"tokensPerUnit": {
+						"type": "string",
+						"example": "100"
+					},
+					"deadline": {
+						"type": "number",
+						"example": 1483228800
+					},
+					"earlyBonus": {
+						"type": "number",
+						"example": 30
+					},
+					"totalNumber": {
+						"type": "string",
+						"example": "192978657"
+					}
+				}
+			},
+			"Fixed": {
+				"type": "object",
+				"properties": {
+					"ecosystem": {
+						"type": "string",
+						"example": "1"
+					},
+					"propertyPrecision": {
+						"type": "number",
+						"example": 1
+					},
+					"previousId": {
+						"type": "number",
+						"example": 1
+					},
+					"category": {
+						"type": "string",
+						"example": "Companies"
+					},
+					"subcategory": {
+						"type": "string",
+						"example": "Bitcoin Mining"
+					},
+					"name": {
+						"type": "string",
+						"example": "Quantum Miner"
+					},
+					"url": {
+						"type": "string",
+						"example": "www.example.com"
+					},
+					"data": {
+						"type": "string",
+						"example": "Quantum Miner Tokens"
+					},
+					"amount": {
+						"type": "string",
+						"example": "100000"
+					}
+				}
+			},
+			"Managed": {
+				"type": "object",
+				"properties": {
+					"ecosystem": {
+						"type": "string",
+						"example": "1"
+					},
+					"propertyPrecision": {
+						"type": "number",
+						"example": 1
+					},
+					"previousId": {
+						"type": "number",
+						"example": 1
+					},
+					"category": {
+						"type": "string",
+						"example": "Companies"
+					},
+					"subcategory": {
+						"type": "string",
+						"example": "Bitcoin Mining"
+					},
+					"name": {
+						"type": "string",
+						"example": "Quantum Miner"
+					},
+					"url": {
+						"type": "string",
+						"example": "www.example.com"
+					},
+					"data": {
+						"type": "string",
+						"example": "Quantum Miner Tokens"
+					}
+				}
+			},
+			"ParticipateCrowdSale": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "string",
+						"example": "1"
+					}
+				}
+			},
+			"Revoke": {
+				"type": "object",
+				"properties": {
+					"propertyId": {
+						"type": "number",
+						"example": 1
+					},
+					"amount": {
+						"type": "string",
+						"example": "10"
+					},
+					"memo": {
+						"type": "string",
+						"example": ""
+					}
+				}
+			},
+			"SendAll": {
+				"type": "object",
+				"properties": {
+					"ecosystem": {
+						"type": "number",
+						"example": 1
+					}
+				}
+			},
+			"SimpleSend": {
+				"type": "object",
+				"properties": {
+					"propertyId": {
+						"type": "number",
+						"example": 1
+					},
+					"amount": {
+						"type": "string",
+						"example": "10"
+					}
+				}
+			},
+			"STO": {
+				"type": "object",
+				"properties": {
+					"propertyId": {
+						"type": "number",
+						"example": 1
+					},
+					"amount": {
+						"type": "string",
+						"example": "10"
+					},
+					"distributionProperty": {
+						"type": "number",
+						"example": 1
+					}
+				}
+			},
+			"Freeze": {
+				"type": "object",
+				"properties": {
+					"toAddress": {
+						"type": "string",
+						"example": ""
+					},
+					"propertyId": {
+						"type": "number",
+						"example": 1
+					}
+				}
+			},
+			"Unfreeze": {
+				"type": "object",
+				"properties": {
+					"toAddress": {
+						"type": "string",
+						"example": ""
+					},
+					"propertyId": {
+						"type": "number",
+						"example": 1
+					}
+				}
+			},
+			"WHConfirmed": {
+				"type": "object",
+				"properties": {
+					"addresses": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Address"
+						},
+						"example": []
+					},
+					"page": {
+						"type": "number",
+						"example": 1
+					}
+				}
 			}
 		}
 	},
@@ -1129,7 +1397,7 @@
 				],
 				"summary": "Unconfirmed transactions for an address",
 				"description": "Returns the list of unconfirmed transactions for an address",
-				"operationId": "unconfirme  dSingle",
+				"operationId": "unconfirmedSingle",
 				"parameters": [
 					{
 						"name": "address",
@@ -1664,7 +1932,7 @@
 				}
 			}
 		},
-		"/blockchain/getTxOutProof/{txids}": {
+		"/blockchain/getTxOutProof/{txid}": {
 			"get": {
 				"tags": [
 					"blockchain"
@@ -1674,10 +1942,10 @@
 				"operationId": "getTxOutProof",
 				"parameters": [
 					{
-						"name": "txids",
+						"name": "txid",
 						"in": "path",
 						"description": "a txid string",
-						"example": "fe28050b93faea61fa88c4c630f0e1f0a1c24d0082dd0e10d369e13212128f33",
+						"example": "",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -2014,7 +2282,7 @@
 				],
 				"summary": "decodeTransaction",
 				"description": "Decodes an Omni transaction. API Reference: https://developer.bitcoin.com/wormhole/docs/rawTransactions",
-				"operationId": "rawTransactionsDecodeTransaction",
+				"operationId": "decodeTransaction",
 				"parameters": [
 					{
 						"name": "rawTx",
@@ -2041,7 +2309,7 @@
 				],
 				"summary": "balance",
 				"description": "Returns the token balance for a given address and property.",
-				"operationId": "dataRetrievalBalance",
+				"operationId": "balance",
 				"parameters": [
 					{
 						"name": "address",
@@ -2081,7 +2349,7 @@
 				],
 				"summary": "balancesForAddress",
 				"description": "Returns a list of all token balances for a given address. API reference: https://developer.bitcoin.com/wormhole/docs/dataRetrieval",
-				"operationId": "dataRetrievalBalancesForAddress",
+				"operationId": "balancesForAddress",
 				"parameters": [
 					{
 						"name": "address",
@@ -2111,7 +2379,7 @@
 				],
 				"summary": "balanceForId",
 				"description": "Returns a list of token balances for a given currency or property identifier. API Reference: https://developer.bitcoin.com/wormhole/docs/dataRetrieval",
-				"operationId": "dataRetrievalBalancesForId",
+				"operationId": "balancesForId",
 				"parameters": [
 					{
 						"name": "propertyId",
@@ -2141,7 +2409,7 @@
 				],
 				"summary": "balancesHash",
 				"description": "Returns a hash of the balances for the property.",
-				"operationId": "dataRetrievalBalancesHash",
+				"operationId": "balancesHash",
 				"parameters": [
 					{
 						"name": "propertyId",
@@ -2171,7 +2439,7 @@
 				],
 				"summary": "crowdSale",
 				"description": "Returns information about a crowdsale.",
-				"operationId": "dataRetrievalCrowdSale",
+				"operationId": "crowdSale",
 				"parameters": [
 					{
 						"name": "propertyId",
@@ -2211,7 +2479,7 @@
 				],
 				"summary": "currentConsensusHash",
 				"description": "Returns the consensus hash for all balances for the current block.",
-				"operationId": "dataRetrievalCurrentConsensusHash",
+				"operationId": "currentConsensusHash",
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2226,7 +2494,7 @@
 				],
 				"summary": "grants",
 				"description": "Returns information about granted and revoked units of managed tokens.",
-				"operationId": "dataRetrievalGrants",
+				"operationId": "grants",
 				"parameters": [
 					{
 						"name": "propertyId",
@@ -2256,7 +2524,7 @@
 				],
 				"summary": "info",
 				"description": "Returns various state information of the client and protocol.",
-				"operationId": "dataRetrievalInfo",
+				"operationId": "info",
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2271,7 +2539,7 @@
 				],
 				"summary": "payload",
 				"description": "Get the payload for an Omni transaction.",
-				"operationId": "dataRetrievalPayload",
+				"operationId": "payload",
 				"parameters": [
 					{
 						"name": "txid",
@@ -2301,7 +2569,7 @@
 				],
 				"summary": "property",
 				"description": "Returns details for about the tokens or smart property to lookup.",
-				"operationId": "dataRetrievalProperty",
+				"operationId": "property",
 				"parameters": [
 					{
 						"name": "propertyId",
@@ -2331,7 +2599,7 @@
 				],
 				"summary": "seedBlocks",
 				"description": "Returns a list of blocks containing Omni transactions for use in seed block filtering.",
-				"operationId": "dataRetrievalSeedBlocks",
+				"operationId": "seedBlocks",
 				"parameters": [
 					{
 						"name": "startBlock",
@@ -2371,7 +2639,7 @@
 				],
 				"summary": "STO",
 				"description": "Get information and recipients of a send-to-owners transaction.",
-				"operationId": "dataRetrievalSto",
+				"operationId": "drSTO",
 				"parameters": [
 					{
 						"name": "txid",
@@ -2411,7 +2679,7 @@
 				],
 				"summary": "transaction",
 				"description": "Get detailed information about an Omni transaction.",
-				"operationId": "dataRetrievalTransaction",
+				"operationId": "transaction",
 				"parameters": [
 					{
 						"name": "txid",
@@ -2441,7 +2709,7 @@
 				],
 				"summary": "blockTransactions",
 				"description": "Lists all Omni transactions in a block.",
-				"operationId": "dataRetrievalBlockTransactions",
+				"operationId": "blockTransactions",
 				"parameters": [
 					{
 						"name": "index",
@@ -2471,7 +2739,7 @@
 				],
 				"summary": "pendingTransactions",
 				"description": "Returns a list of unconfirmed Omni transactions, pending in the memory pool.",
-				"operationId": "dataRetrievalPendingTransactions",
+				"operationId": "pendingTransactions",
 				"parameters": [
 					{
 						"name": "address",
@@ -2501,7 +2769,7 @@
 				],
 				"summary": "properties",
 				"description": "Lists all tokens or smart properties.",
-				"operationId": "dataRetrievalProperties",
+				"operationId": "properties",
 				"parameters": [
 					{
 						"name": "address",
@@ -2568,7 +2836,7 @@
 				],
 				"summary": "frozenBalance",
 				"description": "Returns the frozen token balance for a given address and property.",
-				"operationId": "dataRetrievalFrozenBalance",
+				"operationId": "frozenBalance",
 				"parameters": [
 					{
 						"name": "address",
@@ -2605,7 +2873,7 @@
 				],
 				"summary": "frozenBalanceForAddress",
 				"description": "Returns the frozen token balance for a given address and property.",
-				"operationId": "dataRetrievalFrozenBalanceForAddress",
+				"operationId": "frozenBalanceForAddress",
 				"parameters": [
 					{
 						"name": "address",
@@ -2632,7 +2900,7 @@
 				],
 				"summary": "frozenBalanceForId",
 				"description": "Returns the frozen token balance for a given property.",
-				"operationId": "dataRetrievalFrozenBalanceForId",
+				"operationId": "frozenBalanceForId",
 				"parameters": [
 					{
 						"name": "propertyId",
@@ -2659,7 +2927,7 @@
 				],
 				"summary": "burnBCH",
 				"description": "Creates the payload to burn bch to get whc.",
-				"operationId": "payloadCreationBurnBCH",
+				"operationId": "burnBCH",
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2667,26 +2935,25 @@
 				}
 			}
 		},
-		"/payloadCreation/changeIssuer/{propertyId}": {
+		"/payloadCreation/changeIssuer": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "changeIssuer",
 				"description": "Creates the payload to change the issuer on record of the given tokens.",
-				"operationId": "payloadCreationChangeIssuer",
-				"parameters": [
-					{
-						"name": "propertyId",
-						"in": "path",
-						"description": "The identifier of the tokens",
-						"required": true,
-						"example": 3,
-						"schema": {
-							"type": "number"
+				"operationId": "changeIssuer",
+				"requestBody": {
+					"description": "The identifier of the tokens",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PropertyId"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2705,26 +2972,25 @@
 				}
 			}
 		},
-		"/payloadCreation/closeCrowdSale/{propertyId}": {
+		"/payloadCreation/closeCrowdSale": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "closeCrowdSale",
 				"description": "Creates the payload to manually close a crowdsale.",
-				"operationId": "payloadCreationCloseCrowdSale",
-				"parameters": [
-					{
-						"name": "propertyId",
-						"in": "path",
-						"description": "The identifier of the crowdsale to close",
-						"required": true,
-						"example": 70,
-						"schema": {
-							"type": "number"
+				"operationId": "closeCrowdSale",
+				"requestBody": {
+					"description": "The identifier of the crowdsale to close",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PropertyId"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2743,46 +3009,25 @@
 				}
 			}
 		},
-		"/payloadCreation/grant/{propertyId}/{amount}": {
+		"/payloadCreation/grant": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "grant",
 				"description": "Creates the payload to issue or grant new units of managed tokens.",
-				"operationId": "payloadCreationGrant",
-				"parameters": [
-					{
-						"name": "propertyId",
-						"in": "path",
-						"description": "The identifier of the tokens to grant",
-						"required": true,
-						"example": 196,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "amount",
-						"in": "path",
-						"description": "The amount of tokens to create",
-						"required": true,
-						"example": "7000",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "memo",
-						"in": "query",
-						"description": "A text note attached to this transaction (none by default)",
-						"required": false,
-						"example": "Hello BITBOX",
-						"schema": {
-							"type": "string"
+				"operationId": "grant",
+				"requestBody": {
+					"description": "The identifier of the tokens to grant, amount of tokens to create and text note attached to this transaction",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Grant"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2801,156 +3046,25 @@
 				}
 			}
 		},
-		"/payloadCreation/crowdsale/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{propertyIdDesired}/{tokensPerUnit}/{deadline}/{earlyBonus}/{undefine}/{totalNumber}": {
+		"/payloadCreation/crowdsale": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "crowdsale",
 				"description": "Creates the payload for a new tokens issuance with crowdsale.",
-				"operationId": "payloadCreationCrowdsale",
-				"parameters": [
-					{
-						"name": "ecosystem",
-						"in": "path",
-						"description": "The ecosystem to create the tokens in, must be 1",
-						"required": true,
-						"example": "1",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "propertyPrecision",
-						"in": "path",
-						"description": "The precision of the tokens to create:[0, 8]",
-						"required": true,
-						"example": 1,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "previousId",
-						"in": "path",
-						"description": "An identifier of a predecessor token (0 for new crowdsales)",
-						"required": true,
-						"example": 0,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "category",
-						"in": "path",
-						"description": "A category for the new tokens",
-						"required": true,
-						"example": "Companies",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "subcategory",
-						"in": "path",
-						"description": "A subcategory for the new tokens",
-						"required": true,
-						"example": "Bitcoin Mining",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "name",
-						"in": "path",
-						"description": "The name of the new tokens to create",
-						"required": true,
-						"example": "Quantum Miner",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "url",
-						"in": "path",
-						"description": "An URL for further information about the new tokens",
-						"required": true,
-						"example": "www.example.com",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "data",
-						"in": "path",
-						"description": "A description for the new tokens",
-						"required": true,
-						"example": "Quantum Miner Tokens",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "propertyIdDesired",
-						"in": "path",
-						"description": "The identifier of a token eligible to participate in the crowdsale",
-						"required": true,
-						"example": 1,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "tokensPerUnit",
-						"in": "path",
-						"description": "The amount of tokens granted per unit invested in the crowdsale",
-						"required": true,
-						"example": "100",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "deadline",
-						"in": "path",
-						"description": "The deadline of the crowdsale as Unix timestamp",
-						"required": true,
-						"example": 1483228800,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "earlyBonus",
-						"in": "path",
-						"description": "An early bird bonus for participants in percent per week",
-						"required": true,
-						"example": 30,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "undefine",
-						"in": "path",
-						"description": "The value must be 0",
-						"required": true,
-						"example": 0,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "totalNumber",
-						"in": "path",
-						"description": "The number of tokens to create",
-						"required": true,
-						"example": "192978657",
-						"schema": {
-							"type": "string"
+				"operationId": "crowdsale",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Crowdsale"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2958,106 +3072,25 @@
 				}
 			}
 		},
-		"/payloadCreation/fixed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}/{amount}": {
+		"/payloadCreation/fixed": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "fixed",
 				"description": "Creates the payload for a new tokens issuance with fixed supply.",
-				"operationId": "payloadCreationFixed",
-				"parameters": [
-					{
-						"name": "ecosystem",
-						"in": "path",
-						"description": "The ecosystem to create the tokens in, must be 1",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "propertyPrecision",
-						"in": "path",
-						"description": "The precision of the tokens to create:[0, 8]",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "previousId",
-						"in": "path",
-						"description": "An identifier of a predecessor token (use 0 for new tokens)",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "category",
-						"in": "path",
-						"description": "A category for the new tokens",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "subcategory",
-						"in": "path",
-						"description": "A subcategory for the new tokens",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "name",
-						"in": "path",
-						"description": "The name of the new tokens to create",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "url",
-						"in": "path",
-						"description": "An URL for further information about the new tokens",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "data",
-						"in": "path",
-						"description": "A description for the new tokens",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "amount",
-						"in": "path",
-						"description": "The number of tokens to create",
-						"required": true,
-						"example": "",
-						"schema": {
-							"type": "string"
+				"operationId": "fixed",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Fixed"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3065,96 +3098,25 @@
 				}
 			}
 		},
-		"/payloadCreation/managed/{ecosystem}/{propertyPrecision}/{previousId}/{category}/{subcategory}/{name}/{url}/{data}": {
+		"/payloadCreation/managed": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "managed",
 				"description": "Creates the payload for a new tokens issuance with manageable supply.",
-				"operationId": "payloadCreationManaged",
-				"parameters": [
-					{
-						"name": "ecosystem",
-						"in": "path",
-						"description": "The ecosystem to create the tokens in, must be 1",
-						"required": true,
-						"example": "1",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "propertyPrecision",
-						"in": "path",
-						"description": "The precision of the tokens to create:[0, 8]",
-						"required": true,
-						"example": 1,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "previousId",
-						"in": "path",
-						"description": "An identifier of a predecessor token (use 0 for new tokens)",
-						"required": true,
-						"example": 0,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "category",
-						"in": "path",
-						"description": "A category for the new tokens",
-						"required": true,
-						"example": "Companies",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "subcategory",
-						"in": "path",
-						"description": "A subcategory for the new tokens",
-						"required": true,
-						"example": "Bitcoin Mining",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "name",
-						"in": "path",
-						"description": "The name of the new tokens to create",
-						"required": true,
-						"example": "Quantum Miner",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "url",
-						"in": "path",
-						"description": "An URL for further information about the new tokens",
-						"required": true,
-						"example": "www.example.com",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "data",
-						"in": "path",
-						"description": "A description for the new tokens",
-						"required": true,
-						"example": "Quantum Miner Tokens",
-						"schema": {
-							"type": "string"
+				"operationId": "managed",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Managed"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3165,26 +3127,25 @@
 				}
 			}
 		},
-		"/payloadCreation/participateCrowdSale/{amount}": {
+		"/payloadCreation/participateCrowdSale": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "participateCrowdSale",
 				"description": "Create the payload for a participate crowdsale transaction",
-				"operationId": "payloadCreationParticipateCrowdSale",
-				"parameters": [
-					{
-						"name": "amount",
-						"in": "path",
-						"description": "The amount of WHC to participateCrowdSale",
-						"required": true,
-						"example": "100.0",
-						"schema": {
-							"type": "string"
+				"operationId": "participateCrowdSale",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ParticipateCrowdSale"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3192,46 +3153,25 @@
 				}
 			}
 		},
-		"/payloadCreation/revoke/{propertyId}/{amount}": {
+		"/payloadCreation/revoke": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "revoke",
 				"description": "Creates the payload to revoke units of managed tokens.",
-				"operationId": "payloadCreationRevoke",
-				"parameters": [
-					{
-						"name": "propertyId",
-						"in": "path",
-						"description": "The identifier of the tokens to revoke",
-						"required": true,
-						"example": 196,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "amount",
-						"in": "path",
-						"description": "The amount of tokens to revoke",
-						"required": true,
-						"example": "100",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "memo",
-						"in": "query",
-						"description": "A text note attached to this transaction (none by default)",
-						"required": false,
-						"example": "Goodbye BITBOX",
-						"schema": {
-							"type": "string"
+				"operationId": "revoke",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Revoke"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3239,26 +3179,25 @@
 				}
 			}
 		},
-		"/payloadCreation/sendAll/{ecosystem}": {
+		"/payloadCreation/sendAll": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "sendAll",
 				"description": "Create the payload for a send all transaction.",
-				"operationId": "payloadCreationSendAll",
-				"parameters": [
-					{
-						"name": "ecosystem",
-						"in": "path",
-						"description": "The ecosystem of the tokens to send (1 for main ecosystem, 2 for test ecosystem)",
-						"required": true,
-						"example": 1,
-						"schema": {
-							"type": "number"
+				"operationId": "sendAll",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SendAll"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3266,36 +3205,25 @@
 				}
 			}
 		},
-		"/payloadCreation/simpleSend/{propertyId}/{amount}": {
+		"/payloadCreation/simpleSend": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "simpleSend",
 				"description": "Create the payload for a simple send transaction.",
-				"operationId": "payloadCreationSimpleSend",
-				"parameters": [
-					{
-						"name": "propertyId",
-						"in": "path",
-						"description": "The identifier of the tokens to send",
-						"required": true,
-						"example": 1,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "amount",
-						"in": "path",
-						"description": "The amount to send",
-						"required": true,
-						"example": "100.0",
-						"schema": {
-							"type": "string"
+				"operationId": "simpleSend",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/SimpleSend"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3303,46 +3231,25 @@
 				}
 			}
 		},
-		"/payloadCreation/STO/{propertyId}/{amount}": {
+		"/payloadCreation/STO": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "STO",
 				"description": "Creates the payload for a send-to-owners transaction",
-				"operationId": "payloadCreationSTO",
-				"parameters": [
-					{
-						"name": "propertyId",
-						"in": "path",
-						"description": "The identifier of the tokens to distribute",
-						"required": true,
-						"example": 3,
-						"schema": {
-							"type": "number"
-						}
-					},
-					{
-						"name": "amount",
-						"in": "path",
-						"description": "The amount to distribute",
-						"required": true,
-						"example": "5000",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "distributionProperty",
-						"in": "query",
-						"description": "The identifier of the property holders to distribute to",
-						"required": false,
-						"example": 1,
-						"schema": {
-							"type": "number"
+				"operationId": "STO",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/STO"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3350,36 +3257,25 @@
 				}
 			}
 		},
-		"/payloadCreation/freeze/{toAddress}/{propertyId}": {
+		"/payloadCreation/freeze": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "freeze",
 				"description": "Creates the payload for a freeze transaction",
-				"operationId": "payloadCreationFreeze",
-				"parameters": [
-					{
-						"name": "toAddress",
-						"in": "path",
-						"description": "The to address",
-						"required": true,
-						"example": 3,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "propertyId",
-						"in": "path",
-						"description": "The identifier of the tokens to freeze",
-						"required": true,
-						"example": 3,
-						"schema": {
-							"type": "number"
+				"operationId": "freeze",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Freeze"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3387,36 +3283,51 @@
 				}
 			}
 		},
-		"/payloadCreation/unfreeze/{toAddress}/{propertyId}": {
+		"/payloadCreation/unfreeze": {
 			"post": {
 				"tags": [
 					"payloadCreation"
 				],
 				"summary": "unfreeze",
 				"description": "Creates the payload for an unfreeze transaction",
-				"operationId": "payloadCreationUnfreeze",
-				"parameters": [
-					{
-						"name": "toAddress",
-						"in": "path",
-						"description": "The to address",
-						"required": true,
-						"example": 3,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "propertyId",
-						"in": "path",
-						"description": "The identifier of the tokens to unfreeze",
-						"required": true,
-						"example": 3,
-						"schema": {
-							"type": "number"
+				"operationId": "unfreeze",
+				"requestBody": {
+					"description": "",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Unfreeze"
+							}
 						}
 					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful response"
+					}
+				}
+			}
+		},
+		"/wormhole/transaction/confirmed": {
+			"post": {
+				"tags": [
+					"wormhole"
 				],
+				"summary": "Confirmed wormhole transactions",
+				"description": "Confirmed wormhole transactions",
+				"operationId": "whTxConfirmed",
+				"requestBody": {
+					"description": "Array of addresses",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/WHConfirmed"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -3436,7 +3347,7 @@
 			"description": "Address details and utxo",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/address"
+				"url": "https://developer.bitcoin.com/rest/docs/address"
 			}
 		},
 		{
@@ -3444,7 +3355,7 @@
 			"description": "Block Details",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/block"
+				"url": "https://developer.bitcoin.com/rest/docs/block"
 			}
 		},
 		{
@@ -3452,7 +3363,7 @@
 			"description": "Interacting w/ the BCH Blockchain",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/blockchain"
+				"url": "https://developer.bitcoin.com/rest/docs/blockchain"
 			}
 		},
 		{
@@ -3460,7 +3371,7 @@
 			"description": "Control your blockchain",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/control"
+				"url": "https://developer.bitcoin.com/rest/docs/control"
 			}
 		},
 		{
@@ -3468,7 +3379,7 @@
 			"description": "Mining w/ the BCH Blockchain",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/mining"
+				"url": "https://developer.bitcoin.com/rest/docs/mining"
 			}
 		},
 		{
@@ -3476,7 +3387,7 @@
 			"description": "Create transactions to be transmitted to the network.",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/rawtransactions"
+				"url": "https://developer.bitcoin.com/rest/docs/rawtransactions"
 			}
 		},
 		{
@@ -3484,7 +3395,7 @@
 			"description": "Transaction details.",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/rawtransactions"
+				"url": "https://developer.bitcoin.com/rest/docs/rawtransactions"
 			}
 		},
 		{
@@ -3492,7 +3403,7 @@
 			"description": "Bitcoin Cash utilities.",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/bitbox/docs/util"
+				"url": "https://developer.bitcoin.com/rest/docs/util"
 			}
 		},
 		{
@@ -3500,7 +3411,7 @@
 			"description": "dataRetrieval",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/wormhole/docs/dataRetrieval"
+				"url": "https://developer.bitcoin.com/rest/docs/dataRetrieval"
 			}
 		},
 		{
@@ -3508,7 +3419,15 @@
 			"description": "payloadCreation",
 			"externalDocs": {
 				"description": "Find out more",
-				"url": "https://developer.bitcoin.com/wormhole/docs/payloadCreation"
+				"url": "https://developer.bitcoin.com/rest/docs/payloadCreation"
+			}
+		},
+		{
+			"name": "wormhole",
+			"description": "wormhole",
+			"externalDocs": {
+				"description": "Find out more",
+				"url": "https://developer.bitcoin.com/rest/docs/wormhole"
 			}
 		}
 	]
