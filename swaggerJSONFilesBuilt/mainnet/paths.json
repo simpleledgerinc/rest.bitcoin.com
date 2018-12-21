@@ -1081,26 +1081,6 @@
 						"schema": {
 							"type": "string"
 						}
-					},
-					{
-						"name": "prevTxs",
-						"in": "query",
-						"description": "A JSON array of transaction inputs (default: none)",
-						"required": false,
-						"example": "",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "height",
-						"in": "query",
-						"description": "The parsing block height (default: 0 for chain height)",
-						"required": false,
-						"example": 0,
-						"schema": {
-							"type": "number"
-						}
 					}
 				],
 				"responses": {
