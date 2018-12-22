@@ -1968,7 +1968,7 @@
 						"in": "path",
 						"description": "the property identifier",
 						"required": true,
-						"example": 1,
+						"example": 206,
 						"schema": {
 							"type": "number"
 						}
