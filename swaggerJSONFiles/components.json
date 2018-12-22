@@ -16,6 +16,9 @@
       "Height": {
         "type": "number"
       },
+      "Proof": {
+        "type": "string"
+      },
       "Addresses": {
         "type": "object",
         "properties": {
@@ -99,6 +102,18 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Txid"
+            },
+            "example": []
+          }
+        }
+      },
+      "Proofs": {
+        "type": "object",
+        "properties": {
+          "proofs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Proof"
             },
             "example": []
           }

@@ -53,7 +53,7 @@ const config: IRLConfig = {
 }
 
 let i = 1
-while (i < 17) {
+while (i < 18) {
   config[`blockchainRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
@@ -109,7 +109,12 @@ router.post("/getTxOutProof", config.blockchainRateLimit15, getTxOutProofBulk)
 router.get(
   "/verifyTxOutProof/:proof",
   config.blockchainRateLimit16,
-  verifyTxOutProof
+  verifyTxOutProofSingle
+)
+router.post(
+  "/verifyTxOutProof",
+  config.blockchainRateLimit17,
+  verifyTxOutProofBulk
 )
 
 function root(
@@ -875,7 +880,7 @@ async function getTxOutProofBulk(
 // });
 */
 
-async function verifyTxOutProof(
+async function verifyTxOutProofSingle(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -918,6 +923,83 @@ async function verifyTxOutProof(
   }
 }
 
+async function verifyTxOutProofBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const proofs = req.body.proofs
+
+    // Reject if proofs is not an array.
+    if (!Array.isArray(proofs)) {
+      res.status(400)
+      return res.json({
+        error: "proofs needs to be an array. Use GET for single proof."
+      })
+    }
+
+    // Enforce no more than 20 proofs.
+    if (proofs.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 proofs"
+      })
+    }
+
+    logger.debug(
+      `Executing blockchain/verifyTxOutProof with these proofs: `,
+      proofs
+    )
+
+    // Loop through each proof.
+    const retArray = []
+    for (let i = 0; i < proofs.length; i++) {
+      const thisProof = proofs[i] // Current proof.
+      if (!thisProof || thisProof === "") {
+        res.status(400)
+        return res.json({ error: "proof can not be empty" })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "verifytxoutproof"
+      requestConfig.data.method = "verifytxoutproof"
+      requestConfig.data.params = [thisProof]
+
+      const response = await BitboxHTTP(requestConfig)
+
+      interface Tmp {
+        [txid: string]: any
+      }
+
+      let tmp: Tmp = {}
+      tmp[thisProof] = response.data.result
+      retArray.push(tmp)
+    }
+
+    res.status(200)
+    return res.json(retArray)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
 module.exports = {
   router,
   testableComponents: {
@@ -937,6 +1019,7 @@ module.exports = {
     getTxOut,
     getTxOutProofSingle,
     getTxOutProofBulk,
-    verifyTxOutProof
+    verifyTxOutProofSingle,
+    verifyTxOutProofBulk
   }
 }
