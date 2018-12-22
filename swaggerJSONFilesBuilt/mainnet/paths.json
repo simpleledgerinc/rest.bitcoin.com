@@ -976,7 +976,7 @@
 					"blockchain"
 				],
 				"summary": "Verify that bulk proofs point to transactions in a block",
-				"description": "Verifies that bulk proofs point to transactions in a block, returning the transaction it commits to and throwing an RPC error if the block is not in our best chain",
+				"description": "Verifies that bulk proofs point to transactions in a block",
 				"operationId": "verifyTxOutProofBulk",
 				"requestBody": {
 					"description": "Array of proofs",

@@ -670,7 +670,8 @@ describe("#BlockchainRouter", () => {
   })
 
   describe("verifyTxOutProof()", () => {
-    const verifyTxOutProof = blockchainRoute.testableComponents.verifyTxOutProof
+    const verifyTxOutProof =
+      blockchainRoute.testableComponents.verifyTxOutProofSingle
 
     it("should throw 400 if proof is empty", async () => {
       const result = await verifyTxOutProof(req, res)
