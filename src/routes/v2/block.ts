@@ -270,7 +270,12 @@ async function detailsByHeightBulk(
       // req.params.hash = hash
       // return detailsByHashSingle(req, res, next)
       // console.log(response)
-      retArray.push(hash)
+
+      const resp = await axios.get(
+        `${process.env.BITCOINCOM_BASEURL}block/${hash}`
+      )
+
+      retArray.push(resp.data)
     }
 
     // Return the array of retrieved address information.
