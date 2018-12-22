@@ -945,9 +945,9 @@
 				"tags": [
 					"blockchain"
 				],
-				"summary": "Verify that a proof points to a transaction in a block",
+				"summary": "Verify that a single proof points to a transaction in a block",
 				"description": "Verifies that a proof points to a transaction in a block, returning the transaction it commits to and throwing an RPC error if the block is not in our best chain",
-				"operationId": "verifyTxOutProof",
+				"operationId": "verifyTxOutProofSingle",
 				"parameters": [
 					{
 						"name": "proof",
@@ -960,6 +960,35 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation"
+					},
+					"400": {
+						"description": "Invalid tag value"
+					}
+				}
+			}
+		},
+		"/blockchain/verifyTxOutProof": {
+			"post": {
+				"tags": [
+					"blockchain"
+				],
+				"summary": "Verify that bulk proofs point to transactions in a block",
+				"description": "Verifies that bulk proofs point to transactions in a block",
+				"operationId": "verifyTxOutProofBulk",
+				"requestBody": {
+					"description": "Array of proofs",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Proofs"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation"
