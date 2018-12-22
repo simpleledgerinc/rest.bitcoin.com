@@ -53,7 +53,7 @@ const config: IRLConfig = {
 }
 
 let i = 1
-while (i < 16) {
+while (i < 17) {
   config[`blockchainRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
@@ -100,10 +100,15 @@ router.post(
 router.get("/getMempoolInfo", config.blockchainRateLimit11, getMempoolInfo)
 router.get("/getRawMempool", config.blockchainRateLimit12, getRawMempool)
 router.get("/getTxOut/:txid/:n", config.blockchainRateLimit13, getTxOut)
-router.get("/getTxOutProof/:txid", config.blockchainRateLimit14, getTxOutProof)
+router.get(
+  "/getTxOutProof/:txid",
+  config.blockchainRateLimit14,
+  getTxOutProofSingle
+)
+router.post("/getTxOutProof", config.blockchainRateLimit15, getTxOutProofBulk)
 router.get(
   "/verifyTxOutProof/:proof",
-  config.blockchainRateLimit15,
+  config.blockchainRateLimit16,
   verifyTxOutProof
 )
 
@@ -672,7 +677,7 @@ async function getTxOut(
 }
 
 // Returns a hex-encoded proof that 'txid' was included in a block.
-async function getTxOutProof(
+async function getTxOutProofSingle(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -699,6 +704,89 @@ async function getTxOutProof(
     const response = await BitboxHTTP(requestConfig)
 
     return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// Returns a hex-encoded proof that 'txid' was included in a block.
+async function getTxOutProofBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txids = req.body.txids
+
+    // Reject if txids is not an array.
+    if (!Array.isArray(txids)) {
+      res.status(400)
+      return res.json({
+        error: "txids needs to be an array. Use GET for single txid."
+      })
+    }
+
+    // Enforce no more than 20 txids.
+    if (txids.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 txids"
+      })
+    }
+
+    logger.debug(`Executing blockchain/getTxOutProof with these txids: `, txids)
+
+    // Loop through each txid.
+    const retArray = []
+    for (let i = 0; i < txids.length; i++) {
+      const thisTxid = txids[i] // Current txid.
+
+      // Ensure the input is a valid txid.
+      try {
+        if (thisTxid.length !== 64) {
+          throw "This is not a txid"
+        }
+      } catch (err) {
+        res.status(400)
+        return res.json({
+          error: `Invalid txid. Double check your txid is valid: ${thisTxid}`
+        })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "gettxoutproof"
+      requestConfig.data.method = "gettxoutproof"
+      requestConfig.data.params = [[thisTxid]]
+
+      const response = await BitboxHTTP(requestConfig)
+
+      interface Tmp {
+        [txid: string]: any
+      }
+
+      let tmp: Tmp = {}
+      tmp[thisTxid] = response.data.result
+      retArray.push(tmp)
+    }
+
+    res.status(200)
+    return res.json(retArray)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -847,7 +935,8 @@ module.exports = {
     getMempoolEntrySingle,
     getMempoolEntryBulk,
     getTxOut,
-    getTxOutProof,
+    getTxOutProofSingle,
+    getTxOutProofBulk,
     verifyTxOutProof
   }
 }

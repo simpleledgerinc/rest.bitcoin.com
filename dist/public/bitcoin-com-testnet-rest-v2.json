@@ -2195,21 +2195,50 @@
 				"tags": [
 					"blockchain"
 				],
-				"summary": "Hex-encoded proof that 'txid' was included.",
+				"summary": "Hex-encoded proof that single txid was included.",
 				"description": "Returns a hex-encoded proof that 'txid' was included in a block.",
-				"operationId": "getTxOutProof",
+				"operationId": "getTxOutProofSingle",
 				"parameters": [
 					{
 						"name": "txid",
 						"in": "path",
 						"description": "a txid string",
-						"example": "",
+						"example": "40112ab9d2b5f98427839272d7a1e23dd2afc6c8355626f373e076c2ab5c2f72",
 						"required": true,
 						"schema": {
 							"type": "string"
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation"
+					},
+					"400": {
+						"description": "Invalid tag value"
+					}
+				}
+			}
+		},
+		"/blockchain/getTxOutProof": {
+			"post": {
+				"tags": [
+					"blockchain"
+				],
+				"summary": "Hex-encoded proof that multiple txids wwere included.",
+				"description": "Returns a hex-encoded proof that multiple txids were included in a block.",
+				"operationId": "getTxOutProofBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Txids"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation"
