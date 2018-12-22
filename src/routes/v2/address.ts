@@ -131,7 +131,7 @@ async function detailsBulk(
     const addresses = req.body.addresses
     const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
 
-    // Reject if address is not an array.
+    // Reject if addresses is not an array.
     if (!Array.isArray(addresses)) {
       res.status(400)
       return res.json({
