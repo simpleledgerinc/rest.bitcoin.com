@@ -1264,9 +1264,9 @@
 				"tags": [
 					"util"
 				],
-				"summary": "Information about the given bitcoin address.",
-				"description": "Return information about the given bitcoin address.",
-				"operationId": "validateAddress",
+				"summary": "Information about single bitcoin cash address.",
+				"description": "Return information about single bitcoin cash address.",
+				"operationId": "validateAddressSingle",
 				"parameters": [
 					{
 						"in": "path",
@@ -1279,6 +1279,42 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "successful operation",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ValidateAddress"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid Address"
+					}
+				}
+			}
+		},
+		"/util/validateAddress": {
+			"post": {
+				"tags": [
+					"util"
+				],
+				"summary": "Information about bulk bitcoin cash addresses.",
+				"description": "Return information about bulk bitcoin cash addresses.",
+				"operationId": "validateAddressBulk",
+				"requestBody": {
+					"description": "Array of Addresses",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Addresses"
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation",

@@ -74,6 +74,18 @@
 					}
 				}
 			},
+			"Heights": {
+				"type": "object",
+				"properties": {
+					"heights": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Heights"
+						},
+						"example": []
+					}
+				}
+			},
 			"Hexes": {
 				"type": "object",
 				"properties": {
