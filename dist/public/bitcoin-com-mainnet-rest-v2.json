@@ -3295,7 +3295,7 @@
 						"in": "path",
 						"description": "the property identifier",
 						"required": true,
-						"example": 1,
+						"example": 206,
 						"schema": {
 							"type": "number"
 						}
@@ -3467,7 +3467,7 @@
 						"in": "path",
 						"description": "the identifier of the ERC721 property",
 						"required": true,
-						"example": "0x03",
+						"example": "0x02",
 						"schema": {
 							"type": "string"
 						}

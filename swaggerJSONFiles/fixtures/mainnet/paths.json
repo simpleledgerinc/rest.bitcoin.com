@@ -237,7 +237,7 @@
   {
     "key": "/dataRetrieval/frozenBalance/{address}/{propertyId}",
     "name": "propertyId",
-    "value": 1
+    "value": 206
   },
   {
     "key": "/dataRetrieval/frozenBalanceForAddress/{address}",
@@ -247,7 +247,7 @@
   {
     "key": "/dataRetrieval/frozenBalanceForId/{propertyId}",
     "name": "propertyId",
-    "value": 1
+    "value": 206
   },
   {
     "key": "/payloadCreation/changeIssuer/{propertyId}",
