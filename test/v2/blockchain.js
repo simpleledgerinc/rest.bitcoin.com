@@ -619,7 +619,7 @@ describe("#BlockchainRouter", () => {
   })
 
   describe("getTxOutProof()", () => {
-    const getTxOutProof = blockchainRoute.testableComponents.getTxOutProof
+    const getTxOutProof = blockchainRoute.testableComponents.getTxOutProofSingle
 
     it("should throw 400 if txid is empty", async () => {
       const result = await getTxOutProof(req, res)
