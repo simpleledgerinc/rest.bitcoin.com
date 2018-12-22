@@ -1068,7 +1068,6 @@ async function ERC721AddressTokens(
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
-    propertyId = parseInt(propertyId)
 
     const {
       BitboxHTTP,
@@ -1077,7 +1076,7 @@ async function ERC721AddressTokens(
       requestConfig
     } = routeUtils.setEnvVars()
 
-    const params = [req.params.address, req.params.propertyId]
+    const params = [req.params.address, propertyId]
     requestConfig.data.id = "whc_getERC721AddressTokens"
     requestConfig.data.method = "whc_getERC721AddressTokens"
     requestConfig.data.params = params
@@ -1109,7 +1108,6 @@ async function ERC721PropertyDestroyTokens(
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
-    propertyId = parseInt(propertyId)
 
     const {
       BitboxHTTP,
@@ -1150,7 +1148,6 @@ async function ERC721PropertyNews(
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
-    propertyId = parseInt(propertyId)
 
     const {
       BitboxHTTP,
@@ -1191,7 +1188,6 @@ async function ERC721TokenNews(
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
-    propertyId = parseInt(propertyId)
 
     let tokenId = req.params.tokenId
     if (!tokenId || tokenId === "") {
@@ -1239,7 +1235,6 @@ async function ownerOfERC721Token(
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
-    propertyId = parseInt(propertyId)
 
     let tokenId = req.params.tokenId
     if (!tokenId || tokenId === "") {

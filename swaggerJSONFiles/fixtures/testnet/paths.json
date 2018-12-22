@@ -478,5 +478,20 @@
     "key": "/blockchain/getTxOutProof/{txid}",
     "name": "txid",
     "value": "40112ab9d2b5f98427839272d7a1e23dd2afc6c8355626f373e076c2ab5c2f72"
+  },
+  {
+    "key": "/dataRetrieval/ERC721AddressTokens/{address}/{propertyId}",
+    "name": "address",
+    "value": "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf"
+  },
+  {
+    "key": "/dataRetrieval/ERC721AddressTokens/{address}/{propertyId}",
+    "name": "propertyId",
+    "value": "0x01"
+  },
+  {
+    "key": "/dataRetrieval/ownerOfERC721Token/{propertyId}/{tokenId}/{address}",
+    "name": "address",
+    "value": "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf"
   }
 ]

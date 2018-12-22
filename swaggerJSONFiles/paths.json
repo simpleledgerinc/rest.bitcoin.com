@@ -1929,7 +1929,7 @@
             "in": "path",
             "description": "the address of the query",
             "required": true,
-            "example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -1939,7 +1939,7 @@
             "in": "path",
             "description": "the identifier of the ERC721 property",
             "required": true,
-            "example": "0x01",
+            "example": "",
             "schema": {
               "type": "string"
             }
@@ -2014,7 +2014,7 @@
             "in": "path",
             "description": "the identifier of the ERC721 property",
             "required": true,
-            "example": "0x03",
+            "example": "0x02",
             "schema": {
               "type": "string"
             }
@@ -2069,7 +2069,7 @@
             "in": "path",
             "description": "query address for the specified ERC721 Token",
             "required": true,
-            "example": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c",
+            "example": "",
             "schema": {
               "type": "string"
             }
