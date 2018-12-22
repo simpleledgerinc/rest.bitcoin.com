@@ -428,5 +428,10 @@
     "key": "/payloadCreation/unfreeze/{toAddress}/{propertyId}",
     "name": "propertyId",
     "value": 3
+  },
+  {
+    "key": "/blockchain/getTxOutProof/{txid}",
+    "name": "txid",
+    "value": "bbda45af0ba57e28866995c67a53c225336fddd14eb3dc87f2f3500fd61c8585"
   }
 ]
