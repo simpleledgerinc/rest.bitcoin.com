@@ -3349,7 +3349,7 @@
 						"in": "path",
 						"description": "the Property ID",
 						"required": true,
-						"example": 1,
+						"example": 206,
 						"schema": {
 							"type": "number"
 						}
