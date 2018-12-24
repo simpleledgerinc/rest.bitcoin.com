@@ -91,7 +91,7 @@ describe("#Raw-Transactions", () => {
   describe("decodeRawTransaction()", () => {
     // block route handler.
     const decodeRawTransaction =
-      rawtransactions.testableComponents.decodeRawTransaction
+      rawtransactions.testableComponents.decodeRawTransactionSingle
 
     it("should throw error if hex is missing", async () => {
       const result = await decodeRawTransaction(req, res)
@@ -207,13 +207,13 @@ describe("#Raw-Transactions", () => {
     })
   })
 
-  describe("getRawTransaction()", () => {
+  describe("getRawTransactionBulk()", () => {
     // block route handler.
-    const getRawTransaction =
-      rawtransactions.testableComponents.getRawTransaction
+    const getRawTransactionBulk =
+      rawtransactions.testableComponents.getRawTransactionBulk
 
     it("should throw 400 error if txids array is missing", async () => {
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
@@ -226,7 +226,7 @@ describe("#Raw-Transactions", () => {
 
       req.body.txids = testArray
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
@@ -236,7 +236,7 @@ describe("#Raw-Transactions", () => {
     it("should throw 400 error if txid is empty", async () => {
       req.body.txids = [""]
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
@@ -255,7 +255,7 @@ describe("#Raw-Transactions", () => {
 
       req.body.txids = ["abc123"]
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
@@ -275,7 +275,7 @@ describe("#Raw-Transactions", () => {
         "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
       ]
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
@@ -295,7 +295,7 @@ describe("#Raw-Transactions", () => {
       ]
       req.body.verbose = true
 
-      const result = await getRawTransaction(req, res)
+      const result = await getRawTransactionBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
@@ -315,6 +315,90 @@ describe("#Raw-Transactions", () => {
       ])
       assert.isArray(result[0].vin)
       assert.isArray(result[0].vout)
+    })
+  })
+
+  describe("getRawTransactionSingle()", () => {
+    // block route handler.
+    const getRawTransactionSingle =
+      rawtransactions.testableComponents.getRawTransactionSingle
+
+    it("should throw 400 error if txid is missing", async () => {
+      const result = await getRawTransactionSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "txid can not be empty")
+    })
+
+    it("should throw 400 error if txid is invalid", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(500, {
+            error: { message: "parameter 1 must be of length 64 (not 6)" }
+          })
+      }
+
+      req.params.txid = "abc123"
+
+      const result = await getRawTransactionSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "parameter 1 must be of length 64 (not 6)")
+    })
+
+    it("should get concise transaction data", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockRawTransactionConcise })
+      }
+
+      req.params.txid =
+        "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
+
+      const result = await getRawTransactionSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+    })
+
+    it("should get verbose transaction data", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockRawTransactionVerbose })
+      }
+
+      req.params.txid =
+        "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
+      req.query.verbose = "true"
+
+      const result = await getRawTransactionSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAnyKeys(result, [
+        "hex",
+        "txid",
+        "hash",
+        "size",
+        "version",
+        "locktime",
+        "vin",
+        "vout",
+        "blockhash",
+        "confirmations",
+        "time",
+        "blocktime"
+      ])
+      assert.isArray(result.vin)
+      assert.isArray(result.vout)
     })
   })
 
@@ -412,7 +496,7 @@ describe("#Raw-Transactions", () => {
     const whChangeOutput = rawtransactions.testableComponents.whChangeOutput
 
     it("should throw 400 error if rawtx is empty", async () => {
-      req.params.rawtx = ""
+      req.body.rawtx = ""
       const result = await whChangeOutput(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
@@ -421,27 +505,17 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if prevtx is empty", async () => {
-      req.params.rawtx = "fakeTx"
+      req.body.rawtx = "fakeTx"
       const result = await whChangeOutput(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "could not parse prevtxs")
-    })
-
-    it("should throw 400 error if prevtx not parsable JSON", async () => {
-      req.params.rawtx = "fakeTx"
-      req.params.prevtxs = "someUnparsableJSON"
-      const result = await whChangeOutput(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
-
-      assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "could not parse prevtxs")
+      assert.include(result.error, "prevtxs can not be empty")
     })
 
     it("should throw 400 error if destination is empty", async () => {
-      req.params.rawtx = "fakeTx"
-      req.params.prevtxs = JSON.stringify([{ a: 0 }])
+      req.body.rawtx = "fakeTx"
+      req.body.prevtxs = JSON.stringify([{ a: 0 }])
       const result = await whChangeOutput(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
@@ -450,9 +524,9 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error fee is empty", async () => {
-      req.params.rawtx = "fakeTx"
-      req.params.prevtxs = JSON.stringify([{ a: 0 }])
-      req.params.destination = "bchtest:fakeaddress"
+      req.body.rawtx = "fakeTx"
+      req.body.prevtxs = JSON.stringify([{ a: 0 }])
+      req.body.destination = "bchtest:fakeaddress"
       const result = await whChangeOutput(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
@@ -471,9 +545,9 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.rawtx =
+      req.body.rawtx =
         "0100000001b15ee60431ef57ec682790dec5a3c0d83a0c360633ea8308fbf6d5fc10a779670400000000ffffffff025c0d00000000000047512102f3e471222bb57a7d416c82bf81c627bfcd2bdc47f36e763ae69935bba4601ece21021580b888ff56feb27f17f08802ebed26258c23697d6a462d43fc13b565fda2dd52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000"
-      req.params.prevtxs = JSON.stringify([
+      req.body.prevtxs = [
         {
           txid:
             "6779a710fcd5f6fb0883ea3306360c3ad8c0a3c5de902768ec57ef3104e65eb1",
@@ -481,10 +555,10 @@ describe("#Raw-Transactions", () => {
           scriptPubKey: "76a9147b25205fd98d462880a3e5b0541235831ae959e588ac",
           value: 0.00068257
         }
-      ])
-      req.params.destination =
+      ]
+      req.body.destination =
         "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg"
-      req.params.fee = 0.000035
+      req.body.fee = 0.000035
 
       const result = await whChangeOutput(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -509,7 +583,7 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if n is empty", async () => {
-      req.params.txid = "fakeTXID"
+      req.body.txid = "fakeTXID"
 
       const result = await whInput(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -529,9 +603,9 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.txid =
+      req.body.txid =
         "b006729017df05eda586df9ad3f8ccfee5be340aadf88155b784d1fc0e8342ee"
-      req.params.n = 0
+      req.body.n = 0
 
       const result = await whInput(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -556,7 +630,7 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if payload is empty", async () => {
-      req.params.rawtx = "fakeTX"
+      req.body.rawtx = "fakeTX"
 
       const result = await whOpReturn(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -576,8 +650,8 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.rawtx = "01000000000000000000"
-      req.params.payload = "00000000000000020000000006dac2c0"
+      req.body.rawtx = "01000000000000000000"
+      req.body.payload = "00000000000000020000000006dac2c0"
 
       const result = await whOpReturn(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -602,7 +676,7 @@ describe("#Raw-Transactions", () => {
     })
 
     it("should throw 400 error if destination is empty", async () => {
-      req.params.rawtx = "faketx"
+      req.body.rawtx = "faketx"
 
       const result = await whReference(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -624,9 +698,9 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.rawtx =
+      req.body.rawtx =
         "0100000001a7a9402ecd77f3c9f745793c9ec805bfa2e14b89877581c734c774864247e6f50400000000ffffffff03aa0a0000000000001976a9146d18edfe073d53f84dd491dae1379f8fb0dfe5d488ac5c0d0000000000004751210252ce4bdd3ce38b4ebbc5a6e1343608230da508ff12d23d85b58c964204c4cef3210294cc195fc096f87d0f813a337ae7e5f961b1c8a18f1f8604a909b3a5121f065b52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000"
-      req.params.destination =
+      req.body.destination =
         "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg"
 
       const result = await whReference(req, res)
@@ -649,11 +723,11 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.rawtx =
+      req.body.rawtx =
         "0100000001a7a9402ecd77f3c9f745793c9ec805bfa2e14b89877581c734c774864247e6f50400000000ffffffff03aa0a0000000000001976a9146d18edfe073d53f84dd491dae1379f8fb0dfe5d488ac5c0d0000000000004751210252ce4bdd3ce38b4ebbc5a6e1343608230da508ff12d23d85b58c964204c4cef3210294cc195fc096f87d0f813a337ae7e5f961b1c8a18f1f8604a909b3a5121f065b52aeaa0a0000000000001976a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac00000000"
-      req.params.destination =
+      req.body.destination =
         "bchtest:qq2j9gp97gm9a6lwvhxc4zu28qvqm0x4j5e72v7ejg"
-      req.query.amount = 0.005
+      req.body.amount = 0.005
 
       const result = await whReference(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -766,34 +840,13 @@ describe("#Raw-Transactions", () => {
       assert.include(result.error, "inputs can not be empty")
     })
 
-    it("should throw 400 error if inputs are not parsable JSON", async () => {
-      req.params.inputs = "fakeTx"
-
-      const result = await whCreateTx(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
-
-      assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "could not parse inputs")
-    })
-
     it("should throw 400 error if outputs are empty", async () => {
-      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
+      req.body.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "outputs can not be empty")
-    })
-
-    it("should throw 400 error if outputs are not parsable JSON", async () => {
-      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
-      req.params.outputs = "fakeTx"
-
-      const result = await whCreateTx(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
-
-      assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "could not parse outputs")
     })
 
     it("should throw 503 when network issues", async () => {
@@ -803,8 +856,8 @@ describe("#Raw-Transactions", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.inputs = JSON.stringify([mockData.mockWHCreateInput])
-      req.params.outputs = JSON.stringify({})
+      req.body.inputs = JSON.stringify([mockData.mockWHCreateInput])
+      req.body.outputs = JSON.stringify({})
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -830,8 +883,8 @@ describe("#Raw-Transactions", () => {
           })
       }
 
-      req.params.inputs = JSON.stringify([{ txid: "myid", vout: 0 }])
-      req.params.outputs = JSON.stringify({})
+      req.body.inputs = [{ txid: "myid", vout: 0 }]
+      req.body.outputs = {}
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -855,8 +908,8 @@ describe("#Raw-Transactions", () => {
           .reply(200, { result: expected })
       }
 
-      req.params.inputs = JSON.stringify([mockData.mockWHCreateInput])
-      req.params.outputs = JSON.stringify({})
+      req.body.inputs = [mockData.mockWHCreateInput]
+      req.body.outputs = {}
 
       const result = await whCreateTx(req, res)
       //console.log(`result: ${util.inspect(result)}`)

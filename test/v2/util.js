@@ -87,7 +87,7 @@ describe("#Util", () => {
   })
 
   describe("#validateAddress", async () => {
-    const validateAddress = utilRoute.testableComponents.validateAddress
+    const validateAddress = utilRoute.testableComponents.validateAddressSingle
 
     it("should throw an error for an empty address", async () => {
       const result = await validateAddress(req, res)

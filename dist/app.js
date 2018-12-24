@@ -14,7 +14,13 @@ var BitcoinCashZMQDecoder = require("bitcoincash-zmq-decoder");
 var zmq = require("zeromq");
 var sock = zmq.socket("sub");
 var swStats = require("swagger-stats");
-var apiSpec = require("./public/bitcoin-com-rest-v1.json");
+var apiSpec;
+if (process.env.NETWORK === "mainnet") {
+    apiSpec = require("./public/bitcoin-com-mainnet-rest-v2.json");
+}
+else {
+    apiSpec = require("./public/bitcoin-com-testnet-rest-v2.json");
+}
 // v1
 var indexV1 = require("./routes/v1/index");
 var healthCheckV1 = require("./routes/v1/health-check");
@@ -49,6 +55,7 @@ var payloadCreationV2 = require("./routes/v2/payloadCreation");
 var wormholeV2 = require("./routes/v2/wormhole");
 require("dotenv").config();
 var app = express();
+app.locals.env = process.env;
 app.use(swStats.getMiddleware({ swaggerSpec: apiSpec }));
 app.use(helmet());
 app.use(cors());
@@ -137,6 +144,7 @@ app.use(function (err, req, res) {
  */
 var port = normalizePort(process.env.PORT || "3000");
 app.set("port", port);
+console.log("rest.bitcoin.com started on port " + port);
 /**
  * Create HTTP server.
  */

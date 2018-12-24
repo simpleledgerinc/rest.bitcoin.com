@@ -106,46 +106,46 @@ router.get(
 )
 router.get(
   "/balancesForId/:propertyId",
-  config.dataRetrievalRateLimit2,
+  config.dataRetrievalRateLimit3,
   balancesForId
 )
 router.get(
   "/balance/:address/:propertyId",
-  config.dataRetrievalRateLimit3,
+  config.dataRetrievalRateLimit4,
   addressPropertyBalance
 )
 router.get(
   "/balancesHash/:propertyId",
-  config.dataRetrievalRateLimit4,
+  config.dataRetrievalRateLimit5,
   balancesHash
 )
-router.get("/crowdSale/:propertyId", config.dataRetrievalRateLimit5, crowdsale)
+router.get("/crowdSale/:propertyId", config.dataRetrievalRateLimit6, crowdsale)
 router.get(
   "/currentConsensusHash",
-  config.dataRetrievalRateLimit6,
+  config.dataRetrievalRateLimit7,
   getCurrentConsensusHash
 )
 router.get("/grants/:propertyId", config.dataRetrievalRateLimit8, grants)
 
 router.get("/info", config.dataRetrievalRateLimit9, info)
 router.get("/payload/:txid", config.dataRetrievalRateLimit10, payload)
-router.get("/properties", config.dataRetrievalRateLimit17, properties)
-router.get("/property/:propertyId", config.dataRetrievalRateLimit11, property)
+router.get("/properties", config.dataRetrievalRateLimit11, properties)
+router.get("/property/:propertyId", config.dataRetrievalRateLimit12, property)
 router.get(
   "/seedBlocks/:startBlock/:endBlock",
-  config.dataRetrievalRateLimit12,
+  config.dataRetrievalRateLimit13,
   seedBlocks
 )
-router.get("/STO/:txid/:recipientFilter", config.dataRetrievalRateLimit13, sto)
-router.get("/transaction/:txid", config.dataRetrievalRateLimit14, transaction)
+router.get("/STO/:txid/:recipientFilter", config.dataRetrievalRateLimit14, sto)
+router.get("/transaction/:txid", config.dataRetrievalRateLimit15, transaction)
 router.get(
   "/blockTransactions/:index",
-  config.dataRetrievalRateLimit15,
+  config.dataRetrievalRateLimit16,
   blockTransactions
 )
 router.get(
-  "/pendingTransactions",
-  config.dataRetrievalRateLimit16,
+  "/pendingTransactions/:address",
+  config.dataRetrievalRateLimit17,
   pendingTransactions
 )
 router.get(
@@ -162,6 +162,31 @@ router.get(
   "/frozenBalanceForId/:propertyId",
   config.dataRetrievalRateLimit20,
   frozenBalanceForId
+)
+router.get(
+  "/ERC721AddressTokens/:address/:propertyId",
+  config.dataRetrievalRateLimit20,
+  ERC721AddressTokens
+)
+router.get(
+  "/ERC721PropertyDestroyTokens/:propertyId",
+  config.dataRetrievalRateLimit20,
+  ERC721PropertyDestroyTokens
+)
+router.get(
+  "/ERC721PropertyNews/:propertyId",
+  config.dataRetrievalRateLimit20,
+  ERC721PropertyNews
+)
+router.get(
+  "/ERC721TokenNews/:propertyId/:tokenId",
+  config.dataRetrievalRateLimit20,
+  ERC721TokenNews
+)
+router.get(
+  "/ownerOfERC721Token/:propertyId/:tokenId/:address",
+  config.dataRetrievalRateLimit20,
+  ownerOfERC721Token
 )
 
 function root(
@@ -558,10 +583,10 @@ async function property(
   next: express.NextFunction
 ) {
   try {
-    let propertyid = req.params.propertyid
+    let propertyid = req.params.propertyId
     if (!propertyid || propertyid === "") {
       res.status(400)
-      return res.json({ error: "propertyid can not be empty" })
+      return res.json({ error: "propertyId can not be empty" })
     }
     propertyid = parseInt(propertyid)
 
@@ -1005,7 +1030,245 @@ async function frozenBalanceForId(
     requestConfig.data.params = [propertyId]
 
     const response = await BitboxHTTP(requestConfig)
-    
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ERC721AddressTokens(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(req.params.address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${
+          req.params.address
+        }`
+      })
+    }
+
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [req.params.address, propertyId]
+    requestConfig.data.id = "whc_getERC721AddressTokens"
+    requestConfig.data.method = "whc_getERC721AddressTokens"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ERC721PropertyDestroyTokens(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId]
+    requestConfig.data.id = "whc_getERC721PropertyDestroyTokens"
+    requestConfig.data.method = "whc_getERC721PropertyDestroyTokens"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ERC721PropertyNews(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId]
+    requestConfig.data.id = "whc_getERC721PropertyNews"
+    requestConfig.data.method = "whc_getERC721PropertyNews"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ERC721TokenNews(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    let tokenId = req.params.tokenId
+    if (!tokenId || tokenId === "") {
+      res.status(400)
+      return res.json({ error: "tokenId can not be empty" })
+    }
+    tokenId = parseInt(tokenId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId, req.params.tokenId]
+    requestConfig.data.id = "whc_getERC721TokenNews"
+    requestConfig.data.method = "whc_getERC721TokenNews"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ownerOfERC721Token(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    let tokenId = req.params.tokenId
+    if (!tokenId || tokenId === "") {
+      res.status(400)
+      return res.json({ error: "tokenId can not be empty" })
+    }
+    tokenId = parseInt(tokenId)
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(req.params.address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${
+          req.params.address
+        }`
+      })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId, tokenId, req.params.address]
+    requestConfig.data.id = "whc_ownerOfERC721Token"
+    requestConfig.data.method = "whc_ownerOfERC721Token"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
     return res.json(response.data.result)
   } catch (err) {
     // Attempt to decode the error message.
@@ -1042,6 +1305,11 @@ module.exports = {
     pendingTransactions,
     frozenBalance,
     frozenBalanceForAddress,
-    frozenBalanceForId
+    frozenBalanceForId,
+    ERC721AddressTokens,
+    ERC721PropertyDestroyTokens,
+    ERC721PropertyNews,
+    ERC721TokenNews,
+    ownerOfERC721Token
   }
 }

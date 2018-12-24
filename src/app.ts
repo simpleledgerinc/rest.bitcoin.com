@@ -20,7 +20,12 @@ const zmq = require("zeromq")
 const sock: any = zmq.socket("sub")
 
 const swStats = require("swagger-stats")
-const apiSpec = require("./public/bitcoin-com-rest-v1.json")
+let apiSpec
+if (process.env.NETWORK === "mainnet") {
+  apiSpec = require("./public/bitcoin-com-mainnet-rest-v2.json")
+} else {
+  apiSpec = require("./public/bitcoin-com-testnet-rest-v2.json")
+}
 
 // v1
 const indexV1 = require("./routes/v1/index")
@@ -64,6 +69,8 @@ interface IError {
 require("dotenv").config()
 
 const app: express.Application = express()
+
+app.locals.env = process.env
 
 app.use(swStats.getMiddleware({ swaggerSpec: apiSpec }))
 
@@ -187,6 +194,7 @@ app.use((err: IError, req: express.Request, res: express.Response) => {
  */
 const port = normalizePort(process.env.PORT || "3000")
 app.set("port", port)
+console.log(`rest.bitcoin.com started on port ${port}`)
 
 /**
  * Create HTTP server.
