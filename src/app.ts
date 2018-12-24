@@ -150,17 +150,21 @@ app.use(`/${v2prefix}/` + `payloadCreation`, payloadCreationV2.router)
 app.use(`/${v2prefix}/` + `wormhole/transaction`, wormholeV2.router)
 
 // Initialize wormhole/transaction/socket endpoint
-const bchsocketd = require('bchsocketd')
-bchsocketd.init({
-  bit: {
-    host: process.env.WORMHOLE_SOCKET_URL,
-    port: process.env.WORMHOLE_SOCKET_PORT
-  },
-  socket: {
-    app: app,
-    endpoint: `${v2prefix}/wormhole/transaction/socket`
-  }
-})
+const whSocketUrl = process.env.WORMHOLE_SOCKET_URL
+const whSocketPort = process.env.WORMHOLE_SOCKET_PORT
+if (whSocketUrl && whSocketPort) {
+  const bchsocketd = require('bchsocketd')
+  bchsocketd.init({
+    bit: {
+      host: whSocketUrl,
+      port: whSocketPort
+    },
+    socket: {
+      app: app,
+      endpoint: `${v2prefix}/wormhole/transaction/socket`
+    }
+  })
+}
 
 // catch 404 and forward to error handler
 app.use(
