@@ -152,6 +152,23 @@ async function detailsBulk(
 
     const result: Array<any> = []
     addresses = addresses.map(async address => {
+      // Ensure the input is a valid BCH address.
+      if (BITBOX.Address.toLegacyAddress(address)) {
+        res.status(400)
+        return res.json({
+          error: `Invalid BCH address. Double check your address is valid: ${address}`
+        })
+      }
+
+      // Prevent a common user error. Ensure they are using the correct network address.
+      const networkIsValid = routeUtils.validateNetwork(address)
+      if (!networkIsValid) {
+        res.status(400)
+        return res.json({
+          error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+        })
+      }
+
       return await detailsFromInsight(address, currentPage)
     })
 
