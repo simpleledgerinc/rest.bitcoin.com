@@ -1416,6 +1416,50 @@
 				}
 			}
 		},
+		"/address/axios": {
+			"post": {
+				"tags": [
+					"address"
+				],
+				"summary": "Address details bulk",
+				"description": "Returns the details of multiple addresses",
+				"operationId": "detailsAxios",
+				"requestBody": {
+					"description": "Array of addresses",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Addresses"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddressDetailsArray"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Received an invalid Bitcoin Cash address as input.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"status": 500,
+									"message": "Received an invalid Bitcoin Cash address as input."
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/address/utxo/{address}": {
 			"get": {
 				"tags": [
