@@ -127,6 +127,19 @@ describe("#AddressRouter", () => {
       )
     })
 
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.addresses = testArray
+
+      const result = await detailsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 addresses")
+    })
+
     it("should detect a network mismatch", async () => {
       req.body = {
         addresses: [`bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`]
@@ -237,22 +250,24 @@ describe("#AddressRouter", () => {
 
       // Assert that required fields exist in the returned object.
       assert.equal(result.length, 1, "Array with one entry")
-      assert.exists(result[0].addrStr)
-      assert.exists(result[0].balance)
-      assert.exists(result[0].balanceSat)
-      assert.exists(result[0].totalReceived)
-      assert.exists(result[0].totalReceivedSat)
-      assert.exists(result[0].totalSent)
-      assert.exists(result[0].totalSentSat)
-      assert.exists(result[0].unconfirmedBalance)
-      assert.exists(result[0].unconfirmedBalanceSat)
-      assert.exists(result[0].unconfirmedTxApperances)
-      assert.exists(result[0].txApperances)
-      assert.isArray(result[0].transactions)
-      assert.exists(result[0].legacyAddress)
-      assert.exists(result[0].cashAddress)
-      assert.exists(result[0].currentPage)
-      assert.exists(result[0].pagesTotal)
+      assert.hasAllKeys(result[0], [
+        "addrStr",
+        "balance",
+        "balanceSat",
+        "totalReceived",
+        "totalReceivedSat",
+        "totalSent",
+        "totalSentSat",
+        "unconfirmedBalance",
+        "unconfirmedBalanceSat",
+        "unconfirmedTxApperances",
+        "txApperances",
+        "transactions",
+        "legacyAddress",
+        "cashAddress",
+        "currentPage",
+        "pagesTotal"
+      ])
     })
 
     it("should get details for multiple addresses", async () => {
@@ -581,6 +596,19 @@ describe("#AddressRouter", () => {
       assert.isArray(result)
       assert.equal(result.length, 2, "2 outputs for 2 inputs")
     })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.addresses = testArray
+
+      const result = await utxoBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 addresses")
+    })
   })
 
   describe("#AddressUtxoSingle", () => {
@@ -713,6 +741,19 @@ describe("#AddressRouter", () => {
         "addresses needs to be an array",
         "Proper error message"
       )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.addresses = testArray
+
+      const result = await unconfirmedBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 addresses")
     })
 
     it("should throw an error for an invalid address", async () => {
@@ -934,6 +975,19 @@ describe("#AddressRouter", () => {
         "addresses needs to be an array",
         "Proper error message"
       )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.addresses = testArray
+
+      const result = await transactionsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 addresses")
     })
 
     it("should throw an error for an invalid address", async () => {

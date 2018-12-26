@@ -17,6 +17,8 @@ util.inspect.defaultOptions = { depth: 1 }
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
+const FREEMIUM_INPUT_SIZE = 20
+
 interface IRLConfig {
   [addressRateLimit1: string]: any
   addressRateLimit2: any
@@ -140,8 +142,9 @@ async function detailsBulk(
     }
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
         error: "Array too large. Max 20 addresses"
       })
     }
@@ -308,8 +311,9 @@ async function utxoBulk(
     logger.debug(`Executing address/utxoBulk with these addresses: `, addresses)
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
         error: "Array too large. Max 20 addresses"
       })
     }
@@ -444,8 +448,9 @@ async function unconfirmedBulk(
     logger.debug(`Executing address/utxo with these addresses: `, addresses)
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
         error: "Array too large. Max 20 addresses"
       })
     }
@@ -635,8 +640,9 @@ async function transactionsBulk(
     logger.debug(`Executing address/utxo with these addresses: `, addresses)
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
         error: "Array too large. Max 20 addresses"
       })
     }
