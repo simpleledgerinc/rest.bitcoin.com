@@ -58,7 +58,6 @@ while (i < 10) {
 
 // Connect the route endpoints to their handler functions.
 router.get("/", config.addressRateLimit1, root)
-router.post("/axios", config.addressRateLimit2, detailsAxios)
 router.get("/details/:address", config.addressRateLimit2, detailsSingle)
 router.post("/details", config.addressRateLimit3, detailsBulk)
 router.post("/utxo", config.addressRateLimit4, utxoBulk)
@@ -123,7 +122,7 @@ async function detailsFromInsight(
 // POST handler for bulk queries on address details
 // curl -d '{"addresses": ["bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr", "bchtest:qp6hgvevf4gzz6l7pgcte3gaaud9km0l459fa23dul"]}' -H "Content-Type: application/json" http://localhost:3000/v2/address/details
 // curl -d '{"addresses": ["bchtest:qzjtnzcvzxx7s0na88yrg3zl28wwvfp97538sgrrmr", "bchtest:qp6hgvevf4gzz6l7pgcte3gaaud9km0l459fa23dul"], "from": 1, "to": 5}' -H "Content-Type: application/json" http://localhost:3000/v2/address/details
-async function detailsAxios(
+async function detailsBulk(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -159,7 +158,6 @@ async function detailsAxios(
     axios.all(addresses).then(
       axios.spread((...args) => {
         args.forEach((arg: any) => {
-          console.log(arg)
           arg.legacyAddress = BITBOX.Address.toLegacyAddress(arg.addrStr)
           arg.cashAddress = BITBOX.Address.toCashAddress(arg.addrStr)
           delete arg.addrSr
@@ -171,81 +169,6 @@ async function detailsAxios(
     )
 
     // Return the array of retrieved address information.
-  } catch (err) {
-    // Attempt to decode the error message.
-    const { msg, status } = routeUtils.decodeError(err)
-    if (msg) {
-      res.status(status)
-      return res.json({ error: msg })
-    }
-
-    // Write out error to error log.
-    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
-
-    res.status(500)
-    return res.json({ error: util.inspect(err) })
-  }
-}
-
-async function detailsBulk(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
-  try {
-    const addresses = req.body.addresses
-    const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
-
-    // Reject if addresses is not an array.
-    if (!Array.isArray(addresses)) {
-      res.status(400)
-      return res.json({
-        error: "addresses needs to be an array. Use GET for single address."
-      })
-    }
-
-    // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 addresses"
-      })
-    }
-
-    logger.debug(`Executing address/details with these addresses: `, addresses)
-
-    // Loop through each address.
-    const retArray = []
-    for (let i = 0; i < addresses.length; i++) {
-      const thisAddress = addresses[i] // Current address.
-
-      // Ensure the input is a valid BCH address.
-      try {
-        var legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
-      } catch (err) {
-        res.status(400)
-        return res.json({
-          error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
-        })
-      }
-
-      // Prevent a common user error. Ensure they are using the correct network address.
-      const networkIsValid = routeUtils.validateNetwork(thisAddress)
-      if (!networkIsValid) {
-        res.status(400)
-        return res.json({
-          error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
-        })
-      }
-
-      // Query the Insight API.
-      const retData = await detailsFromInsight(thisAddress, currentPage)
-
-      retArray.push(retData)
-    }
-
-    // Return the array of retrieved address information.
-    res.status(200)
-    return res.json(retArray)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -828,7 +751,6 @@ module.exports = {
   router,
   testableComponents: {
     root,
-    detailsAxios,
     detailsBulk,
     detailsSingle,
     utxoBulk,
