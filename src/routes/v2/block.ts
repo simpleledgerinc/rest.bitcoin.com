@@ -14,6 +14,8 @@ util.inspect.defaultOptions = { depth: 1 }
 const router: express.Router = express.Router()
 //const BitboxHTTP = bitbox.getInstance()
 
+const FREEMIUM_INPUT_SIZE = 20
+
 const RateLimit = require("express-rate-limit")
 
 interface IRLConfig {
@@ -120,10 +122,11 @@ async function detailsByHashBulk(
       })
     }
 
-    // Enforce no more than 20 hashes.
-    if (hashes.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 hashes"
+    // Enforce no more than 20 addresses.
+    if (hashes.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: "Array too large. Max 20 hashs"
       })
     }
 
@@ -135,11 +138,7 @@ async function detailsByHashBulk(
       const thisHash = hashes[i] // Current hash.
 
       // Ensure the input is a valid BCH address.
-      try {
-        if (thisHash.length !== 64) {
-          throw "This is not a hash"
-        }
-      } catch (err) {
+      if(thisHash.length !== 64) {
         res.status(400)
         return res.json({
           error: `Invalid hash. Double check your hash is valid: ${thisHash}`
