@@ -1720,3 +1720,7 @@
 .swagger-ui a:active {
   color: #34495e;
 }
+
+.swagger-ui .opblock-body pre .headerline {
+  display: block;
+}
