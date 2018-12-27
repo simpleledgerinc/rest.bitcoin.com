@@ -112,7 +112,7 @@ async function detailsByHashBulk(
   try {
     let hashes = req.body.hashes
 
-    // Loop through each hashes and creates an array of requests to call in parallel
+    // Loop through each hash and creates an array of requests to call in parallel
     hashes = hashes.map(async (hash: any) => {
       try {
         if (hash.length !== 64) {

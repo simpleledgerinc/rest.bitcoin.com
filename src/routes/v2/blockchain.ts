@@ -306,7 +306,7 @@ async function getBlockHeaderBulk(
       hashes
     )
 
-    // Loop through each hashes and creates an array of requests to call in parallel
+    // Loop through each hash and creates an array of requests to call in parallel
     hashes = hashes.map(async (hash: any) => {
       // Ensure the input is a valid BCH hash.
       try {
