@@ -2,6 +2,7 @@
 
 import * as express from "express"
 import * as requestUtils from "./services/requestUtils"
+import { IResponse } from "./interfaces/IResponse"
 import axios from "axios"
 const logger = require("./logging.js")
 const routeUtils = require("./route-utils")
@@ -149,14 +150,8 @@ async function detailsBulk(
     logger.debug(`Executing address/details with these addresses: `, addresses)
 
     // Loop through each address.
-
     const result: Array<any> = []
-    let returnStatus: {
-      status: number
-      json: {
-        error: string
-      }
-    } = {
+    let returnStatus: IResponse = {
       status: 100,
       json: {
         error: ""
@@ -322,15 +317,20 @@ async function utxoBulk(
   next: express.NextFunction
 ) {
   try {
-    const addresses = req.body.addresses
+    const result: Array<any> = []
+    let returnStatus: IResponse = {
+      status: 100,
+      json: {
+        error: ""
+      }
+    }
+    let addresses = req.body.addresses
 
     // Reject if address is not an array.
     if (!Array.isArray(addresses)) {
       res.status(400)
       return res.json({ error: "addresses needs to be an array" })
     }
-
-    logger.debug(`Executing address/utxoBulk with these addresses: `, addresses)
 
     // Enforce no more than 20 addresses.
     if (addresses.length > 20) {
@@ -339,38 +339,47 @@ async function utxoBulk(
       })
     }
 
-    // Loop through each address.
-    const retArray = []
-    for (let i = 0; i < addresses.length; i++) {
-      const thisAddress = addresses[i] // Current address.
+    logger.debug(`Executing address/utxoBulk with these addresses: `, addresses)
 
+    addresses = addresses.map(async (address: any, index: number) => {
       // Ensure the input is a valid BCH address.
       try {
-        var legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
-      } catch (err) {
-        res.status(400)
-        return res.json({
-          error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
-        })
+        BITBOX.Address.toLegacyAddress(address)
+      } catch (er) {
+        if (er.message.includes("Unsupported address format"))
+          returnStatus.status = 400
+        returnStatus.json = {
+          error: `Invalid BCH address. Double check your address is valid: ${address}`
+        }
+        return
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
-      const networkIsValid = routeUtils.validateNetwork(thisAddress)
+      const networkIsValid = routeUtils.validateNetwork(address)
       if (!networkIsValid) {
-        res.status(400)
-        return res.json({
+        returnStatus.status = 400
+        returnStatus.json = {
           error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
-        })
+        }
       }
 
-      const retData = await utxoFromInsight(thisAddress)
+      const retData = await utxoFromInsight(address)
+    })
 
-      retArray.push(retData)
+    if (returnStatus.status !== 100) {
+      res.status(returnStatus.status)
+      return res.json(returnStatus.json)
     }
 
-    // Return the array of retrieved address information.
-    res.status(200)
-    return res.json(retArray)
+    axios.all(addresses).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          result.push(arg)
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -458,7 +467,14 @@ async function unconfirmedBulk(
   next: express.NextFunction
 ) {
   try {
-    const addresses = req.body.addresses
+    const result: Array<any> = []
+    let returnStatus: IResponse = {
+      status: 100,
+      json: {
+        error: ""
+      }
+    }
+    let addresses = req.body.addresses
 
     // Reject if address is not an array.
     if (!Array.isArray(addresses)) {
@@ -476,43 +492,55 @@ async function unconfirmedBulk(
     }
 
     // Loop through each address.
-    const retArray = []
-    for (let i = 0; i < addresses.length; i++) {
-      const thisAddress = addresses[i] // Current address.
-
+    addresses = addresses.map(async (address: any, index: number) => {
       // Ensure the input is a valid BCH address.
       try {
-        var legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
-      } catch (err) {
-        res.status(400)
-        return res.json({
-          error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
-        })
+        BITBOX.Address.toLegacyAddress(address)
+      } catch (er) {
+        if (er.message.includes("Unsupported address format"))
+          returnStatus.status = 400
+        returnStatus.json = {
+          error: `Invalid BCH address. Double check your address is valid: ${address}`
+        }
+        return
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
-      const networkIsValid = routeUtils.validateNetwork(thisAddress)
+      const networkIsValid = routeUtils.validateNetwork(address)
       if (!networkIsValid) {
-        res.status(400)
-        return res.json({
+        returnStatus.status = 400
+        returnStatus.json = {
           error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
-        })
+        }
       }
 
-      const retData = await utxoFromInsight(thisAddress)
+      const retData = await utxoFromInsight(address)
 
       // Loop through each returned UTXO.
       for (let j = 0; j < retData.utxos.length; j++) {
         const thisUtxo = (<any>retData.utxos)[j]
 
         // Only interested in UTXOs with no confirmations.
-        if (thisUtxo.confirmations === 0) retArray.push(thisUtxo)
+        if (thisUtxo.confirmations !== 0) return thisUtxo
       }
+    })
+
+    if (returnStatus.status !== 100) {
+      res.status(returnStatus.status)
+      return res.json(returnStatus.json)
     }
 
-    // Return the array of retrieved address information.
-    res.status(200)
-    return res.json(retArray)
+    axios.all(addresses).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -648,7 +676,14 @@ async function transactionsBulk(
   next: express.NextFunction
 ) {
   try {
-    const addresses = req.body.addresses
+    const result: Array<any> = []
+    let returnStatus: IResponse = {
+      status: 100,
+      json: {
+        error: ""
+      }
+    }
+    let addresses = req.body.addresses
     const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
 
     // Reject if address is not an array.
@@ -667,37 +702,47 @@ async function transactionsBulk(
     }
 
     // Loop through each address.
-    const retArray = []
-    for (let i = 0; i < addresses.length; i++) {
-      const thisAddress = addresses[i] // Current address.
-
+    addresses = addresses.map(async (address: any, index: number) => {
       // Ensure the input is a valid BCH address.
       try {
-        BITBOX.Address.toLegacyAddress(thisAddress)
-      } catch (err) {
-        res.status(400)
-        return res.json({
-          error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
-        })
+        BITBOX.Address.toLegacyAddress(address)
+      } catch (er) {
+        if (er.message.includes("Unsupported address format"))
+          returnStatus.status = 400
+        returnStatus.json = {
+          error: `Invalid BCH address. Double check your address is valid: ${address}`
+        }
+        return
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
-      const networkIsValid = routeUtils.validateNetwork(thisAddress)
+      const networkIsValid = routeUtils.validateNetwork(address)
       if (!networkIsValid) {
-        res.status(400)
-        return res.json({
+        returnStatus.status = 400
+        returnStatus.json = {
           error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
-        })
+        }
       }
 
-      const retData = await transactionsFromInsight(thisAddress, currentPage)
+      const retData = await transactionsFromInsight(address, currentPage)
+    })
 
-      retArray.push(retData)
+    if (returnStatus.status !== 100) {
+      res.status(returnStatus.status)
+      return res.json(returnStatus.json)
     }
 
-    // Return the array of retrieved address information.
-    res.status(200)
-    return res.json(retArray)
+    axios.all(addresses).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
