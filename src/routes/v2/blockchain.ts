@@ -284,7 +284,7 @@ async function getBlockHeaderBulk(
   next: express.NextFunction
 ) {
   try {
-    const hashes = req.body.hashes
+    let hashes = req.body.hashes
     const verbose = req.body.verbose ? req.body.verbose : false
 
     if (!Array.isArray(hashes)) {
@@ -306,14 +306,11 @@ async function getBlockHeaderBulk(
       hashes
     )
 
-    // Loop through each hash.
-    const retArray = []
-    for (let i = 0; i < hashes.length; i++) {
-      const thisHash = hashes[i] // Current hash.
-
+    // Loop through each hashes and creates an array of requests to call in parallel
+    hashes = hashes.map(async (hash: any) => {
       // Ensure the input is a valid BCH hash.
       try {
-        if (thisHash.length !== 64) {
+        if (hash.length !== 64) {
           throw "This is not a hash"
         }
       } catch (err) {
@@ -332,16 +329,23 @@ async function getBlockHeaderBulk(
 
       requestConfig.data.id = "getblockheader"
       requestConfig.data.method = "getblockheader"
-      requestConfig.data.params = [thisHash, verbose]
+      requestConfig.data.params = [hash, verbose]
 
-      const retData = await BitboxHTTP(requestConfig)
+      return await BitboxHTTP(requestConfig)
+    })
 
-      retArray.push(retData.data.result)
-    }
-
-    // Return the array of retrieved block information.
-    res.status(200)
-    return res.json(retArray)
+    const result: Array<any> = []
+    return axios.all(hashes).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg.data.result)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -480,7 +484,7 @@ async function getMempoolEntryBulk(
   next: express.NextFunction
 ) {
   try {
-    const txids = req.body.txids
+    let txids = req.body.txids
 
     if (!Array.isArray(txids)) {
       res.status(400)
@@ -501,13 +505,10 @@ async function getMempoolEntryBulk(
       txids
     )
 
-    // Loop through each hash.
-    const retArray = []
-    for (let i = 0; i < txids.length; i++) {
-      const thisTxid = txids[i] // Current txid.
-
+    // Loop through each txid and creates an array of requests to call in parallel
+    txids = txids.map(async (txid: any) => {
       try {
-        if (thisTxid.length !== 64) {
+        if (txid.length !== 64) {
           throw "This is not a txid"
         }
       } catch (err) {
@@ -526,16 +527,23 @@ async function getMempoolEntryBulk(
 
       requestConfig.data.id = "getmempoolentry"
       requestConfig.data.method = "getmempoolentry"
-      requestConfig.data.params = [thisTxid]
+      requestConfig.data.params = [txid]
 
-      const retData = await BitboxHTTP(requestConfig)
+      return await BitboxHTTP(requestConfig)
+    })
 
-      retArray.push(retData.data.result)
-    }
-
-    // Return the array of retrieved block information.
-    res.status(200)
-    return res.json(retArray)
+    const result: Array<any> = []
+    return axios.all(txids).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg.data.result)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -732,7 +740,7 @@ async function getTxOutProofBulk(
   next: express.NextFunction
 ) {
   try {
-    const txids = req.body.txids
+    let txids = req.body.txids
 
     // Reject if txids is not an array.
     if (!Array.isArray(txids)) {
@@ -751,20 +759,17 @@ async function getTxOutProofBulk(
 
     logger.debug(`Executing blockchain/getTxOutProof with these txids: `, txids)
 
-    // Loop through each txid.
-    const retArray = []
-    for (let i = 0; i < txids.length; i++) {
-      const thisTxid = txids[i] // Current txid.
-
+    // Loop through each txid and creates an array of requests to call in parallel
+    txids = txids.map(async (txid: any) => {
       // Ensure the input is a valid txid.
       try {
-        if (thisTxid.length !== 64) {
+        if (txid.length !== 64) {
           throw "This is not a txid"
         }
       } catch (err) {
         res.status(400)
         return res.json({
-          error: `Invalid txid. Double check your txid is valid: ${thisTxid}`
+          error: `Invalid txid. Double check your txid is valid: ${txid}`
         })
       }
 
@@ -777,21 +782,29 @@ async function getTxOutProofBulk(
 
       requestConfig.data.id = "gettxoutproof"
       requestConfig.data.method = "gettxoutproof"
-      requestConfig.data.params = [[thisTxid]]
+      requestConfig.data.params = [[txid]]
 
-      const response = await BitboxHTTP(requestConfig)
+      return await BitboxHTTP(requestConfig)
+    })
 
-      interface Tmp {
-        [txid: string]: any
-      }
+    const result: Array<any> = []
+    return axios.all(txids).then(
+      axios.spread((...args) => {
+        args.forEach((txid: any, index: number) => {
+          if (txid) {
+            interface Tmp {
+              [txid: string]: any
+            }
 
-      let tmp: Tmp = {}
-      tmp[thisTxid] = response.data.result
-      retArray.push(tmp)
-    }
-
-    res.status(200)
-    return res.json(retArray)
+            let tmp: Tmp = {}
+            tmp[req.body.txids[index]] = txid.data.result
+            result.push(tmp)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -929,7 +942,7 @@ async function verifyTxOutProofBulk(
   next: express.NextFunction
 ) {
   try {
-    const proofs = req.body.proofs
+    let proofs = req.body.proofs
 
     // Reject if proofs is not an array.
     if (!Array.isArray(proofs)) {
@@ -951,11 +964,9 @@ async function verifyTxOutProofBulk(
       proofs
     )
 
-    // Loop through each proof.
-    const retArray = []
-    for (let i = 0; i < proofs.length; i++) {
-      const thisProof = proofs[i] // Current proof.
-      if (!thisProof || thisProof === "") {
+    // Loop through each proof and creates an array of requests to call in parallel
+    proofs = proofs.map(async (proof: any) => {
+      if (!proof || proof === "") {
         res.status(400)
         return res.json({ error: "proof can not be empty" })
       }
@@ -969,21 +980,29 @@ async function verifyTxOutProofBulk(
 
       requestConfig.data.id = "verifytxoutproof"
       requestConfig.data.method = "verifytxoutproof"
-      requestConfig.data.params = [thisProof]
+      requestConfig.data.params = [proof]
 
-      const response = await BitboxHTTP(requestConfig)
+      return await BitboxHTTP(requestConfig)
+    })
 
-      interface Tmp {
-        [txid: string]: any
-      }
+    const result: Array<any> = []
+    return axios.all(proofs).then(
+      axios.spread((...args) => {
+        args.forEach((proof: any, index: number) => {
+          if (proof) {
+            interface Tmp {
+              [proof: string]: any
+            }
 
-      let tmp: Tmp = {}
-      tmp[thisProof] = response.data.result
-      retArray.push(tmp)
-    }
-
-    res.status(200)
-    return res.json(retArray)
+            let tmp: Tmp = {}
+            tmp[req.body.proofs[index]] = proof.data.result
+            result.push(tmp)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)

@@ -198,12 +198,12 @@ async function detailsBulk(
           delete arg.addrSr
           result.push(arg)
         })
+
+        // Return the array of retrieved address information.
         res.status(200)
         return res.json(result)
       })
     )
-
-    // Return the array of retrieved address information.
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
