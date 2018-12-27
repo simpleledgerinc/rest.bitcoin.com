@@ -366,7 +366,7 @@ async function utxoBulk(
         }
       }
 
-      const retData = await utxoFromInsight(address)
+      return await utxoFromInsight(address)
     })
 
     if (returnResponse.status !== 100) {
@@ -727,7 +727,7 @@ async function transactionsBulk(
         }
       }
 
-      const retData = await transactionsFromInsight(address, currentPage)
+      return await transactionsFromInsight(address, currentPage)
     })
 
     if (returnResponse.status !== 100) {
