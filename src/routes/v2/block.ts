@@ -222,7 +222,7 @@ async function detailsByHeightBulk(
     }
 
     logger.debug(`Executing detailsByHeight with these heights: `, heights)
-    // Loop through each heights and creates an array of requests to call in parallel
+    // Loop through each height and creates an array of requests to call in parallel
     heights = heights.map(async (height: any) => {
       // Reject if id is empty
       if (!height || height === "") {
