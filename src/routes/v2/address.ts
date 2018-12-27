@@ -149,14 +149,15 @@ async function detailsBulk(
 
     logger.debug(`Executing address/details with these addresses: `, addresses)
 
-    // Loop through each address.
-    const result: Array<any> = []
+    // stub response object
     let returnResponse: IResponse = {
       status: 100,
       json: {
         error: ""
       }
     }
+
+    // Loop through each address and creates an array of insight requests to call in parallel
     addresses = addresses.map(async (address: any, index: number) => {
       // Ensure the input is a valid BCH address.
       try {
@@ -182,12 +183,14 @@ async function detailsBulk(
       return await detailsFromInsight(address, currentPage)
     })
 
+    // if any input errors return response
     if (returnResponse.status !== 100) {
       res.status(returnResponse.status)
       return res.json(returnResponse.json)
     }
 
-    axios.all(addresses).then(
+    const result: Array<any> = []
+    return axios.all(addresses).then(
       axios.spread((...args) => {
         args.forEach((arg: any) => {
           arg.legacyAddress = BITBOX.Address.toLegacyAddress(arg.addrStr)
@@ -371,7 +374,7 @@ async function utxoBulk(
       return res.json(returnResponse.json)
     }
 
-    axios.all(addresses).then(
+    return axios.all(addresses).then(
       axios.spread((...args) => {
         args.forEach((arg: any) => {
           result.push(arg)
@@ -530,7 +533,7 @@ async function unconfirmedBulk(
       return res.json(returnResponse.json)
     }
 
-    axios.all(addresses).then(
+    return axios.all(addresses).then(
       axios.spread((...args) => {
         args.forEach((arg: any) => {
           if (arg) {
@@ -732,7 +735,7 @@ async function transactionsBulk(
       return res.json(returnResponse.json)
     }
 
-    axios.all(addresses).then(
+    return axios.all(addresses).then(
       axios.spread((...args) => {
         args.forEach((arg: any) => {
           if (arg) {
