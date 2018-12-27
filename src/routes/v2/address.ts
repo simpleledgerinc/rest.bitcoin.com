@@ -151,26 +151,46 @@ async function detailsBulk(
     // Loop through each address.
 
     const result: Array<any> = []
-    addresses = addresses.map(async address => {
+    let returnStatus: {
+      status: number
+      json: {
+        error: string
+      }
+    } = {
+      status: 100,
+      json: {
+        error: ""
+      }
+    }
+    addresses = addresses.map(async (address: any, index: number) => {
       // Ensure the input is a valid BCH address.
-      if (BITBOX.Address.toLegacyAddress(address)) {
-        res.status(400)
-        return res.json({
+      try {
+        BITBOX.Address.toLegacyAddress(address)
+      } catch (er) {
+        if (er.message.includes("Unsupported address format"))
+          returnStatus.status = 400
+        returnStatus.json = {
           error: `Invalid BCH address. Double check your address is valid: ${address}`
-        })
+        }
+        return
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
       const networkIsValid = routeUtils.validateNetwork(address)
       if (!networkIsValid) {
-        res.status(400)
-        return res.json({
+        returnStatus.status = 400
+        returnStatus.json = {
           error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
-        })
+        }
       }
 
       return await detailsFromInsight(address, currentPage)
     })
+
+    if (returnStatus.status !== 100) {
+      res.status(returnStatus.status)
+      return res.json(returnStatus.json)
+    }
 
     axios.all(addresses).then(
       axios.spread((...args) => {
@@ -181,7 +201,7 @@ async function detailsBulk(
           result.push(arg)
         })
         res.status(200)
-        res.json(result)
+        return res.json(result)
       })
     )
 
