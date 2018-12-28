@@ -125,7 +125,7 @@ async function validateAddressBulk(
   next: express.NextFunction
 ) {
   try {
-    const addresses = req.body.addresses
+    let addresses = req.body.addresses
 
     // Reject if addresses is not an array.
     if (!Array.isArray(addresses)) {
@@ -144,23 +144,20 @@ async function validateAddressBulk(
 
     logger.debug(`Executing util/validate with these addresses: `, addresses)
 
-    // Loop through each address.
-    const retArray = []
-    for (let i = 0; i < addresses.length; i++) {
-      const thisAddress = addresses[i] // Current address.
-
+    // Loop through each address and creates an array of requests to call in parallel
+    addresses = addresses.map(async (address: any) => {
       // Ensure the input is a valid BCH address.
       try {
-        var legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
+        var legacyAddr = BITBOX.Address.toLegacyAddress(address)
       } catch (err) {
         res.status(400)
         return res.json({
-          error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
+          error: `Invalid BCH address. Double check your address is valid: ${address}`
         })
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
-      const networkIsValid = routeUtils.validateNetwork(thisAddress)
+      const networkIsValid = routeUtils.validateNetwork(address)
       if (!networkIsValid) {
         res.status(400)
         return res.json({
@@ -177,16 +174,23 @@ async function validateAddressBulk(
 
       requestConfig.data.id = "validateaddress"
       requestConfig.data.method = "validateaddress"
-      requestConfig.data.params = [thisAddress]
+      requestConfig.data.params = [address]
 
-      const response = await BitboxHTTP(requestConfig)
+      return await BitboxHTTP(requestConfig)
+    })
 
-      retArray.push(response.data.result)
-    }
-
-    // Return the array of retrieved address information.
-    res.status(200)
-    return res.json(retArray)
+    const result: Array<any> = []
+    return axios.all(addresses).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)

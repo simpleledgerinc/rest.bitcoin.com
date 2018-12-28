@@ -662,7 +662,7 @@ describe("#AddressRouter", () => {
       const savedUrl = process.env.BITCOINCOM_BASEURL
 
       try {
-        req.params.address = `qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`
+        req.params.address = `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`
 
         // Switch the Insight URL to something that will error out.
         process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"

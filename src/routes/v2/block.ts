@@ -112,49 +112,36 @@ async function detailsByHashBulk(
   next: express.NextFunction
 ) {
   try {
-    const hashes = req.body.hashes
+    let hashes = req.body.hashes
 
-    // Reject if hashes is not an array.
-    if (!Array.isArray(hashes)) {
-      res.status(400)
-      return res.json({
-        error: "hashes needs to be an array. Use GET for single hash."
-      })
-    }
-
-    // Enforce no more than 20 addresses.
-    if (hashes.length > FREEMIUM_INPUT_SIZE) {
-      res.status(400)
-      return res.json({
-        error: "Array too large. Max 20 hashs"
-      })
-    }
-
-    logger.debug(`Executing detailsByHash with these hashes: `, hashes)
-
-    // Loop through each hash.
-    const retArray = []
-    for (let i = 0; i < hashes.length; i++) {
-      const thisHash = hashes[i] // Current hash.
-
-      // Ensure the input is a valid BCH address.
-      if(thisHash.length !== 64) {
+    // Loop through each hash and creates an array of requests to call in parallel
+    hashes = hashes.map(async (hash: any) => {
+      try {
+        if (hash.length !== 64) {
+          throw "This is not a hash"
+        }
+      } catch (err) {
         res.status(400)
         return res.json({
-          error: `Invalid hash. Double check your hash is valid: ${thisHash}`
+          error: `Invalid hash. Double check your hash is valid: ${hash}`
         })
       }
 
-      const response = await axios.get(
-        `${process.env.BITCOINCOM_BASEURL}block/${thisHash}`
-      )
+      return await axios.get(`${process.env.BITCOINCOM_BASEURL}block/${hash}`)
+    })
 
-      retArray.push(response.data)
-    }
-
-    // Return the array of retrieved address information.
-    res.status(200)
-    return res.json(retArray)
+    const result: Array<any> = []
+    return axios.all(hashes).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (error) {
     // Write out error to error log.
     //logger.error(`Error in block/detailsByHash: `, error)
@@ -219,7 +206,7 @@ async function detailsByHeightBulk(
   next: express.NextFunction
 ) {
   try {
-    const heights = req.body.heights
+    let heights = req.body.heights
 
     // Reject if heights is not an array.
     if (!Array.isArray(heights)) {
@@ -237,14 +224,10 @@ async function detailsByHeightBulk(
     }
 
     logger.debug(`Executing detailsByHeight with these heights: `, heights)
-
-    // Loop through each height.
-    const retArray = []
-    for (let i = 0; i < heights.length; i++) {
-      const thisHeight = heights[i] // Current height.
-
+    // Loop through each height and creates an array of requests to call in parallel
+    heights = heights.map(async (height: any) => {
       // Reject if id is empty
-      if (!thisHeight || thisHeight === "") {
+      if (!height || height === "") {
         res.status(400)
         return res.json({ error: "height must not be empty" })
       }
@@ -258,28 +241,27 @@ async function detailsByHeightBulk(
 
       requestConfig.data.id = "getblockhash"
       requestConfig.data.method = "getblockhash"
-      requestConfig.data.params = [parseInt(thisHeight)]
+      requestConfig.data.params = [parseInt(height)]
 
       const response = await BitboxHTTP(requestConfig)
 
       const hash = response.data.result
-      //console.log(`hash: ${hash}`)
 
-      // Call detailsByHashSingle now that the hash has been retrieved.
-      // req.params.hash = hash
-      // return detailsByHashSingle(req, res, next)
-      // console.log(response)
+      return await axios.get(`${process.env.BITCOINCOM_BASEURL}block/${hash}`)
+    })
 
-      const resp = await axios.get(
-        `${process.env.BITCOINCOM_BASEURL}block/${hash}`
-      )
-
-      retArray.push(resp.data)
-    }
-
-    // Return the array of retrieved address information.
-    res.status(200)
-    return res.json(retArray)
+    const result: Array<any> = []
+    return axios.all(heights).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (error) {
     // Write out error to error log.
     //logger.error(`Error in block/detailsByHash: `, error)
