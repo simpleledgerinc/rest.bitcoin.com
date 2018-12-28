@@ -462,7 +462,7 @@ describe("#AddressRouter", () => {
       ])
     })
   })
-  /*
+
   describe("#AddressUtxoBulk", () => {
     // utxo route handler.
     const utxoBulk = addressRoute.testableComponents.utxoBulk
@@ -1058,7 +1058,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1080,7 +1080,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=5`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1101,7 +1101,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1131,13 +1131,13 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
 
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr.
+            `/txs/?address=bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1228,7 +1228,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1248,7 +1248,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=5`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1267,7 +1267,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1285,5 +1285,4 @@ describe("#AddressRouter", () => {
       assert.exists(result.cashAddress)
     })
   })
-  */
 })
