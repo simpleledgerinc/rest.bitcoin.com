@@ -93,7 +93,8 @@ function decodeError(err) {
     // Attempt to detect a network connection error.
     if (err.message && err.message.indexOf("ENOTFOUND") > -1) {
       return {
-        msg: "Network error: Could not communicate with full node.",
+        msg:
+          "Network error: Could not communicate with full node or Insight API.",
         status: 503
       }
     }
@@ -101,7 +102,8 @@ function decodeError(err) {
     // Different kind of network error
     if (err.message && err.message.indexOf("ENETUNREACH") > -1) {
       return {
-        msg: "Network error: Could not communicate with full node.",
+        msg:
+          "Network error: Could not communicate with full node or Insight API.",
         status: 503
       }
     }
