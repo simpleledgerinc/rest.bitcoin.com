@@ -163,7 +163,7 @@ describe("#Block", () => {
       assert.isArray(result.tx)
     })
   })
-
+  /*
   describe("#detailsByHashBulk", () => {
     // details route handler.
     const detailsByHashBulk = blockRoute.testableComponents.detailsByHashBulk
@@ -247,7 +247,7 @@ describe("#Block", () => {
         process.env.BITCOINCOM_BASEURL = savedUrl
       }
     })
-    /*
+
     it("should get details for a single hash", async () => {
       req.body = {
         hashes: [
@@ -289,7 +289,7 @@ describe("#Block", () => {
       ])
     })
 */
-    /*
+  /*
     it("should get details for multiple addresses", async () => {
       req.body = {
         addresses: [
@@ -330,9 +330,9 @@ describe("#Block", () => {
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(result.error, "This is not a hash", "Proper error message")
     })
-    */
-  })
 
+  })
+*/
   describe("Block Details By Height", () => {
     // block route handler.
     const detailsByHeight = blockRoute.testableComponents.detailsByHeightSingle
