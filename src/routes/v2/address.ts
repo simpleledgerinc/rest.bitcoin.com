@@ -18,6 +18,13 @@ util.inspect.defaultOptions = { depth: 1 }
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
+// Max number of items per request for freemium access.
+const FREEMIUM_INPUT_SIZE = 20
+
+// Use the default (and max) page size of 1000
+// https://github.com/bitpay/insight-api#notes-on-upgrading-from-v03
+const PAGE_SIZE = 1000
+
 interface IRLConfig {
   [addressRateLimit1: string]: any
   addressRateLimit2: any
@@ -82,40 +89,28 @@ function root(
 }
 
 // Query the Insight API for details on a single BCH address.
+// Returns a Promise.
 async function detailsFromInsight(
   thisAddress: string,
   currentPage: number = 0
 ) {
   try {
-    // Use the default (and max) page size of 1000
-    // https://github.com/bitpay/insight-api#notes-on-upgrading-from-v03
-    const pageSize = 1000
-
     const legacyAddr = BITBOX.Address.toLegacyAddress(thisAddress)
 
     let path = `${process.env.BITCOINCOM_BASEURL}addr/${legacyAddr}`
 
     // Set from and to params based on currentPage and pageSize
     // https://github.com/bitpay/insight-api/blob/master/README.md#notes-on-upgrading-from-v02
-    const from = currentPage * pageSize
-    const to = from + pageSize
+    const from = currentPage * PAGE_SIZE
+    const to = from + PAGE_SIZE
     path = `${path}?from=${from}&to=${to}`
 
     // Query the Insight server.
-    const response = await axios.get(path)
+    const insightPromise = axios.get(path)
 
-    // Calculate pagesTotal from response
-    const pagesTotal = Math.ceil(response.data.txApperances / pageSize)
-
-    // Append different address formats to the return data.
-    const retData = response.data
-    retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
-    retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
-    retData.currentPage = currentPage
-    retData.pagesTotal = pagesTotal
-
-    return retData
+    return insightPromise
   } catch (err) {
+    logger.error(`Error in detailsFromInsight(): `, err)
     throw err
   }
 }
@@ -141,70 +136,75 @@ async function detailsBulk(
     }
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
         error: "Array too large. Max 20 addresses"
       })
     }
 
     logger.debug(`Executing address/details with these addresses: `, addresses)
 
-    // stub response object
-    let returnResponse: IResponse = {
-      status: 100,
-      json: {
-        error: ""
-      }
-    }
+    // Validate each element in the address array.
+    for(let i=0; i < addresses.length; i++) {
+      const thisAddress = addresses[i]
 
-    // Loop through each address and creates an array of insight requests to call in parallel
-    addresses = addresses.map(async (address: any, index: number) => {
       // Ensure the input is a valid BCH address.
       try {
-        BITBOX.Address.toLegacyAddress(address)
-      } catch (er) {
-        if (er.message.includes("Unsupported address format"))
-          returnResponse.status = 400
-        returnResponse.json = {
-          error: `Invalid BCH address. Double check your address is valid: ${address}`
+        BITBOX.Address.toLegacyAddress(thisAddress)
+      } catch (err) {
+        if (err.message.includes("Unsupported address format")) {
+          res.status(400)
+          return res.json({
+            error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
+          })
         }
-        return
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
-      const networkIsValid = routeUtils.validateNetwork(address)
+      const networkIsValid = routeUtils.validateNetwork(thisAddress)
       if (!networkIsValid) {
-        returnResponse.status = 400
-        returnResponse.json = {
-          error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
-        }
+        res.status(400)
+        return res.json({
+          error: `Invalid network for address ${thisAddress}. Trying to use a testnet address on mainnet, or vice versa.`
+        })
       }
-
-      return await detailsFromInsight(address, currentPage)
-    })
-
-    // if any input errors return response
-    if (returnResponse.status !== 100) {
-      res.status(returnResponse.status)
-      return res.json(returnResponse.json)
     }
 
-    const result: Array<any> = []
-    return axios.all(addresses).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          arg.legacyAddress = BITBOX.Address.toLegacyAddress(arg.addrStr)
-          arg.cashAddress = BITBOX.Address.toCashAddress(arg.addrStr)
-          delete arg.addrSr
-          result.push(arg)
-        })
+    // Loops through each address and creates an array of Promises, querying
+    // Insight API in parallel.
+    addresses = addresses.map(async (address: any, index: number) => {
+      return detailsFromInsight(address, currentPage)
+    })
 
-        // Return the array of retrieved address information.
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Wait for all parallel Insight requests to return.
+    let result: Array<any> = await axios.all(addresses)
+
+    // Add additional metadata to each element.
+    result = result.map((element: any) => {
+      const thisData = element.data
+
+      // Calculate pagesTotal from response
+      const pagesTotal = Math.ceil(thisData.txApperances / PAGE_SIZE)
+
+      // Append different address formats to the return data.
+      thisData.legacyAddress = BITBOX.Address.toLegacyAddress(thisData.addrStr)
+      thisData.cashAddress = BITBOX.Address.toCashAddress(thisData.addrStr)
+      delete thisData.addrStr
+
+      // Append pagination information to the return data.
+      thisData.currentPage = currentPage
+      thisData.pagesTotal = pagesTotal
+
+      return thisData
+    })
+
+    // Return the array of retrieved address information.
+    res.status(200)
+    return res.json(result)
   } catch (err) {
+    //logger.error(`Error in detailsBulk(): `, err)
+
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {
@@ -265,9 +265,22 @@ async function detailsSingle(
     }
 
     // Query the Insight API.
-    const retData = await detailsFromInsight(address, currentPage)
+    let retData: any = await detailsFromInsight(address, currentPage)
+    retData = retData.data
 
-    // Return the array of retrieved address information.
+    // Calculate pagesTotal from response
+    const pagesTotal = Math.ceil(retData.txApperances / PAGE_SIZE)
+
+    // Append different address formats to the return data.
+    retData.legacyAddress = BITBOX.Address.toLegacyAddress(retData.addrStr)
+    retData.cashAddress = BITBOX.Address.toCashAddress(retData.addrStr)
+    delete retData.addrStr
+
+    // Append pagination information to the return data.
+    retData.currentPage = currentPage
+    retData.pagesTotal = pagesTotal
+
+    // Return the retrieved address information.
     res.status(200)
     return res.json(retData)
   } catch (err) {
@@ -336,8 +349,9 @@ async function utxoBulk(
     }
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
         error: "Array too large. Max 20 addresses"
       })
     }
@@ -488,8 +502,9 @@ async function unconfirmedBulk(
     logger.debug(`Executing address/utxo with these addresses: `, addresses)
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
         error: "Array too large. Max 20 addresses"
       })
     }
@@ -698,8 +713,9 @@ async function transactionsBulk(
     logger.debug(`Executing address/utxo with these addresses: `, addresses)
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
         error: "Array too large. Max 20 addresses"
       })
     }

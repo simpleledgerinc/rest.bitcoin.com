@@ -14,6 +14,8 @@ util.inspect.defaultOptions = { depth: 1 }
 const router: express.Router = express.Router()
 //const BitboxHTTP = bitbox.getInstance()
 
+const FREEMIUM_INPUT_SIZE = 20
+
 const RateLimit = require("express-rate-limit")
 
 interface IRLConfig {
