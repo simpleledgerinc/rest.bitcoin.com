@@ -163,7 +163,7 @@ describe("#Block", () => {
       assert.isArray(result.tx)
     })
   })
-  /*
+
   describe("#detailsByHashBulk", () => {
     // details route handler.
     const detailsByHashBulk = blockRoute.testableComponents.detailsByHashBulk
@@ -258,13 +258,13 @@ describe("#Block", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(`/block/${req.params.hashes[0]}`)
-          .reply(200, [mockData.mockBlockDetails])
+          .get(`/block/${req.body.hashes[0]}`)
+          .reply(200, mockData.mockBlockDetails)
       }
 
       // Call the details API.
       const result = await detailsByHashBulk(req, res)
-      console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
       // Assert that required fields exist in the returned object.
       assert.equal(result.length, 1, "Array with one entry")
@@ -288,25 +288,24 @@ describe("#Block", () => {
         "version"
       ])
     })
-*/
-  /*
-    it("should get details for multiple addresses", async () => {
+
+    it("should get details for multiple hashes", async () => {
       req.body = {
-        addresses: [
-          `bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`,
-          `bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr`
+        hashes: [
+          `00000000000000645dec6503d3f5eafb0d2537a7a28f181d721dec7c44154c79`,
+          `00000000c2b2c19cf499f57d5b0f724c6df753330d7acc7d4a8ebe412d427bd0`
         ]
       }
 
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.)
-          .reply(200, mockData.mockAddressDetails)
+          .get(`/block/${req.body.hashes[0]}`)
+          .reply(200, mockData.mockBlockDetails)
 
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mwJnEzXzKkveF2q5Af9jxi9j1zrtWAnPU8.)
-          .reply(200, mockData.mockAddressDetails)
+          .get(`/block/${req.body.hashes[1]}`)
+          .reply(200, mockData.mockBlockDetails)
       }
 
       // Call the details API.
@@ -324,15 +323,21 @@ describe("#Block", () => {
         ]
       }
 
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/block/${req.body.hashes[0]}`)
+          .reply(404, { error: { message: "Not Found" } })
+      }
+
       const result = await detailsByHashBulk(req, res)
-      console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
-      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
-      assert.include(result.error, "This is not a hash", "Proper error message")
+      assert.equal(res.statusCode, 404, "HTTP status code 400 expected.")
+      assert.include(result.error, "Not Found", "Proper error message")
     })
-
   })
-*/
+
   describe("Block Details By Height", () => {
     // block route handler.
     const detailsByHeight = blockRoute.testableComponents.detailsByHeightSingle
