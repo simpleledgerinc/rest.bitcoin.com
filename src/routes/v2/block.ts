@@ -112,36 +112,50 @@ async function detailsByHashBulk(
   next: express.NextFunction
 ) {
   try {
-    let hashes = req.body.hashes
+    const hashes = req.body.hashes
 
-    // Loop through each hash and creates an array of requests to call in parallel
-    hashes = hashes.map(async (hash: any) => {
-      try {
-        if (hash.length !== 64) {
-          throw "This is not a hash"
-        }
-      } catch (err) {
+    // Reject if hashes is not an array.
+    if (!Array.isArray(hashes)) {
+      res.status(400)
+      return res.json({
+        error: "hashes needs to be an array. Use GET for single address."
+      })
+    }
+
+    // Enforce no more than 20 addresses.
+    if (hashes.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
+      })
+    }
+
+    // Validate each hash in the array.
+    for (let i = 0; i < hashes.length; i++) {
+      const thisHash = hashes[i]
+
+      if (thisHash.length !== 64) {
         res.status(400)
         return res.json({
-          error: `Invalid hash. Double check your hash is valid: ${hash}`
+          error: `Invalid hash. Double check your hash is valid: ${thisHash}`
         })
       }
+    }
 
-      return await axios.get(`${process.env.BITCOINCOM_BASEURL}block/${hash}`)
+    // Loop through each hash and creates an array of promises
+    const axiosPromises = hashes.map(async (hash: any) => {
+      return axios.get(`${process.env.BITCOINCOM_BASEURL}block/${hash}`)
     })
 
-    const result: Array<any> = []
-    return axios.all(hashes).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Wait for all parallel promises to return.
+    const axiosResult: Array<any> = await axios.all(axiosPromises)
+
+    // Extract the data component from the axios response.
+    const result = axiosResult.map(x => x.data)
+    //console.log(`result: ${util.inspect(result)}`)
+
+    res.status(200)
+    return res.json(result)
   } catch (error) {
     // Write out error to error log.
     //logger.error(`Error in block/detailsByHash: `, error)
@@ -216,28 +230,36 @@ async function detailsByHeightBulk(
       })
     }
 
-    // Enforce no more than 20 heights.
-    if (heights.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 heights"
+    // Enforce no more than 20 addresses.
+    if (heights.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
     }
 
     logger.debug(`Executing detailsByHeight with these heights: `, heights)
-    // Loop through each height and creates an array of requests to call in parallel
-    heights = heights.map(async (height: any) => {
+
+    // Validate each element in the address array.
+    for(let i=0; i < heights.length; i++) {
+      const thisHeight = heights[i]
+
       // Reject if id is empty
-      if (!height || height === "") {
+      if (!thisHeight || thisHeight === "") {
         res.status(400)
         return res.json({ error: "height must not be empty" })
       }
+    }
 
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    // Loop through each height and creates an array of requests to call in parallel
+    const promises = heights.map(async (height: any) => {
 
       requestConfig.data.id = "getblockhash"
       requestConfig.data.method = "getblockhash"
@@ -247,21 +269,17 @@ async function detailsByHeightBulk(
 
       const hash = response.data.result
 
-      return await axios.get(`${process.env.BITCOINCOM_BASEURL}block/${hash}`)
+      const axiosResult = await axios.get(`${process.env.BITCOINCOM_BASEURL}block/${hash}`)
+
+      return axiosResult.data
     })
 
-    const result: Array<any> = []
-    return axios.all(heights).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Wait for all parallel Insight requests to return.
+    let result: Array<any> = await axios.all(promises)
+
+    res.status(200)
+    return res.json(result)
+
   } catch (error) {
     // Write out error to error log.
     //logger.error(`Error in block/detailsByHash: `, error)
