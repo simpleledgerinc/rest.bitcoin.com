@@ -166,12 +166,10 @@ async function detailsBulk(
       try {
         BITBOX.Address.toLegacyAddress(thisAddress)
       } catch (err) {
-        if (err.message.includes("Unsupported address format")) {
-          res.status(400)
-          return res.json({
-            error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
-          })
-        }
+        res.status(400)
+        return res.json({
+          error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
+        })
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
@@ -300,6 +298,7 @@ async function utxoFromInsight(thisAddress: string) {
 
     return retData
   } catch (err) {
+    logger.debug(`Error in address.js/utxoFromInsight()`)
     throw err
   }
 }
@@ -311,15 +310,6 @@ async function utxoBulk(
   next: express.NextFunction
 ) {
   try {
-    //const result: Array<any> = []
-    /*
-    let returnResponse: IResponse = {
-      status: 100,
-      json: {
-        error: ""
-      }
-    }
-    */
     let addresses = req.body.addresses
 
     // Reject if address is not an array.
@@ -366,28 +356,11 @@ async function utxoBulk(
     // Loops through each address and creates an array of Promises, querying
     // Insight API in parallel.
     addresses = addresses.map(async (address: any, index: number) => {
-      return await utxoFromInsight(address)
+      return utxoFromInsight(address)
     })
-
-    //if (returnResponse.status !== 100) {
-    //  res.status(returnResponse.status)
-    //  return res.json(returnResponse.json)
-    //}
 
     // Wait for all parallel Insight requests to return.
     let result: Array<any> = await axios.all(addresses)
-
-/*
-    return axios.all(addresses).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          result.push(arg)
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
-*/
 
     res.status(200)
     return res.json(result)
@@ -479,13 +452,6 @@ async function unconfirmedBulk(
   next: express.NextFunction
 ) {
   try {
-    const result: Array<any> = []
-    let returnResponse: IResponse = {
-      status: 100,
-      json: {
-        error: ""
-      }
-    }
     let addresses = req.body.addresses
 
     // Reject if address is not an array.
@@ -504,28 +470,32 @@ async function unconfirmedBulk(
       })
     }
 
-    // Loop through each address.
-    addresses = addresses.map(async (address: any, index: number) => {
+    // Validate each element in the address array.
+    for(let i=0; i < addresses.length; i++) {
+      const thisAddress = addresses[i]
+
       // Ensure the input is a valid BCH address.
       try {
-        BITBOX.Address.toLegacyAddress(address)
-      } catch (er) {
-        if (er.message.includes("Unsupported address format"))
-          returnResponse.status = 400
-        returnResponse.json = {
-          error: `Invalid BCH address. Double check your address is valid: ${address}`
-        }
-        return
+        BITBOX.Address.toLegacyAddress(thisAddress)
+      } catch (err) {
+        res.status(400)
+        return res.json({
+          error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
+        })
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
-      const networkIsValid = routeUtils.validateNetwork(address)
+      const networkIsValid = routeUtils.validateNetwork(thisAddress)
       if (!networkIsValid) {
-        returnResponse.status = 400
-        returnResponse.json = {
-          error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
-        }
+        res.status(400)
+        return res.json({
+          error: `Invalid network for address ${thisAddress}. Trying to use a testnet address on mainnet, or vice versa.`
+        })
       }
+    }
+
+    // Loop through each address and collect an array of promises.
+    addresses = addresses.map(async (address: any, index: number) => {
 
       const retData = await utxoFromInsight(address)
 
@@ -538,22 +508,13 @@ async function unconfirmedBulk(
       }
     })
 
-    if (returnResponse.status !== 100) {
-      res.status(returnResponse.status)
-      return res.json(returnResponse.json)
-    }
+    // Wait for all parallel Insight requests to return.
+    let result: Array<any> = await axios.all(addresses)
 
-    return axios.all(addresses).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Return the array of retrieved address information.
+    res.status(200)
+    return res.json(result)
+
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -689,13 +650,7 @@ async function transactionsBulk(
   next: express.NextFunction
 ) {
   try {
-    const result: Array<any> = []
-    let returnResponse: IResponse = {
-      status: 100,
-      json: {
-        error: ""
-      }
-    }
+
     let addresses = req.body.addresses
     const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
 
@@ -715,48 +670,42 @@ async function transactionsBulk(
       })
     }
 
-    // Loop through each address.
-    addresses = addresses.map(async (address: any, index: number) => {
+    // Validate each element in the address array.
+    for(let i=0; i < addresses.length; i++) {
+      const thisAddress = addresses[i]
+
       // Ensure the input is a valid BCH address.
       try {
-        BITBOX.Address.toLegacyAddress(address)
-      } catch (er) {
-        if (er.message.includes("Unsupported address format"))
-          returnResponse.status = 400
-        returnResponse.json = {
-          error: `Invalid BCH address. Double check your address is valid: ${address}`
-        }
-        return
+        BITBOX.Address.toLegacyAddress(thisAddress)
+      } catch (err) {
+        res.status(400)
+        return res.json({
+          error: `Invalid BCH address. Double check your address is valid: ${thisAddress}`
+        })
       }
 
       // Prevent a common user error. Ensure they are using the correct network address.
-      const networkIsValid = routeUtils.validateNetwork(address)
+      const networkIsValid = routeUtils.validateNetwork(thisAddress)
       if (!networkIsValid) {
-        returnResponse.status = 400
-        returnResponse.json = {
-          error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
-        }
+        res.status(400)
+        return res.json({
+          error: `Invalid network for address ${thisAddress}. Trying to use a testnet address on mainnet, or vice versa.`
+        })
       }
-
-      return await transactionsFromInsight(address, currentPage)
-    })
-
-    if (returnResponse.status !== 100) {
-      res.status(returnResponse.status)
-      return res.json(returnResponse.json)
     }
 
-    return axios.all(addresses).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Loop through each address and collect an array of promises.
+    addresses = addresses.map(async (address: any, index: number) => {
+      return transactionsFromInsight(address, currentPage)
+    })
+
+    // Wait for all parallel Insight requests to return.
+    let result: Array<any> = await axios.all(addresses)
+
+    // Return the array of retrieved address information.
+    res.status(200)
+    return res.json(result)
+
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
