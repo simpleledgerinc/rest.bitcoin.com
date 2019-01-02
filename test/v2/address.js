@@ -164,7 +164,7 @@ describe("#AddressRouter", () => {
         process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
 
         const result = await detailsBulk(req, res)
-        //console.log(`network issue result: ${util.inspect(result)}`)
+        console.log(`network issue result: ${util.inspect(result)}`)
 
         // Restore the saved URL.
         process.env.BITCOINCOM_BASEURL = savedUrl
