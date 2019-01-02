@@ -139,7 +139,7 @@ async function detailsBulk(
     if (addresses.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
       return res.json({
-        error: "Array too large. Max 20 addresses"
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
     }
 
