@@ -127,12 +127,26 @@ describe("#AddressRouter", () => {
       )
     })
 
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.addresses = testArray
+
+      const result = await detailsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 addresses")
+    })
+
     it("should detect a network mismatch", async () => {
       req.body = {
         addresses: [`bitcoincash:qqqvv56zepke5k0xeaehlmjtmkv9ly2uzgkxpajdx3`]
       }
 
       const result = await detailsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(result.error, "Invalid network", "Proper error message")
@@ -143,19 +157,25 @@ describe("#AddressRouter", () => {
 
       try {
         req.body = {
-          addresses: [`qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
+          addresses: [`bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4`]
         }
 
         // Switch the Insight URL to something that will error out.
         process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
 
         const result = await detailsBulk(req, res)
+        //console.log(`network issue result: ${util.inspect(result)}`)
 
         // Restore the saved URL.
         process.env.BITCOINCOM_BASEURL = savedUrl
 
         assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-        assert.include(result.error, "ENOTFOUND", "Error message expected")
+        //assert.include(result.error, "ENOTFOUND", "Error message expected")
+        assert.include(
+          result.error,
+          "Network error: Could not communicate",
+          "Error message expected"
+        )
       } catch (err) {
         // Restore the saved URL.
         process.env.BITCOINCOM_BASEURL = savedUrl
@@ -170,12 +190,13 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=0&to=1000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
       // Call the details API.
       const result = await detailsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
 
       // Assert current page defaults to 0
       assert.equal(result[0].currentPage, 0)
@@ -190,12 +211,13 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=5000&to=6000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
       // Call the details API.
       const result = await detailsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
 
       // Assert current page is same as requested
       assert.equal(result[0].currentPage, 5)
@@ -209,12 +231,13 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=0&to=1000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
       // Call the details API.
       const result = await detailsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(result[0].pagesTotal, 1)
     })
@@ -227,32 +250,33 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=0&to=1000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
       // Call the details API.
       const result = await detailsBulk(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
+      // console.log(`result: ${util.inspect(result)}`)
 
       // Assert that required fields exist in the returned object.
       assert.equal(result.length, 1, "Array with one entry")
-      assert.exists(result[0].addrStr)
-      assert.exists(result[0].balance)
-      assert.exists(result[0].balanceSat)
-      assert.exists(result[0].totalReceived)
-      assert.exists(result[0].totalReceivedSat)
-      assert.exists(result[0].totalSent)
-      assert.exists(result[0].totalSentSat)
-      assert.exists(result[0].unconfirmedBalance)
-      assert.exists(result[0].unconfirmedBalanceSat)
-      assert.exists(result[0].unconfirmedTxApperances)
-      assert.exists(result[0].txApperances)
-      assert.isArray(result[0].transactions)
-      assert.exists(result[0].legacyAddress)
-      assert.exists(result[0].cashAddress)
-      assert.exists(result[0].currentPage)
-      assert.exists(result[0].pagesTotal)
+      assert.hasAllKeys(result[0], [
+        "balance",
+        "balanceSat",
+        "totalReceived",
+        "totalReceivedSat",
+        "totalSent",
+        "totalSentSat",
+        "unconfirmedBalance",
+        "unconfirmedBalanceSat",
+        "unconfirmedTxApperances",
+        "txApperances",
+        "transactions",
+        "legacyAddress",
+        "cashAddress",
+        "currentPage",
+        "pagesTotal"
+      ])
     })
 
     it("should get details for multiple addresses", async () => {
@@ -266,17 +290,17 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=0&to=1000`)
           .reply(200, mockData.mockAddressDetails)
 
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mwJnEzXzKkveF2q5Af9jxi9j1zrtWAnPU8.*/)
+          .get(`/addr/mwJnEzXzKkveF2q5Af9jxi9j1zrtWAnPU8?from=0&to=1000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
       // Call the details API.
       const result = await detailsBulk(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
+      // console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
       assert.equal(result.length, 2, "2 outputs for 2 inputs")
@@ -358,12 +382,13 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=0&to=1000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
       // Call the details API.
       const result = await detailsSingle(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
 
       // Assert current page defaults to 0
       assert.equal(result.currentPage, 0)
@@ -376,7 +401,7 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=5000&to=6000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
@@ -393,7 +418,7 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=0&to=1000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
@@ -409,7 +434,7 @@ describe("#AddressRouter", () => {
       // Mock the Insight URL for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(/addr\/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz.*/)
+          .get(`/addr/mgps7qxk2Z5ma4mXsviznnet8wx4VvMPFz?from=0&to=1000`)
           .reply(200, mockData.mockAddressDetails)
       }
 
@@ -419,7 +444,6 @@ describe("#AddressRouter", () => {
 
       // Assert that required fields exist in the returned object.
       assert.hasAllKeys(result, [
-        "addrStr",
         "balance",
         "balanceSat",
         "totalReceived",
@@ -581,6 +605,19 @@ describe("#AddressRouter", () => {
       assert.isArray(result)
       assert.equal(result.length, 2, "2 outputs for 2 inputs")
     })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.addresses = testArray
+
+      const result = await utxoBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 addresses")
+    })
   })
 
   describe("#AddressUtxoSingle", () => {
@@ -713,6 +750,19 @@ describe("#AddressRouter", () => {
         "addresses needs to be an array",
         "Proper error message"
       )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.addresses = testArray
+
+      const result = await unconfirmedBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 addresses")
     })
 
     it("should throw an error for an invalid address", async () => {
@@ -936,6 +986,19 @@ describe("#AddressRouter", () => {
       )
     })
 
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.addresses = testArray
+
+      const result = await transactionsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 addresses")
+    })
+
     it("should throw an error for an invalid address", async () => {
       req.body = {
         addresses: [`02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c`]
@@ -995,7 +1058,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1017,7 +1080,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=5`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1038,7 +1101,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1068,13 +1131,13 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
 
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr.*/
+            `/txs/?address=bchtest:qzknfggae0av6yvxk77gmyq7syc67yux6sk80haqyr&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1165,7 +1228,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1185,7 +1248,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=5`
           )
           .reply(200, mockData.mockTransactions)
       }
@@ -1204,7 +1267,7 @@ describe("#AddressRouter", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITCOINCOM_BASEURL}`)
           .get(
-            /\/txs\/\?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4.*/
+            `/txs/?address=bchtest:qq89kjkeqz9mngp8kl3dpmu43y2wztdjqu500gn4c4&pageNum=0`
           )
           .reply(200, mockData.mockTransactions)
       }

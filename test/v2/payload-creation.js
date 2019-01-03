@@ -109,7 +109,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -159,7 +159,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -212,7 +212,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -275,7 +275,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -528,7 +528,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -715,7 +715,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -879,7 +879,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -946,7 +946,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1011,7 +1011,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1066,7 +1066,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1131,7 +1131,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1197,7 +1197,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1286,7 +1286,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1379,7 +1379,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
