@@ -4,6 +4,7 @@ import * as express from "express"
 const router = express.Router()
 import axios from "axios"
 import { IRequestConfig } from "./interfaces/IRequestConfig"
+import { IResponse } from "./interfaces/IResponse"
 const RateLimit = require("express-rate-limit")
 const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
@@ -83,7 +84,12 @@ router.get("/", config.rawTransactionsRateLimit1, root)
 router.get(
   "/decodeRawTransaction/:hex",
   config.rawTransactionsRateLimit2,
-  decodeRawTransaction
+  decodeRawTransactionSingle
+)
+router.post(
+  "/decodeRawTransaction",
+  config.rawTransactionsRateLimit2,
+  decodeRawTransactionBulk
 )
 router.get("/decodeScript/:hex", config.rawTransactionsRateLimit3, decodeScript)
 router.post(
@@ -122,7 +128,7 @@ function root(
 
 // Decode transaction hex into a JSON object.
 // GET
-async function decodeRawTransaction(
+async function decodeRawTransactionSingle(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -159,6 +165,73 @@ async function decodeRawTransaction(
 
     // Write out error to error log.
     //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function decodeRawTransactionBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let hexes = req.body.hexes
+    if (!Array.isArray(hexes)) {
+      res.status(400)
+      return res.json({ error: "hexes must be an array" })
+    }
+    if (hexes.length > 20) {
+      res.status(400)
+      return res.json({ error: "Array too large. Max 20 hexes" })
+    }
+
+    const results = []
+
+    // Loop through each hex and creates an array of requests to call in parallel
+    hexes = hexes.map(async (hex: any) => {
+      if (!hex || hex === "") {
+        res.status(400)
+        return res.json({ error: "Encountered empty hex" })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "decoderawtransaction"
+      requestConfig.data.method = "decoderawtransaction"
+      requestConfig.data.params = [hex]
+
+      return await BitboxHTTP(requestConfig)
+    })
+
+    const result: Array<any> = []
+    return axios.all(hexes).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg.data.result)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/getRawTransaction: `, err)
 
     res.status(500)
     return res.json({ error: util.inspect(err) })
@@ -243,7 +316,7 @@ async function getRawTransactionBulk(
     let verbose = 0
     if (req.body.verbose) verbose = 1
 
-    const txids = req.body.txids
+    let txids = req.body.txids
     if (!Array.isArray(txids)) {
       res.status(400)
       return res.json({ error: "txids must be an array" })
@@ -253,23 +326,53 @@ async function getRawTransactionBulk(
       return res.json({ error: "Array too large. Max 20 txids" })
     }
 
-    const results = []
-
-    // Loop through each txid in the array
-    for (let i = 0; i < txids.length; i++) {
-      const txid = txids[i]
-
-      if (!txid || txid === "") {
-        res.status(400)
-        return res.json({ error: "Encountered empty TXID" })
+    // stub response object
+    let returnResponse: IResponse = {
+      status: 100,
+      json: {
+        error: ""
       }
-
-      const data = await getRawTransactionsFromNode(txid, verbose)
-
-      results.push(data)
     }
 
-    return res.json(results)
+    // Loop through each txid and creates an array of requests to call in parallel
+    txids = txids.map(async (txid: any) => {
+      if (!txid || txid === "") {
+        returnResponse.status = 400
+        returnResponse.json = {
+          error: `Encountered empty TXID`
+        }
+        return
+      }
+
+      if (txid.length !== 64) {
+        returnResponse.status = 400
+        returnResponse.json = {
+          error: `parameter 1 must be of length 64 (not ${txid.length})`
+        }
+        return
+      }
+
+      return await getRawTransactionsFromNode(txid, verbose)
+    })
+
+    // if any input errors return response
+    if (returnResponse.status !== 100) {
+      res.status(returnResponse.status)
+      return res.json(returnResponse.json)
+    }
+
+    const result: Array<any> = []
+    return axios.all(txids).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -295,7 +398,7 @@ async function getRawTransactionSingle(
 ) {
   try {
     let verbose = 0
-    if (req.query.verbose) verbose = 1
+    if (req.query.verbose === "true") verbose = 1
 
     const txid = req.params.txid
     if (!txid || txid === "") {
@@ -609,13 +712,19 @@ async function whDecodeTx(
 
     const params = [rawtx]
 
-    if (req.query.prevTxs) params.push(JSON.parse(req.query.prevTxs))
+    // 12/21/18 CT - Commenting out this code because the swagger UI is causing
+    // a bug. If height is specified but prevTxs is not, then the full node
+    // will throw an error. Commenting out these extra parameters for now since
+    // my understanding is that its use is a corner case.
+    //if (req.query.prevTxs) params.push(req.query.prevTxs)
 
-    if (req.query.height) params.push(req.query.height)
+    //if (req.query.height) params.push(req.query.height)
 
     requestConfig.data.id = "whc_decodetransaction"
     requestConfig.data.method = "whc_decodetransaction"
     requestConfig.data.params = params
+
+    //console.log(`requestConfig.data: ${util.inspect(requestConfig.data)}`)
 
     const response = await BitboxHTTP(requestConfig)
 
@@ -687,7 +796,8 @@ module.exports = {
   router,
   testableComponents: {
     root,
-    decodeRawTransaction,
+    decodeRawTransactionSingle,
+    decodeRawTransactionBulk,
     decodeScript,
     getRawTransactionBulk,
     getRawTransactionSingle,

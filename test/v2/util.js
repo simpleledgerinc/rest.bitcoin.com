@@ -87,7 +87,7 @@ describe("#Util", () => {
   })
 
   describe("#validateAddress", async () => {
-    const validateAddress = utilRoute.testableComponents.validateAddress
+    const validateAddress = utilRoute.testableComponents.validateAddressSingle
 
     it("should throw an error for an empty address", async () => {
       const result = await validateAddress(req, res)
@@ -118,7 +118,7 @@ describe("#Util", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })

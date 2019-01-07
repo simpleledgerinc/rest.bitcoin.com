@@ -1,6 +1,124 @@
 {
   "components": {
     "schemas": {
+      "Address": {
+        "type": "string"
+      },
+      "Hash": {
+        "type": "string"
+      },
+      "Txid": {
+        "type": "string"
+      },
+      "Hex": {
+        "type": "string"
+      },
+      "Height": {
+        "type": "number"
+      },
+      "Proof": {
+        "type": "string"
+      },
+      "Addresses": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            },
+            "example": []
+          }
+        }
+      },
+      "Hashes": {
+        "type": "object",
+        "properties": {
+          "hashes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hash"
+            },
+            "example": []
+          },
+          "verbose": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "BlockHashes": {
+        "type": "object",
+        "properties": {
+          "hashes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hash"
+            },
+            "example": []
+          }
+        }
+      },
+      "BlockHeights": {
+        "type": "object",
+        "properties": {
+          "heights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Heights"
+            },
+            "example": []
+          }
+        }
+      },
+      "Heights": {
+        "type": "object",
+        "properties": {
+          "heights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Heights"
+            },
+            "example": []
+          }
+        }
+      },
+      "Hexes": {
+        "type": "object",
+        "properties": {
+          "hexes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hex"
+            },
+            "example": []
+          }
+        }
+      },
+      "Txids": {
+        "type": "object",
+        "properties": {
+          "txids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Txid"
+            },
+            "example": []
+          }
+        }
+      },
+      "Proofs": {
+        "type": "object",
+        "properties": {
+          "proofs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Proof"
+            },
+            "example": []
+          }
+        }
+      },
       "AddressDetails": {
         "type": "object",
         "properties": {
@@ -57,11 +175,24 @@
           }
         }
       },
+      "AddressDetailsArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AddressDetails"
+        }
+      },
       "AddressUtxo": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Utxo"
         }
+      },
+      "AddressUtxoArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AddressUtxo"
+        },
+        "example": []
       },
       "Utxo": {
         "type": "object",
@@ -101,6 +232,13 @@
         "items": {
           "$ref": "#/components/schemas/Unconfirmed"
         }
+      },
+      "AddressUnconfirmedArray": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AddressUnconfirmed"
+        },
+        "example": []
       },
       "Unconfirmed": {
         "type": "object",
@@ -891,6 +1029,274 @@
         "type": "array",
         "items": {
           "type": "string"
+        }
+      },
+      "PropertyId": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "number",
+            "example": 10
+          }
+        }
+      },
+      "Grant": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "number",
+            "example": 10
+          },
+          "amount": {
+            "type": "string",
+            "example": "10"
+          },
+          "memo": {
+            "type": "string",
+            "example": ""
+          }
+        }
+      },
+      "Crowdsale": {
+        "type": "object",
+        "properties": {
+          "ecosystem": {
+            "type": "string",
+            "example": "1"
+          },
+          "propertyPrecision": {
+            "type": "number",
+            "example": 1
+          },
+          "previousId": {
+            "type": "number",
+            "example": 1
+          },
+          "category": {
+            "type": "string",
+            "example": "Companies"
+          },
+          "subcategory": {
+            "type": "string",
+            "example": "Bitcoin Mining"
+          },
+          "name": {
+            "type": "string",
+            "example": "Quantum Miner"
+          },
+          "url": {
+            "type": "string",
+            "example": "www.example.com"
+          },
+          "data": {
+            "type": "string",
+            "example": "Quantum Miner Tokens"
+          },
+          "propertyIdDesired": {
+            "type": "number",
+            "example": 1
+          },
+          "tokensPerUnit": {
+            "type": "string",
+            "example": "100"
+          },
+          "deadline": {
+            "type": "number",
+            "example": 1483228800
+          },
+          "earlyBonus": {
+            "type": "number",
+            "example": 30
+          },
+          "totalNumber": {
+            "type": "string",
+            "example": "192978657"
+          }
+        }
+      },
+      "Fixed": {
+        "type": "object",
+        "properties": {
+          "ecosystem": {
+            "type": "string",
+            "example": "1"
+          },
+          "propertyPrecision": {
+            "type": "number",
+            "example": 1
+          },
+          "previousId": {
+            "type": "number",
+            "example": 1
+          },
+          "category": {
+            "type": "string",
+            "example": "Companies"
+          },
+          "subcategory": {
+            "type": "string",
+            "example": "Bitcoin Mining"
+          },
+          "name": {
+            "type": "string",
+            "example": "Quantum Miner"
+          },
+          "url": {
+            "type": "string",
+            "example": "www.example.com"
+          },
+          "data": {
+            "type": "string",
+            "example": "Quantum Miner Tokens"
+          },
+          "amount": {
+            "type": "string",
+            "example": "100000"
+          }
+        }
+      },
+      "Managed": {
+        "type": "object",
+        "properties": {
+          "ecosystem": {
+            "type": "string",
+            "example": "1"
+          },
+          "propertyPrecision": {
+            "type": "number",
+            "example": 1
+          },
+          "previousId": {
+            "type": "number",
+            "example": 1
+          },
+          "category": {
+            "type": "string",
+            "example": "Companies"
+          },
+          "subcategory": {
+            "type": "string",
+            "example": "Bitcoin Mining"
+          },
+          "name": {
+            "type": "string",
+            "example": "Quantum Miner"
+          },
+          "url": {
+            "type": "string",
+            "example": "www.example.com"
+          },
+          "data": {
+            "type": "string",
+            "example": "Quantum Miner Tokens"
+          }
+        }
+      },
+      "ParticipateCrowdSale": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "example": "1"
+          }
+        }
+      },
+      "Revoke": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "number",
+            "example": 1
+          },
+          "amount": {
+            "type": "string",
+            "example": "10"
+          },
+          "memo": {
+            "type": "string",
+            "example": ""
+          }
+        }
+      },
+      "SendAll": {
+        "type": "object",
+        "properties": {
+          "ecosystem": {
+            "type": "number",
+            "example": 1
+          }
+        }
+      },
+      "SimpleSend": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "number",
+            "example": 1
+          },
+          "amount": {
+            "type": "string",
+            "example": "10"
+          }
+        }
+      },
+      "STO": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "number",
+            "example": 1
+          },
+          "amount": {
+            "type": "string",
+            "example": "10"
+          },
+          "distributionProperty": {
+            "type": "number",
+            "example": 1
+          }
+        }
+      },
+      "Freeze": {
+        "type": "object",
+        "properties": {
+          "toAddress": {
+            "type": "string",
+            "example": ""
+          },
+          "propertyId": {
+            "type": "number",
+            "example": 1
+          }
+        }
+      },
+      "Unfreeze": {
+        "type": "object",
+        "properties": {
+          "toAddress": {
+            "type": "string",
+            "example": ""
+          },
+          "propertyId": {
+            "type": "number",
+            "example": 1
+          }
+        }
+      },
+      "WHConfirmed": {
+        "type": "object",
+        "properties": {
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            },
+            "example": []
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          }
         }
       }
     }

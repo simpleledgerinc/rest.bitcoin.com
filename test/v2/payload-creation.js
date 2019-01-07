@@ -56,7 +56,7 @@ describe("#Payload Creation", () => {
     res = mockRes
 
     // Explicitly reset the parmas and body.
-    req.params = {}
+    req.body = {}
     req.body = {}
     req.query = {}
 
@@ -109,7 +109,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -148,7 +148,7 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await changeIssuer(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -159,7 +159,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -172,7 +172,7 @@ describe("#Payload Creation", () => {
           .reply(200, { result: "0000004600000004" })
       }
 
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await changeIssuer(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -201,7 +201,7 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await closeCrowdSale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -212,7 +212,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -225,7 +225,7 @@ describe("#Payload Creation", () => {
           .reply(200, { result: "0000003500000004" })
       }
 
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await closeCrowdSale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -247,7 +247,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if amount is missing", async () => {
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await grant(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -263,8 +263,8 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyId = 4
-      req.params.amount = "1000"
+      req.body.propertyId = 4
+      req.body.amount = "1000"
 
       const result = await grant(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -275,7 +275,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -288,8 +288,8 @@ describe("#Payload Creation", () => {
           .reply(200, { result: "000000370000000400000000000186a000" })
       }
 
-      req.params.propertyId = 4
-      req.params.amount = "1000"
+      req.body.propertyId = 4
+      req.body.amount = "1000"
 
       const result = await grant(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -311,7 +311,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if propertyPrecision is missing", async () => {
-      req.params.ecosystem = 1
+      req.body.ecosystem = 1
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -321,8 +321,8 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if previousId is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -332,9 +332,9 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if category is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -344,10 +344,10 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if subcategory is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -357,11 +357,11 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if name is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -371,12 +371,12 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if url is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -386,13 +386,13 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if data is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -402,14 +402,14 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if propertyIdDesired is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -419,15 +419,15 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if tokensPerUnit is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.propertyIdDesired = 1
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.propertyIdDesired = 1
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -437,16 +437,16 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if deadline is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.propertyIdDesired = 1
-      req.params.tokensPerUnit = 1
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.propertyIdDesired = 1
+      req.body.tokensPerUnit = 1
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -456,17 +456,17 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if earlyBonus is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.propertyIdDesired = 1
-      req.params.tokensPerUnit = 1
-      req.params.deadline = 1751969410
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.propertyIdDesired = 1
+      req.body.tokensPerUnit = 1
+      req.body.deadline = 1751969410
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -475,41 +475,20 @@ describe("#Payload Creation", () => {
       assert.include(result.error, "earlyBonus can not be empty")
     })
 
-    it("should throw 400 error if undefine is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.propertyIdDesired = 1
-      req.params.tokensPerUnit = 1
-      req.params.deadline = 1751969410
-      req.params.earlyBonus = 30
-
-      const result = await crowdsale(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
-
-      assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "undefine can not be empty")
-    })
-
     it("should throw 400 error if totalNumber is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.propertyIdDesired = 1
-      req.params.tokensPerUnit = 1
-      req.params.deadline = 1751969410
-      req.params.earlyBonus = 30
-      req.params.undefine = 0
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.propertyIdDesired = 1
+      req.body.tokensPerUnit = 1
+      req.body.deadline = 1751969410
+      req.body.earlyBonus = 30
+      req.body.undefine = 0
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -525,20 +504,20 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.propertyIdDesired = 1
-      req.params.tokensPerUnit = 1
-      req.params.deadline = 1751969410
-      req.params.earlyBonus = 30
-      req.params.undefine = 0
-      req.params.totalNumber = 10000
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.propertyIdDesired = 1
+      req.body.tokensPerUnit = 1
+      req.body.deadline = 1751969410
+      req.body.earlyBonus = 30
+      req.body.undefine = 0
+      req.body.totalNumber = 10000
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -549,7 +528,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -565,20 +544,20 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.propertyIdDesired = 1
-      req.params.tokensPerUnit = 1
-      req.params.deadline = 1751969410
-      req.params.earlyBonus = 30
-      req.params.undefine = 0
-      req.params.totalNumber = 10000
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.propertyIdDesired = 1
+      req.body.tokensPerUnit = 1
+      req.body.deadline = 1751969410
+      req.body.earlyBonus = 30
+      req.body.undefine = 0
+      req.body.totalNumber = 10000
 
       const result = await crowdsale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -603,7 +582,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if propertyPrecision is missing", async () => {
-      req.params.ecosystem = 1
+      req.body.ecosystem = 1
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -613,8 +592,8 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if previousId is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -624,9 +603,9 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if category is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -636,10 +615,10 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if subcategory is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -649,11 +628,11 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if name is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -663,12 +642,12 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if url is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -678,13 +657,13 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if data is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -694,14 +673,14 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if amount is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -717,15 +696,15 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.amount = 1000
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.amount = 1000
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -736,7 +715,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -752,15 +731,15 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.amount = 1000
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.amount = 1000
 
       const result = await fixed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -785,7 +764,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if propertyPrecision is missing", async () => {
-      req.params.ecosystem = 1
+      req.body.ecosystem = 1
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -795,8 +774,8 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if previousId is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -806,9 +785,9 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if category is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -818,10 +797,10 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if subcategory is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -831,11 +810,11 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if name is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -845,12 +824,12 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if url is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -860,13 +839,13 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if data is missing", async () => {
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -882,14 +861,14 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -900,7 +879,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -916,15 +895,15 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.ecosystem = 1
-      req.params.propertyPrecision = 8
-      req.params.previousId = 0
-      req.params.category = "test"
-      req.params.subcategory = "test"
-      req.params.name = "test"
-      req.params.url = "www.test.com"
-      req.params.data = "some data"
-      req.params.amount = 1000
+      req.body.ecosystem = 1
+      req.body.propertyPrecision = 8
+      req.body.previousId = 0
+      req.body.category = "test"
+      req.body.subcategory = "test"
+      req.body.name = "test"
+      req.body.url = "www.test.com"
+      req.body.data = "some data"
+      req.body.amount = 1000
 
       const result = await managed(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -956,7 +935,7 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.amount = 1000
+      req.body.amount = 1000
 
       const result = await participateCrowdSale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -967,7 +946,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -982,7 +961,7 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.amount = 1000
+      req.body.amount = 1000
 
       const result = await participateCrowdSale(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1004,7 +983,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if amount is missing", async () => {
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await revoke(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1020,8 +999,8 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyId = 4
-      req.params.amount = 1000
+      req.body.propertyId = 4
+      req.body.amount = 1000
 
       const result = await revoke(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1032,7 +1011,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1047,8 +1026,8 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.propertyId = 4
-      req.params.amount = 1000
+      req.body.propertyId = 4
+      req.body.amount = 1000
 
       const result = await revoke(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1076,7 +1055,7 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.ecosystem = 1
+      req.body.ecosystem = 1
 
       const result = await sendAll(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1087,7 +1066,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1102,7 +1081,7 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.ecosystem = 1
+      req.body.ecosystem = 1
 
       const result = await sendAll(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1124,7 +1103,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if amount is missing", async () => {
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await simpleSend(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1140,8 +1119,8 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyId = 4
-      req.params.amount = 1000
+      req.body.propertyId = 4
+      req.body.amount = 1000
 
       const result = await simpleSend(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1152,7 +1131,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1167,8 +1146,8 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.propertyId = 4
-      req.params.amount = 1000
+      req.body.propertyId = 4
+      req.body.amount = 1000
 
       const result = await simpleSend(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1190,7 +1169,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 error if amount is missing", async () => {
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await STO(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1206,8 +1185,8 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyId = 4
-      req.params.amount = 1000
+      req.body.propertyId = 4
+      req.body.amount = 1000
 
       const result = await STO(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1218,7 +1197,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1233,8 +1212,8 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.propertyId = 4
-      req.params.amount = 1000
+      req.body.propertyId = 4
+      req.body.amount = 1000
 
       const result = await STO(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1256,7 +1235,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 if address is empty", async () => {
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await freeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1266,8 +1245,8 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 if address is invalid", async () => {
-      req.params.propertyId = 4
-      req.params.toAddress = "badAddress"
+      req.body.propertyId = 4
+      req.body.toAddress = "badAddress"
 
       const result = await freeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1277,8 +1256,8 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 if address network mismatch", async () => {
-      req.params.propertyId = 4
-      req.params.toAddress =
+      req.body.propertyId = 4
+      req.body.toAddress =
         "bitcoincash:qzxtuwx8jxjja5wj8eyq98amq9z669s8xsl76vph9z"
 
       const result = await freeze(req, res)
@@ -1295,9 +1274,8 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyId = 4
-      req.params.toAddress =
-        "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+      req.body.propertyId = 4
+      req.body.toAddress = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
 
       const result = await freeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1308,7 +1286,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1324,9 +1302,8 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.propertyId = 4
-      req.params.toAddress =
-        "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+      req.body.propertyId = 4
+      req.body.toAddress = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
 
       const result = await freeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1351,7 +1328,7 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 if address is empty", async () => {
-      req.params.propertyId = 4
+      req.body.propertyId = 4
 
       const result = await unfreeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1361,8 +1338,8 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 if address is invalid", async () => {
-      req.params.propertyId = 4
-      req.params.toAddress = "badAddress"
+      req.body.propertyId = 4
+      req.body.toAddress = "badAddress"
 
       const result = await unfreeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1372,8 +1349,8 @@ describe("#Payload Creation", () => {
     })
 
     it("should throw 400 if address network mismatch", async () => {
-      req.params.propertyId = 4
-      req.params.toAddress =
+      req.body.propertyId = 4
+      req.body.toAddress =
         "bitcoincash:qzxtuwx8jxjja5wj8eyq98amq9z669s8xsl76vph9z"
 
       const result = await unfreeze(req, res)
@@ -1390,9 +1367,8 @@ describe("#Payload Creation", () => {
       // Manipulate the URL to cause a 500 network error.
       process.env.RPC_BASEURL = "http://fakeurl/api/"
 
-      req.params.propertyId = 4
-      req.params.toAddress =
-        "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+      req.body.propertyId = 4
+      req.body.toAddress = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
 
       const result = await unfreeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -1403,7 +1379,7 @@ describe("#Payload Creation", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -1419,9 +1395,8 @@ describe("#Payload Creation", () => {
           })
       }
 
-      req.params.propertyId = 4
-      req.params.toAddress =
-        "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
+      req.body.propertyId = 4
+      req.body.toAddress = "bchtest:qr46wzv0cuma6gskh6swxlpvqdcdrjnzjggqt4exvp"
 
       const result = await unfreeze(req, res)
       //console.log(`result: ${util.inspect(result)}`)

@@ -53,7 +53,7 @@ const config: IRLConfig = {
 }
 
 let i = 1
-while (i < 14) {
+while (i < 18) {
   config[`blockchainRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
@@ -78,23 +78,43 @@ router.get("/getBestBlockHash", config.blockchainRateLimit2, getBestBlockHash)
 //router.get("/getBlock/:hash", config.blockchainRateLimit3, getBlock) // Same as block/getBlockByHash
 router.get("/getBlockchainInfo", config.blockchainRateLimit3, getBlockchainInfo)
 router.get("/getBlockCount", config.blockchainRateLimit4, getBlockCount)
-router.get("/getBlockHeader/:hash", config.blockchainRateLimit5, getBlockHeader)
+router.get(
+  "/getBlockHeader/:hash",
+  config.blockchainRateLimit5,
+  getBlockHeaderSingle
+)
+router.post("/getBlockHeader", config.blockchainRateLimit6, getBlockHeaderBulk)
 
-router.get("/getChainTips", config.blockchainRateLimit8, getChainTips)
-router.get("/getDifficulty", config.blockchainRateLimit7, getDifficulty)
+router.get("/getChainTips", config.blockchainRateLimit7, getChainTips)
+router.get("/getDifficulty", config.blockchainRateLimit8, getDifficulty)
 router.get(
   "/getMempoolEntry/:txid",
-  config.blockchainRateLimit8,
-  getMempoolEntry
+  config.blockchainRateLimit9,
+  getMempoolEntrySingle
 )
-router.get("/getMempoolInfo", config.blockchainRateLimit9, getMempoolInfo)
-router.get("/getRawMempool", config.blockchainRateLimit10, getRawMempool)
-router.get("/getTxOut/:txid/:n", config.blockchainRateLimit11, getTxOut)
-router.get("/getTxOutProof/:txid", config.blockchainRateLimit12, getTxOutProof)
+router.post(
+  "/getMempoolEntry",
+  config.blockchainRateLimit10,
+  getMempoolEntryBulk
+)
+router.get("/getMempoolInfo", config.blockchainRateLimit11, getMempoolInfo)
+router.get("/getRawMempool", config.blockchainRateLimit12, getRawMempool)
+router.get("/getTxOut/:txid/:n", config.blockchainRateLimit13, getTxOut)
+router.get(
+  "/getTxOutProof/:txid",
+  config.blockchainRateLimit14,
+  getTxOutProofSingle
+)
+router.post("/getTxOutProof", config.blockchainRateLimit15, getTxOutProofBulk)
 router.get(
   "/verifyTxOutProof/:proof",
-  config.blockchainRateLimit13,
-  verifyTxOutProof
+  config.blockchainRateLimit16,
+  verifyTxOutProofSingle
+)
+router.post(
+  "/verifyTxOutProof",
+  config.blockchainRateLimit17,
+  verifyTxOutProofBulk
 )
 
 function root(
@@ -212,7 +232,7 @@ async function getBlockCount(
   }
 }
 
-async function getBlockHeader(
+async function getBlockHeaderSingle(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -242,6 +262,90 @@ async function getBlockHeader(
     const response = await BitboxHTTP(requestConfig)
 
     return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function getBlockHeaderBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let hashes = req.body.hashes
+    const verbose = req.body.verbose ? req.body.verbose : false
+
+    if (!Array.isArray(hashes)) {
+      res.status(400)
+      return res.json({
+        error: "hashes needs to be an array. Use GET for single hash."
+      })
+    }
+
+    // Enforce no more than 20 hashes.
+    if (hashes.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 hashes"
+      })
+    }
+
+    logger.debug(
+      `Executing blockchain/getBlockHeader with these hashes: `,
+      hashes
+    )
+
+    // Loop through each hash and creates an array of requests to call in parallel
+    hashes = hashes.map(async (hash: any) => {
+      // Ensure the input is a valid BCH hash.
+      try {
+        if (hash.length !== 64) {
+          throw "This is not a hash"
+        }
+      } catch (err) {
+        res.status(400)
+        return res.json({
+          error: err
+        })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "getblockheader"
+      requestConfig.data.method = "getblockheader"
+      requestConfig.data.params = [hash, verbose]
+
+      return await BitboxHTTP(requestConfig)
+    })
+
+    const result: Array<any> = []
+    return axios.all(hashes).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg.data.result)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -331,7 +435,7 @@ async function getDifficulty(
 }
 
 // Returns mempool data for given transaction. TXID must be in mempool (unconfirmed)
-async function getMempoolEntry(
+async function getMempoolEntrySingle(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -358,6 +462,88 @@ async function getMempoolEntry(
     const response = await BitboxHTTP(requestConfig)
 
     return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function getMempoolEntryBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let txids = req.body.txids
+
+    if (!Array.isArray(txids)) {
+      res.status(400)
+      return res.json({
+        error: "txids needs to be an array. Use GET for single txid."
+      })
+    }
+
+    // Enforce no more than 20 txids.
+    if (txids.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 txids"
+      })
+    }
+
+    logger.debug(
+      `Executing blockchain/getMempoolEntry with these txids: `,
+      txids
+    )
+
+    // Loop through each txid and creates an array of requests to call in parallel
+    txids = txids.map(async (txid: any) => {
+      try {
+        if (txid.length !== 64) {
+          throw "This is not a txid"
+        }
+      } catch (err) {
+        res.status(400)
+        return res.json({
+          error: err
+        })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "getmempoolentry"
+      requestConfig.data.method = "getmempoolentry"
+      requestConfig.data.params = [txid]
+
+      return await BitboxHTTP(requestConfig)
+    })
+
+    const result: Array<any> = []
+    return axios.all(txids).then(
+      axios.spread((...args) => {
+        args.forEach((arg: any) => {
+          if (arg) {
+            result.push(arg.data.result)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -504,7 +690,7 @@ async function getTxOut(
 }
 
 // Returns a hex-encoded proof that 'txid' was included in a block.
-async function getTxOutProof(
+async function getTxOutProofSingle(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -531,6 +717,94 @@ async function getTxOutProof(
     const response = await BitboxHTTP(requestConfig)
 
     return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// Returns a hex-encoded proof that 'txid' was included in a block.
+async function getTxOutProofBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let txids = req.body.txids
+
+    // Reject if txids is not an array.
+    if (!Array.isArray(txids)) {
+      res.status(400)
+      return res.json({
+        error: "txids needs to be an array. Use GET for single txid."
+      })
+    }
+
+    // Enforce no more than 20 txids.
+    if (txids.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 txids"
+      })
+    }
+
+    logger.debug(`Executing blockchain/getTxOutProof with these txids: `, txids)
+
+    // Loop through each txid and creates an array of requests to call in parallel
+    txids = txids.map(async (txid: any) => {
+      // Ensure the input is a valid txid.
+      try {
+        if (txid.length !== 64) {
+          throw "This is not a txid"
+        }
+      } catch (err) {
+        res.status(400)
+        return res.json({
+          error: `Invalid txid. Double check your txid is valid: ${txid}`
+        })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "gettxoutproof"
+      requestConfig.data.method = "gettxoutproof"
+      requestConfig.data.params = [[txid]]
+
+      return await BitboxHTTP(requestConfig)
+    })
+
+    const result: Array<any> = []
+    return axios.all(txids).then(
+      axios.spread((...args) => {
+        args.forEach((txid: any, index: number) => {
+          if (txid) {
+            interface Tmp {
+              [txid: string]: any
+            }
+
+            let tmp: Tmp = {}
+            tmp[req.body.txids[index]] = txid.data.result
+            result.push(tmp)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -619,7 +893,7 @@ async function getTxOutProof(
 // });
 */
 
-async function verifyTxOutProof(
+async function verifyTxOutProofSingle(
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -662,6 +936,89 @@ async function verifyTxOutProof(
   }
 }
 
+async function verifyTxOutProofBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let proofs = req.body.proofs
+
+    // Reject if proofs is not an array.
+    if (!Array.isArray(proofs)) {
+      res.status(400)
+      return res.json({
+        error: "proofs needs to be an array. Use GET for single proof."
+      })
+    }
+
+    // Enforce no more than 20 proofs.
+    if (proofs.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 proofs"
+      })
+    }
+
+    logger.debug(
+      `Executing blockchain/verifyTxOutProof with these proofs: `,
+      proofs
+    )
+
+    // Loop through each proof and creates an array of requests to call in parallel
+    proofs = proofs.map(async (proof: any) => {
+      if (!proof || proof === "") {
+        res.status(400)
+        return res.json({ error: "proof can not be empty" })
+      }
+
+      const {
+        BitboxHTTP,
+        username,
+        password,
+        requestConfig
+      } = routeUtils.setEnvVars()
+
+      requestConfig.data.id = "verifytxoutproof"
+      requestConfig.data.method = "verifytxoutproof"
+      requestConfig.data.params = [proof]
+
+      return await BitboxHTTP(requestConfig)
+    })
+
+    const result: Array<any> = []
+    return axios.all(proofs).then(
+      axios.spread((...args) => {
+        args.forEach((proof: any, index: number) => {
+          if (proof) {
+            interface Tmp {
+              [proof: string]: any
+            }
+
+            let tmp: Tmp = {}
+            tmp[req.body.proofs[index]] = proof.data.result
+            result.push(tmp)
+          }
+        })
+        res.status(200)
+        return res.json(result)
+      })
+    )
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
 module.exports = {
   router,
   testableComponents: {
@@ -670,14 +1027,18 @@ module.exports = {
     //getBlock,
     getBlockchainInfo,
     getBlockCount,
-    getBlockHeader,
+    getBlockHeaderSingle,
+    getBlockHeaderBulk,
     getChainTips,
     getDifficulty,
     getMempoolInfo,
     getRawMempool,
-    getMempoolEntry,
+    getMempoolEntrySingle,
+    getMempoolEntryBulk,
     getTxOut,
-    getTxOutProof,
-    verifyTxOutProof
+    getTxOutProofSingle,
+    getTxOutProofBulk,
+    verifyTxOutProofSingle,
+    verifyTxOutProofBulk
   }
 }

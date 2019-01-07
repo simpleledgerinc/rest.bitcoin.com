@@ -1568,18 +1568,18 @@
 /**
  * Swagger UI Theme Overrides
  *
- * Theme: Newspaper
+ * Theme: Feeling Blue
  * Author: Mark Ostrander
  * Github: https://github.com/ostranme/swagger-ui-themes
  */
 
 .swagger-ui .opblock.opblock-post {
   border-color: #dadfe1;
-  background: rgba(34, 34, 34, 0.1);
+  background: rgba(241, 241, 241, 0.1);
 }
 
 .swagger-ui .opblock.opblock-post .opblock-summary-method {
-  background: #222222;
+  background: #205493;
 }
 
 .swagger-ui .opblock.opblock-post .opblock-summary {
@@ -1588,11 +1588,11 @@
 
 .swagger-ui .opblock.opblock-put {
   border-color: #dadfe1;
-  background: rgba(34, 34, 34, 0.1);
+  background: rgba(241, 241, 241, 0.1);
 }
 
 .swagger-ui .opblock.opblock-put .opblock-summary-method {
-  background: #222222;
+  background: #0071bc;
 }
 
 .swagger-ui .opblock.opblock-put .opblock-summary {
@@ -1601,11 +1601,11 @@
 
 .swagger-ui .opblock.opblock-delete {
   border-color: #dadfe1;
-  background: rgba(34, 34, 34, 0.1);
+  background: rgba(241, 241, 241, 0.1);
 }
 
 .swagger-ui .opblock.opblock-delete .opblock-summary-method {
-  background: #222222;
+  background: #112e51;
 }
 
 .swagger-ui .opblock.opblock-delete .opblock-summary {
@@ -1614,11 +1614,11 @@
 
 .swagger-ui .opblock.opblock-get {
   border-color: #dadfe1;
-  background: rgba(34, 34, 34, 0.1);
+  background: rgba(241, 241, 241, 0.1);
 }
 
 .swagger-ui .opblock.opblock-get .opblock-summary-method {
-  background: #222222;
+  background: #34495e;
 }
 
 .swagger-ui .opblock.opblock-get .opblock-summary {
@@ -1627,11 +1627,11 @@
 
 .swagger-ui .opblock.opblock-patch {
   border-color: #dadfe1;
-  background: rgba(34, 34, 34, 0.1);
+  background: rgba(241, 241, 241, 0.1);
 }
 
 .swagger-ui .opblock.opblock-patch .opblock-summary-method {
-  background: #222222;
+  background: #0071bc;
 }
 
 .swagger-ui .opblock.opblock-patch .opblock-summary {
@@ -1640,11 +1640,11 @@
 
 .swagger-ui .opblock.opblock-head {
   border-color: #dadfe1;
-  background: rgba(34, 34, 34, 0.1);
+  background: rgba(241, 241, 241, 0.1);
 }
 
 .swagger-ui .opblock.opblock-head .opblock-summary-method {
-  background: #222222;
+  background: #5c6bc0;
 }
 
 .swagger-ui .opblock.opblock-head .opblock-summary {
@@ -1653,11 +1653,11 @@
 
 .swagger-ui .opblock.opblock-options {
   border-color: #dadfe1;
-  background: rgba(34, 34, 34, 0.1);
+  background: rgba(241, 241, 241, 0.1);
 }
 
 .swagger-ui .opblock.opblock-options .opblock-summary-method {
-  background: #222222;
+  background: #0071bc;
 }
 
 .swagger-ui .opblock.opblock-options .opblock-summary {
@@ -1666,8 +1666,9 @@
 
 .swagger-ui .topbar {
   padding: 8px 30px;
-  background-color: #222222;
+  background-color: #2c3e50;
 }
+
 .swagger-ui .topbar .download-url-wrapper input[type="text"] {
   min-width: 350px;
   margin: 0;
@@ -1692,19 +1693,34 @@
   -webkit-transition: all 0.4s;
   transition: all 0.4s;
   font-family: Open Sans, sans-serif;
-  color: #222222;
+  color: #34495e;
 }
 
 .swagger-ui .info a:hover {
-  color: #222222;
+  color: #34495e;
 }
 
 .swagger-ui .btn.authorize {
   line-height: 1;
   display: inline;
-  color: #222222;
-  border-color: #222222;
+  color: #336e7b;
+  border-color: #336e7b;
 }
 .swagger-ui .btn.authorize svg {
-  fill: #222222;
+  fill: #336e7b;
+}
+
+.swagger-ui img {
+  width: 175px;
+}
+
+.swagger-ui a,
+.swagger-ui a:visited,
+.swagger-ui a:hover,
+.swagger-ui a:active {
+  color: #34495e;
+}
+
+.swagger-ui .opblock-body pre .headerline {
+  display: block;
 }

@@ -91,7 +91,7 @@ describe("#Raw-Transactions", () => {
   describe("decodeRawTransaction()", () => {
     // block route handler.
     const decodeRawTransaction =
-      rawtransactions.testableComponents.decodeRawTransaction
+      rawtransactions.testableComponents.decodeRawTransactionSingle
 
     it("should throw error if hex is missing", async () => {
       const result = await decodeRawTransaction(req, res)
@@ -120,7 +120,7 @@ describe("#Raw-Transactions", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -184,7 +184,7 @@ describe("#Raw-Transactions", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -378,7 +378,7 @@ describe("#Raw-Transactions", () => {
 
       req.params.txid =
         "bd320377db7026a3dd5c7ec444596c0ee18fc25c4f34ee944adc03e432ce1971"
-      req.query.verbose = true
+      req.query.verbose = "true"
 
       const result = await getRawTransactionSingle(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -767,7 +767,7 @@ describe("#Raw-Transactions", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -868,7 +868,7 @@ describe("#Raw-Transactions", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })

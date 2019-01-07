@@ -14,7 +14,13 @@ var BitcoinCashZMQDecoder = require("bitcoincash-zmq-decoder");
 var zmq = require("zeromq");
 var sock = zmq.socket("sub");
 var swStats = require("swagger-stats");
-var apiSpec = require("./public/bitcoin-com-rest-v2.json");
+var apiSpec;
+if (process.env.NETWORK === "mainnet") {
+    apiSpec = require("./public/bitcoin-com-mainnet-rest-v2.json");
+}
+else {
+    apiSpec = require("./public/bitcoin-com-testnet-rest-v2.json");
+}
 // v1
 var indexV1 = require("./routes/v1/index");
 var healthCheckV1 = require("./routes/v1/health-check");
@@ -49,6 +55,7 @@ var payloadCreationV2 = require("./routes/v2/payloadCreation");
 var wormholeV2 = require("./routes/v2/wormhole");
 require("dotenv").config();
 var app = express();
+app.locals.env = process.env;
 app.use(swStats.getMiddleware({ swaggerSpec: apiSpec }));
 app.use(helmet());
 app.use(cors());
@@ -99,6 +106,22 @@ app.use("/" + v2prefix + "/" + "util", utilV2.router);
 app.use("/" + v2prefix + "/" + "dataRetrieval", dataRetrievalV2.router);
 app.use("/" + v2prefix + "/" + "payloadCreation", payloadCreationV2.router);
 app.use("/" + v2prefix + "/" + "wormhole/transaction", wormholeV2.router);
+// Initialize wormhole/transaction/socket endpoint
+var whSocketUrl = process.env.WORMHOLE_SOCKET_URL;
+var whSocketPort = process.env.WORMHOLE_SOCKET_PORT;
+if (whSocketUrl && whSocketPort) {
+    var bchsocketd = require('bchsocketd');
+    bchsocketd.init({
+        bit: {
+            host: whSocketUrl,
+            port: whSocketPort
+        },
+        socket: {
+            app: app,
+            endpoint: v2prefix + "/wormhole/transaction/socket"
+        }
+    });
+}
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     var err = {

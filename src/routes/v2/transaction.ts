@@ -107,6 +107,13 @@ async function detailsBulk(
       return res.json({ error: "txids needs to be an array" })
     }
 
+    // Enforce no more than 20 txids.
+    if (txids.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 txids"
+      })
+    }
+
     logger.debug(`Executing transaction/details with these txids: `, txids)
 
     // Loop through each txid.

@@ -89,63 +89,23 @@ while (i < 16) {
 
 router.get("/", config.payloadCreationRateLimit1, root)
 router.get("/burnBCH", config.payloadCreationRateLimit2, burnBCH)
+router.post("/changeIssuer", config.payloadCreationRateLimit3, changeIssuer)
+router.post("/closeCrowdSale", config.payloadCreationRateLimit4, closeCrowdSale)
+router.post("/grant", config.payloadCreationRateLimit5, grant)
+router.post("/crowdsale", config.payloadCreationRateLimit6, crowdsale)
+router.post("/fixed", config.payloadCreationRateLimit7, fixed)
+router.post("/managed", config.payloadCreationRateLimit8, managed)
 router.post(
-  "/changeIssuer/:propertyId",
-  config.payloadCreationRateLimit3,
-  changeIssuer
-)
-router.post(
-  "/closeCrowdSale/:propertyId",
-  config.payloadCreationRateLimit4,
-  closeCrowdSale
-)
-router.post(
-  "/grant/:propertyId/:amount",
-  config.payloadCreationRateLimit5,
-  grant
-)
-router.post(
-  "/crowdsale/:ecosystem/:propertyPrecision/:previousId/:category/:subcategory/:name/:url/:data/:propertyIdDesired/:tokensPerUnit/:deadline/:earlyBonus/:undefine/:totalNumber",
-  config.payloadCreationRateLimit6,
-  crowdsale
-)
-router.post(
-  "/fixed/:ecosystem/:propertyPrecision/:previousId/:category/:subcategory/:name/:url/:data/:amount",
-  config.payloadCreationRateLimit7,
-  fixed
-)
-router.post(
-  "/managed/:ecosystem/:propertyPrecision/:previousId/:category/:subcategory/:name/:url/:data",
-  config.payloadCreationRateLimit8,
-  managed
-)
-router.post(
-  "/participateCrowdSale/:amount",
+  "/participateCrowdSale",
   config.payloadCreationRateLimit9,
   participateCrowdSale
 )
-router.post(
-  "/revoke/:propertyId/:amount",
-  config.payloadCreationRateLimit10,
-  revoke
-)
-router.post("/sendAll/:ecosystem", config.payloadCreationRateLimit11, sendAll)
-router.post(
-  "/simpleSend/:propertyId/:amount",
-  config.payloadCreationRateLimit12,
-  simpleSend
-)
-router.post("/STO/:propertyId/:amount", config.payloadCreationRateLimit13, STO)
-router.post(
-  "/freeze/:toAddress/:propertyId",
-  config.payloadCreationRateLimit14,
-  freeze
-)
-router.post(
-  "/unfreeze/:toAddress/:propertyId",
-  config.payloadCreationRateLimit15,
-  unfreeze
-)
+router.post("/revoke", config.payloadCreationRateLimit10, revoke)
+router.post("/sendAll", config.payloadCreationRateLimit11, sendAll)
+router.post("/simpleSend", config.payloadCreationRateLimit12, simpleSend)
+router.post("/STO", config.payloadCreationRateLimit13, STO)
+router.post("/freeze", config.payloadCreationRateLimit14, freeze)
+router.post("/unfreeze", config.payloadCreationRateLimit15, unfreeze)
 
 function root(
   req: express.Request,
@@ -198,7 +158,7 @@ async function changeIssuer(
 ) {
   try {
     // Validate input parameter
-    let propertyId = req.params.propertyId
+    let propertyId = req.body.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
@@ -242,7 +202,7 @@ async function closeCrowdSale(
 ) {
   try {
     // Validate input parameter
-    let propertyId = req.params.propertyId
+    let propertyId = req.body.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
@@ -286,7 +246,7 @@ async function grant(
 ) {
   try {
     // Validate input parameter
-    let propertyId = req.params.propertyId
+    let propertyId = req.body.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
@@ -294,7 +254,7 @@ async function grant(
     propertyId = parseInt(propertyId)
 
     // Validate input parameter
-    let amount = req.params.amount
+    let amount = req.body.amount
     if (!amount || amount === "") {
       res.status(400)
       return res.json({ error: "amount can not be empty" })
@@ -302,7 +262,7 @@ async function grant(
 
     const params = [propertyId, amount]
 
-    if (req.query.memo) params.push(req.query.memo)
+    if (req.body.memo) params.push(req.body.memo)
 
     const {
       BitboxHTTP,
@@ -343,93 +303,88 @@ async function crowdsale(
     // "/crowdsale/:ecosystem/:propertyPrecision/:previousId/:category/:subcategory/:name/:url/:data/:propertyIdDesired/:tokensPerUnit/:deadline/:earlyBonus/:undefine/:totalNumber",
 
     // Validate input parameter
-    let ecosystem = req.params.ecosystem
+    let ecosystem = req.body.ecosystem
     if (!ecosystem || ecosystem === "") {
       res.status(400)
       return res.json({ error: "ecosystem can not be empty" })
     }
     ecosystem = parseInt(ecosystem)
 
-    let propertyPrecision = req.params.propertyPrecision
+    let propertyPrecision = req.body.propertyPrecision
     if (propertyPrecision === undefined || propertyPrecision === "") {
       res.status(400)
       return res.json({ error: "propertyPrecision can not be empty" })
     }
     propertyPrecision = parseInt(propertyPrecision)
 
-    let previousId = req.params.previousId
+    let previousId = req.body.previousId
     if (previousId === undefined || previousId === "") {
       res.status(400)
       return res.json({ error: "previousId can not be empty" })
     }
     previousId = parseInt(previousId)
 
-    const category = req.params.category
+    const category = req.body.category
     if (!category || category === "") {
       res.status(400)
       return res.json({ error: "category can not be empty" })
     }
 
-    const subcategory = req.params.subcategory
+    const subcategory = req.body.subcategory
     if (!subcategory || subcategory === "") {
       res.status(400)
       return res.json({ error: "subcategory can not be empty" })
     }
 
-    const name = req.params.name
+    const name = req.body.name
     if (!name || name === "") {
       res.status(400)
       return res.json({ error: "name can not be empty" })
     }
 
-    const url = req.params.url
+    const url = req.body.url
     if (!url || url === "") {
       res.status(400)
       return res.json({ error: "url can not be empty" })
     }
 
-    const data = req.params.data
+    const data = req.body.data
     if (!data || data === "") {
       res.status(400)
       return res.json({ error: "data can not be empty" })
     }
 
-    let propertyIdDesired = req.params.propertyIdDesired
+    let propertyIdDesired = req.body.propertyIdDesired
     if (!propertyIdDesired || propertyIdDesired === "") {
       res.status(400)
       return res.json({ error: "propertyIdDesired can not be empty" })
     }
     propertyIdDesired = parseInt(propertyIdDesired)
 
-    let tokensPerUnit = req.params.tokensPerUnit
+    let tokensPerUnit = req.body.tokensPerUnit
     if (!tokensPerUnit || tokensPerUnit === "") {
       res.status(400)
       return res.json({ error: "tokensPerUnit can not be empty" })
     }
     tokensPerUnit = tokensPerUnit.toString()
 
-    let deadline = req.params.deadline
+    let deadline = req.body.deadline
     if (!deadline || deadline === "") {
       res.status(400)
       return res.json({ error: "deadline can not be empty" })
     }
     deadline = parseInt(deadline)
 
-    let earlyBonus = req.params.earlyBonus
+    let earlyBonus = req.body.earlyBonus
     if (earlyBonus === undefined || earlyBonus === "") {
       res.status(400)
       return res.json({ error: "earlyBonus can not be empty" })
     }
     earlyBonus = parseInt(earlyBonus)
 
-    let undefine = req.params.undefine
-    if (undefine === undefined || undefine === "") {
-      res.status(400)
-      return res.json({ error: "undefine can not be empty" })
-    }
-    undefine = parseInt(undefine)
+    let undefine = 0
 
-    let totalNumber = req.params.totalNumber
+    let totalNumber = req.body.totalNumber
     if (!totalNumber || totalNumber === "") {
       res.status(400)
       return res.json({ error: "totalNumber can not be empty" })
@@ -488,58 +443,58 @@ async function fixed(
 ) {
   try {
     // Validate input parameter
-    let ecosystem = req.params.ecosystem
+    let ecosystem = req.body.ecosystem
     if (!ecosystem || ecosystem === "") {
       res.status(400)
       return res.json({ error: "ecosystem can not be empty" })
     }
     ecosystem = parseInt(ecosystem)
 
-    let propertyPrecision = req.params.propertyPrecision
+    let propertyPrecision = req.body.propertyPrecision
     if (!propertyPrecision || propertyPrecision === "") {
       res.status(400)
       return res.json({ error: "propertyPrecision can not be empty" })
     }
     propertyPrecision = parseInt(propertyPrecision)
 
-    let previousId = req.params.previousId
+    let previousId = req.body.previousId
     if (previousId === undefined || previousId === "") {
       res.status(400)
       return res.json({ error: "previousId can not be empty" })
     }
     previousId = parseInt(previousId)
 
-    const category = req.params.category
+    const category = req.body.category
     if (!category || category === "") {
       res.status(400)
       return res.json({ error: "category can not be empty" })
     }
 
-    const subcategory = req.params.subcategory
+    const subcategory = req.body.subcategory
     if (!subcategory || subcategory === "") {
       res.status(400)
       return res.json({ error: "subcategory can not be empty" })
     }
 
-    const name = req.params.name
+    const name = req.body.name
     if (!name || name === "") {
       res.status(400)
       return res.json({ error: "name can not be empty" })
     }
 
-    const url = req.params.url
+    const url = req.body.url
     if (!url || url === "") {
       res.status(400)
       return res.json({ error: "url can not be empty" })
     }
 
-    const data = req.params.data
+    const data = req.body.data
     if (!data || data === "") {
       res.status(400)
       return res.json({ error: "data can not be empty" })
     }
 
-    let amount = req.params.amount
+    let amount = req.body.amount
     if (!amount || amount === "") {
       res.status(400)
       return res.json({ error: "amount can not be empty" })
@@ -593,52 +548,52 @@ async function managed(
 ) {
   try {
     // Validate input parameter
-    let ecosystem = req.params.ecosystem
+    let ecosystem = req.body.ecosystem
     if (!ecosystem || ecosystem === "") {
       res.status(400)
       return res.json({ error: "ecosystem can not be empty" })
     }
     ecosystem = parseInt(ecosystem)
 
-    let propertyPrecision = req.params.propertyPrecision
+    let propertyPrecision = req.body.propertyPrecision
     if (!propertyPrecision || propertyPrecision === "") {
       res.status(400)
       return res.json({ error: "propertyPrecision can not be empty" })
     }
     propertyPrecision = parseInt(propertyPrecision)
 
-    let previousId = req.params.previousId
+    let previousId = req.body.previousId
     if (previousId === undefined || previousId === "") {
       res.status(400)
       return res.json({ error: "previousId can not be empty" })
     }
     previousId = parseInt(previousId)
 
-    const category = req.params.category
+    const category = req.body.category
     if (!category || category === "") {
       res.status(400)
       return res.json({ error: "category can not be empty" })
     }
 
-    const subcategory = req.params.subcategory
+    const subcategory = req.body.subcategory
     if (!subcategory || subcategory === "") {
       res.status(400)
       return res.json({ error: "subcategory can not be empty" })
     }
 
-    const name = req.params.name
+    const name = req.body.name
     if (!name || name === "") {
       res.status(400)
       return res.json({ error: "name can not be empty" })
     }
 
-    const url = req.params.url
+    const url = req.body.url
     if (!url || url === "") {
       res.status(400)
       return res.json({ error: "url can not be empty" })
     }
 
-    const data = req.params.data
+    const data = req.body.data
     if (!data || data === "") {
       res.status(400)
       return res.json({ error: "data can not be empty" })
@@ -689,7 +644,7 @@ async function participateCrowdSale(
   next: express.NextFunction
 ) {
   try {
-    let amount = req.params.amount
+    let amount = req.body.amount
     if (!amount || amount === "") {
       res.status(400)
       return res.json({ error: "amount can not be empty" })
@@ -733,14 +688,14 @@ async function revoke(
 ) {
   try {
     // Validate input parameter
-    let propertyId = req.params.propertyId
+    let propertyId = req.body.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
     propertyId = parseInt(propertyId)
 
-    let amount = req.params.amount
+    let amount = req.body.amount
     if (!amount || amount === "") {
       res.status(400)
       return res.json({ error: "amount can not be empty" })
@@ -755,7 +710,7 @@ async function revoke(
     } = routeUtils.setEnvVars()
 
     const params = [propertyId, amount]
-    if (req.query.memo) params.push(req.query.memo)
+    if (req.body.memo) params.push(req.body.memo)
 
     requestConfig.data.id = "whc_createpayload_revoke"
     requestConfig.data.method = "whc_createpayload_revoke"
@@ -786,7 +741,7 @@ async function sendAll(
   next: express.NextFunction
 ) {
   try {
-    let ecosystem = req.params.ecosystem
+    let ecosystem = req.body.ecosystem
     if (!ecosystem || ecosystem === "") {
       res.status(400)
       return res.json({ error: "ecosystem can not be empty" })
@@ -830,14 +785,14 @@ async function simpleSend(
 ) {
   try {
     // Validate input parameter
-    let propertyId = req.params.propertyId
+    let propertyId = req.body.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
     propertyId = parseInt(propertyId)
 
-    let amount = req.params.amount
+    let amount = req.body.amount
     if (!amount || amount === "") {
       res.status(400)
       return res.json({ error: "amount can not be empty" })
@@ -882,14 +837,14 @@ async function STO(
 ) {
   try {
     // Validate input parameter
-    let propertyId = req.params.propertyId
+    let propertyId = req.body.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
     propertyId = parseInt(propertyId)
 
-    let amount = req.params.amount
+    let amount = req.body.amount
     if (!amount || amount === "") {
       res.status(400)
       return res.json({ error: "amount can not be empty" })
@@ -905,8 +860,8 @@ async function STO(
 
     const params = [propertyId, amount]
 
-    if (req.query.distributionProperty)
-      params.push(parseInt(req.query.distributionProperty))
+    if (req.body.distributionProperty)
+      params.push(parseInt(req.body.distributionProperty))
 
     requestConfig.data.id = "whc_createpayload_sto"
     requestConfig.data.method = "whc_createpayload_sto"
@@ -937,14 +892,14 @@ async function freeze(
   next: express.NextFunction
 ) {
   try {
-    let propertyId = req.params.propertyId
+    let propertyId = req.body.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
     propertyId = parseInt(propertyId)
 
-    let address = req.params.toAddress
+    let address = req.body.toAddress
     if (!address || address === "") {
       res.status(400)
       return res.json({ error: "address can not be empty" })
@@ -1009,14 +964,14 @@ async function unfreeze(
   next: express.NextFunction
 ) {
   try {
-    let propertyId = req.params.propertyId
+    let propertyId = req.body.propertyId
     if (!propertyId || propertyId === "") {
       res.status(400)
       return res.json({ error: "propertyId can not be empty" })
     }
     propertyId = parseInt(propertyId)
 
-    let address = req.params.toAddress
+    let address = req.body.toAddress
     if (!address || address === "") {
       res.status(400)
       return res.json({ error: "address can not be empty" })

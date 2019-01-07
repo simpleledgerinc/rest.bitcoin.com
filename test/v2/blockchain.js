@@ -224,7 +224,8 @@ describe("#BlockchainRouter", () => {
   })
 
   describe("getBlockHeader()", async () => {
-    const getBlockHeader = blockchainRoute.testableComponents.getBlockHeader
+    const getBlockHeader =
+      blockchainRoute.testableComponents.getBlockHeaderSingle
 
     it("should throw 400 error if hash is missing", async () => {
       const result = await getBlockHeader(req, res)
@@ -253,7 +254,7 @@ describe("#BlockchainRouter", () => {
       assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node.",
+        "Network error: Could not communicate with full node",
         "Error message expected"
       )
     })
@@ -486,7 +487,8 @@ describe("#BlockchainRouter", () => {
 
   describe("getMempoolEntry()", () => {
     // block route handler.
-    const getMempoolEntry = blockchainRoute.testableComponents.getMempoolEntry
+    const getMempoolEntry =
+      blockchainRoute.testableComponents.getMempoolEntrySingle
 
     it("should throw 400 if txid is empty", async () => {
       const result = await getMempoolEntry(req, res)
@@ -583,6 +585,7 @@ describe("#BlockchainRouter", () => {
       )
     })
 
+    // This test can only run for unit tests. See TODO at the top of this file.
     it("should GET /getTxOut", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
@@ -591,8 +594,8 @@ describe("#BlockchainRouter", () => {
           .reply(200, { result: mockData.mockTxOut })
       }
 
-      req.params.txid = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
-      req.params.n = 0
+      req.params.txid = `5747e6462e2c452a5d583fd6a5f82866cd8e4a86826c86d9a1842b7d023e0c0c`
+      req.params.n = 1
 
       const result = await getTxOut(req, res)
       //console.log(`result: ${JSON.stringify(result, null, 2)}`)
@@ -616,7 +619,7 @@ describe("#BlockchainRouter", () => {
   })
 
   describe("getTxOutProof()", () => {
-    const getTxOutProof = blockchainRoute.testableComponents.getTxOutProof
+    const getTxOutProof = blockchainRoute.testableComponents.getTxOutProofSingle
 
     it("should throw 400 if txid is empty", async () => {
       const result = await getTxOutProof(req, res)
@@ -667,7 +670,8 @@ describe("#BlockchainRouter", () => {
   })
 
   describe("verifyTxOutProof()", () => {
-    const verifyTxOutProof = blockchainRoute.testableComponents.verifyTxOutProof
+    const verifyTxOutProof =
+      blockchainRoute.testableComponents.verifyTxOutProofSingle
 
     it("should throw 400 if proof is empty", async () => {
       const result = await verifyTxOutProof(req, res)

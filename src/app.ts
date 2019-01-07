@@ -20,7 +20,12 @@ const zmq = require("zeromq")
 const sock: any = zmq.socket("sub")
 
 const swStats = require("swagger-stats")
-const apiSpec = require("./public/bitcoin-com-rest-v2.json")
+let apiSpec
+if (process.env.NETWORK === "mainnet") {
+  apiSpec = require("./public/bitcoin-com-mainnet-rest-v2.json")
+} else {
+  apiSpec = require("./public/bitcoin-com-testnet-rest-v2.json")
+}
 
 // v1
 const indexV1 = require("./routes/v1/index")
@@ -64,6 +69,8 @@ interface IError {
 require("dotenv").config()
 
 const app: express.Application = express()
+
+app.locals.env = process.env
 
 app.use(swStats.getMiddleware({ swaggerSpec: apiSpec }))
 
@@ -141,6 +148,23 @@ app.use(`/${v2prefix}/` + `dataRetrieval`, dataRetrievalV2.router)
 
 app.use(`/${v2prefix}/` + `payloadCreation`, payloadCreationV2.router)
 app.use(`/${v2prefix}/` + `wormhole/transaction`, wormholeV2.router)
+
+// Initialize wormhole/transaction/socket endpoint
+const whSocketUrl = process.env.WORMHOLE_SOCKET_URL
+const whSocketPort = process.env.WORMHOLE_SOCKET_PORT
+if (whSocketUrl && whSocketPort) {
+  const bchsocketd = require('bchsocketd')
+  bchsocketd.init({
+    bit: {
+      host: whSocketUrl,
+      port: whSocketPort
+    },
+    socket: {
+      app: app,
+      endpoint: `${v2prefix}/wormhole/transaction/socket`
+    }
+  })
+}
 
 // catch 404 and forward to error handler
 app.use(
