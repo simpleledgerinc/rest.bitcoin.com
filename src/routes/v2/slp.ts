@@ -8,6 +8,9 @@ const RateLimit = require("express-rate-limit")
 const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
 
+const bitboxproxy = require("slpjs").bitbox
+const utils = require("slpjs").utils
+const slpBalances = require("slp-balances")
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
@@ -90,6 +93,12 @@ while (i < 16) {
 router.get("/", config.slpRateLimit1, root)
 router.get("/list", config.slpRateLimit2, list)
 router.get("/list/:tokenId", config.slpRateLimit3, listSingleToken)
+router.get(
+  "/balancesForAddress/:address",
+  config.slpRateLimit4,
+  balancesForAddress
+)
+router.get("/address/convert/:address", config.slpRateLimit4, convertAddress)
 
 function root(
   req: express.Request,
@@ -135,7 +144,7 @@ async function list(
       return res.json({ error: msg })
     }
     res.status(500)
-    return res.json({ error: `Error in /properties: ${err.message}` })
+    return res.json({ error: `Error in /list: ${err.message}` })
   }
 }
 
@@ -183,7 +192,80 @@ async function listSingleToken(
       return res.json({ error: msg })
     }
     res.status(500)
-    return res.json({ error: `Error in /properties: ${err.message}` })
+    return res.json({ error: `Error in /list/:tokenId: ${err.message}` })
+  }
+}
+
+// TODO - finish balancesForAddress
+async function balancesForAddress(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+    const slpAddr = utils.toSlpAddress(req.params.address)
+    console.log("SLP ADDR", slpAddr)
+    const balances = await bitboxproxy.getAllTokenBalances(slpAddr)
+    console.log("balances: ", balances)
+    balances.slpAddress = slpAddr
+    balances.cashAddress = utils.toCashAddress(slpAddr)
+    balances.legacyAddress = BITBOX.Address.toLegacyAddress(
+      balances.cashAddress
+    )
+    return res.json(balances)
+  } catch (err) {
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+    res.status(500)
+    return res.json({
+      error: `Error in /balancesForAddress/:address: ${err.message}`
+    })
+  }
+}
+
+async function convertAddress(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+    const slpAddr = utils.toSlpAddress(req.params.address)
+    const obj: {
+      [slpAddress: string]: any
+      cashAddress: any
+      legacyAddress: any
+    } = {
+      slpAddress: "",
+      cashAddress: "",
+      legacyAddress: ""
+    }
+    obj.slpAddress = slpAddr
+    obj.cashAddress = utils.toCashAddress(slpAddr)
+    obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
+    return res.json(obj)
+  } catch (err) {
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+    res.status(500)
+    return res.json({
+      error: `Error in /address/convert/:address: ${err.message}`
+    })
   }
 }
 
@@ -192,6 +274,8 @@ module.exports = {
   testableComponents: {
     root,
     list,
-    listSingleToken
+    listSingleToken,
+    balancesForAddress,
+    convertAddress
   }
 }
