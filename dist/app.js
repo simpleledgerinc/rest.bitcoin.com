@@ -53,6 +53,7 @@ var utilV2 = require("./routes/v2/util");
 var dataRetrievalV2 = require("./routes/v2/dataRetrieval");
 var payloadCreationV2 = require("./routes/v2/payloadCreation");
 var wormholeV2 = require("./routes/v2/wormhole");
+var slpV2 = require("./routes/v2/slp");
 require("dotenv").config();
 var app = express();
 app.locals.env = process.env;
@@ -106,11 +107,12 @@ app.use("/" + v2prefix + "/" + "util", utilV2.router);
 app.use("/" + v2prefix + "/" + "dataRetrieval", dataRetrievalV2.router);
 app.use("/" + v2prefix + "/" + "payloadCreation", payloadCreationV2.router);
 app.use("/" + v2prefix + "/" + "wormhole/transaction", wormholeV2.router);
+app.use("/" + v2prefix + "/" + "slp", slpV2.router);
 // Initialize wormhole/transaction/socket endpoint
 var whSocketUrl = process.env.WORMHOLE_SOCKET_URL;
 var whSocketPort = process.env.WORMHOLE_SOCKET_PORT;
 if (whSocketUrl && whSocketPort) {
-    var bchsocketd = require('bchsocketd');
+    var bchsocketd = require("bchsocketd");
     bchsocketd.init({
         bit: {
             host: whSocketUrl,
