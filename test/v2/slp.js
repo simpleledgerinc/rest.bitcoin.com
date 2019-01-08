@@ -198,7 +198,7 @@ describe("#SLP", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITDB_URL}`)
           .post(``)
-          .reply(200, { result: mockData.mockList[0] })
+          .reply(200, { result: mockData.mockConvert })
       }
 
       req.params.address = "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5"

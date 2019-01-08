@@ -35,6 +35,13 @@ const mockList = [
   }
 ]
 
+const mockConvert = {
+  slpAddress: "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5",
+  cashAddress: "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf",
+  legacyAddress: "mvQPGnzRT6gMWASZBMg7NcT3vmvsSKSQtf"
+}
+
 module.exports = {
-  mockList
+  mockList,
+  mockConvert
 }
