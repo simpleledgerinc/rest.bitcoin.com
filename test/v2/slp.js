@@ -105,7 +105,7 @@ describe("#SLP", () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITDB_URL}`)
-          .post(``)
+          .get(`/list`)
           .reply(200, { result: mockData.mockList })
       }
 
@@ -162,7 +162,7 @@ describe("#SLP", () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITDB_URL}`)
-          .post(``)
+          .get(`/list${req.params.tokenId}`)
           .reply(200, { result: mockData.mockList[0] })
       }
 
