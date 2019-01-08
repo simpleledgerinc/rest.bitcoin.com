@@ -217,6 +217,9 @@ const mockRawMempool = [
   "6b3df7febf2b9834f1409155f88b866dd516b36376eae00e2b455df82e290405"
 ]
 
+const mockBlockHeaderConcise =
+  "0000ff7f7d217c9b7845ea8b50d620c59a1bf7c276566406e9b7bc7e463e0000000000006d70322c0b697c1c81d2744f87f09f1e9780ba5d30338952e2cdc64e60456f8423bb0a5ceafa091a3e843526"
+
 const mockBlockHeader = {
   hash: "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900",
   confirmations: 7,
@@ -261,6 +264,7 @@ module.exports = {
   mockChainTips,
   mockMempoolInfo,
   mockRawMempool,
+  mockBlockHeaderConcise,
   mockBlockHeader,
   mockTxOut,
   mockTxOutProof
