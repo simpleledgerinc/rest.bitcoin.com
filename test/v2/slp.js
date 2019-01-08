@@ -17,7 +17,7 @@ let originalEnvVars // Used during transition from integration to unit tests.
 
 // Mocking data.
 const { mockReq, mockRes } = require("./mocks/express-mocks")
-//const mockData = require("./mocks/mining-mocks")
+const mockData = require("./mocks/slp-mocks")
 
 // Used for debugging.
 const util = require("util")
@@ -106,7 +106,7 @@ describe("#SLP", () => {
       if (process.env.TEST === "unit") {
         nock(`${process.env.BITDB_URL}`)
           .post(``)
-          .reply(200, { result: mockData.mockProperties })
+          .reply(200, { result: mockData.mockList })
       }
 
       const result = await list(req, res)
