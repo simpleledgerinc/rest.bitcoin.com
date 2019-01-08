@@ -89,6 +89,7 @@ while (i < 16) {
 
 router.get("/", config.slpRateLimit1, root)
 router.get("/list", config.slpRateLimit2, list)
+router.get("/list/:tokenId", config.slpRateLimit3, listSingleToken)
 
 function root(
   req: express.Request,
@@ -138,10 +139,51 @@ async function list(
   }
 }
 
+async function listSingleToken(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const query = {
+      v: 3,
+      q: {
+        find: { "out.h1": "534c5000", "out.s3": "GENESIS" },
+        limit: 1000
+      },
+      r: {
+        f:
+          '[ .[] | { id: .tx.h, timestamp: (.blk.t | strftime("%Y-%m-%d %H:%M")), symbol: .out[0].s4, name: .out[0].s5, document: .out[0].s6 } ]'
+      }
+    }
+
+    const s = JSON.stringify(query)
+    const b64 = Buffer.from(s).toString("base64")
+    const url = `${process.env.BITDB_URL}q/${b64}`
+
+    const tokenRes = await axios.get(url)
+    const tokens = tokenRes.data.c
+    if (tokenRes.data.u && tokenRes.data.u.length)
+      tokens.concat(tokenRes.data.u)
+    tokens.forEach((token: any) => {
+      if (token.id === req.params.tokenId) return res.json(token)
+    })
+  } catch (err) {
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+    res.status(500)
+    return res.json({ error: `Error in /properties: ${err.message}` })
+  }
+}
+
 module.exports = {
   router,
   testableComponents: {
     root,
-    list
+    list,
+    listSingleToken
   }
 }
