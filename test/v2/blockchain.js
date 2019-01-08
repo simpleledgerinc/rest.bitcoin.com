@@ -330,7 +330,7 @@ describe("#BlockchainRouter", () => {
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
         result.error,
-        "heights needs to be an array",
+        "hashes needs to be an array",
         "Proper error message"
       )
     })
@@ -344,7 +344,7 @@ describe("#BlockchainRouter", () => {
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
         result.error,
-        "heights needs to be an array",
+        "hashes needs to be an array",
         "Proper error message"
       )
     })
@@ -353,7 +353,7 @@ describe("#BlockchainRouter", () => {
       const testArray = []
       for (var i = 0; i < 25; i++) testArray.push("")
 
-      req.body.heights = testArray
+      req.body.hashes = testArray
 
       const result = await getBlockHeaderBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
@@ -362,13 +362,13 @@ describe("#BlockchainRouter", () => {
       assert.include(result.error, "Array too large")
     })
 
-    it("should throw a 500 error for an invalid hash", async () => {
+    it("should throw a 400 error for an invalid hash", async () => {
       req.body.hashes = ["badHash"]
 
       const result = await getBlockHeaderBulk(req, res)
       // console.log(`result: ${util.inspect(result)}`)
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
     })
 
     it("should throw 500 when network issues", async () => {
@@ -394,19 +394,17 @@ describe("#BlockchainRouter", () => {
         process.env.BITCOINCOM_BASEURL = savedUrl
       }
     })
-    /*
-    it("should get details for a single height", async () => {
-      req.body.heights = [`500000`]
 
-      // Mock the Insight URL for unit tests.
+    it("should get concise block header for a single hash", async () => {
+      req.body.hashes = [
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+      ]
+
+      // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.RPC_BASEURL}`)
           .post(``)
-          .reply(200, { result: mockData.mockBlockHash })
-
-        nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(`/block/${mockData.mockBlockHash}`)
-          .reply(200, mockData.mockBlockDetails)
+          .reply(200, { result: mockData.mockBlockHeaderConcise })
       }
 
       // Call the details API.
@@ -414,44 +412,64 @@ describe("#BlockchainRouter", () => {
       //console.log(`result: ${util.inspect(result)}`)
 
       // Assert that required fields exist in the returned object.
-      assert.equal(result.length, 1, "Array with one entry")
+      assert.isArray(result)
+      assert.equal(
+        result[0],
+        "0000ff7f7d217c9b7845ea8b50d620c59a1bf7c276566406e9b7bc7e463e0000000000006d70322c0b697c1c81d2744f87f09f1e9780ba5d30338952e2cdc64e60456f8423bb0a5ceafa091a3e843526"
+      )
+    })
+
+    it("should get verbose block header for a single hash", async () => {
+      req.body = {
+        hashes: [
+          "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+        ],
+        verbose: true
+      }
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBlockHeader })
+      }
+
+      // Call the details API.
+      const result = await getBlockHeaderBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Assert that required fields exist in the returned object.
+      assert.isArray(result)
       assert.hasAllKeys(result[0], [
-        "bits",
-        "chainwork",
-        "confirmations",
-        "difficulty",
         "hash",
+        "confirmations",
         "height",
-        "isMainChain",
+        "version",
+        "versionHex",
         "merkleroot",
-        "nextblockhash",
-        "nonce",
-        "poolInfo",
-        "previousblockhash",
-        "reward",
-        "size",
         "time",
-        "tx",
-        "version"
+        "mediantime",
+        "nonce",
+        "bits",
+        "difficulty",
+        "chainwork",
+        "previousblockhash",
+        "nextblockhash"
       ])
     })
 
     it("should get details for multiple block heights", async () => {
-      req.body = {
-        heights: [`500000`, `500001`]
-      }
+      req.body.hashes = [
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900",
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+      ]
 
-      // Mock the Insight URL for unit tests.
+      // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
         nock(`${process.env.RPC_BASEURL}`)
           .post(``)
           .times(2)
-          .reply(200, { result: mockData.mockBlockHash })
-
-        nock(`${process.env.BITCOINCOM_BASEURL}`)
-          .get(`/block/${mockData.mockBlockHash}`)
-          .times(2)
-          .reply(200, mockData.mockBlockDetails)
+          .reply(200, { result: mockData.mockBlockHeaderConcise })
       }
 
       // Call the details API.
@@ -461,7 +479,6 @@ describe("#BlockchainRouter", () => {
       assert.isArray(result)
       assert.equal(result.length, 2, "2 outputs for 2 inputs")
     })
-*/
   })
 
   describe("getChainTips()", () => {

@@ -338,7 +338,7 @@ async function getBlockHeaderBulk(
     const axiosResult: Array<any> = await axios.all(promises)
 
     // Extract the data component from the axios response.
-    const result = axiosResult.map(x => x.data)
+    const result = axiosResult.map(x => x.data.result)
 
     res.status(200)
     return res.json(result)
