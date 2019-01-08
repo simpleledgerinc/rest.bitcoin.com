@@ -145,6 +145,11 @@ async function listSingleToken(
   next: express.NextFunction
 ) {
   try {
+    let tokenId = req.params.tokenId
+    if (!tokenId || tokenId === "") {
+      res.status(400)
+      return res.json({ error: "tokenId can not be empty" })
+    }
     const query = {
       v: 3,
       q: {
@@ -165,9 +170,12 @@ async function listSingleToken(
     const tokens = tokenRes.data.c
     if (tokenRes.data.u && tokenRes.data.u.length)
       tokens.concat(tokenRes.data.u)
+
+    let t
     tokens.forEach((token: any) => {
-      if (token.id === req.params.tokenId) return res.json(token)
+      if (token.id === req.params.tokenId) t = token
     })
+    return t
   } catch (err) {
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {

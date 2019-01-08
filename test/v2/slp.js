@@ -122,4 +122,63 @@ describe("#SLP", () => {
       ])
     })
   })
+
+  describe("listSingleToken()", () => {
+    const listSingleToken = slpRoute.testableComponents.listSingleToken
+
+    it("should throw 400 if tokenId is empty", async () => {
+      const result = await listSingleToken(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "tokenId can not be empty")
+    })
+
+    it("should throw 503 when network issues", async () => {
+      // Save the existing BITDB_URL.
+      const savedUrl2 = process.env.BITDB_URL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.BITDB_URL = "http://fakeurl/api/"
+
+      req.params.tokenId =
+        "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
+
+      const result = await listSingleToken(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.BITDB_URL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+
+    it("should get token information", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITDB_URL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockList[0] })
+      }
+
+      req.params.tokenId =
+        "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
+
+      const result = await listSingleToken(req, res)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, [
+        "id",
+        "timestamp",
+        "symbol",
+        "name",
+        "document"
+      ])
+    })
+  })
 })

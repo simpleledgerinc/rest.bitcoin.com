@@ -3981,7 +3981,7 @@
 						"in": "path",
 						"description": "The token id",
 						"required": true,
-						"example": "259908ae44f46ef585edef4bcc1e50dc06e4c391ac4be929fae27235b8158cf1",
+						"example": "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a",
 						"schema": {
 							"type": "string"
 						}
