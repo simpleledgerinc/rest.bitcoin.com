@@ -12,6 +12,8 @@ const logger = require("./logging.js")
 const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
 
+const FREEMIUM_INPUT_SIZE = 20
+
 interface IRLConfig {
   [blockchainRateLimit1: string]: any
   blockchainRateLimit2: any
@@ -74,8 +76,8 @@ while (i < 18) {
 // Define routes.
 router.get("/", config.blockchainRateLimit1, root)
 router.get("/getBestBlockHash", config.blockchainRateLimit2, getBestBlockHash)
-// TODO: Where is getBlockByHash?
-//router.get("/getBlock/:hash", config.blockchainRateLimit3, getBlock) // Same as block/getBlockByHash
+// Dev Note: getBlock/:hash ommited because its the same as block/detailsByHash
+//router.get("/getBlock/:hash", config.blockchainRateLimit3, getBlock)
 router.get("/getBlockchainInfo", config.blockchainRateLimit3, getBlockchainInfo)
 router.get("/getBlockCount", config.blockchainRateLimit4, getBlockCount)
 router.get(
@@ -294,39 +296,38 @@ async function getBlockHeaderBulk(
       })
     }
 
-    // Enforce no more than 20 hashes.
-    if (hashes.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 hashes"
+    // Enforce no more than 20 addresses.
+    if (hashes.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
     }
 
     logger.debug(
-      `Executing blockchain/getBlockHeader with these hashes: `,
+      `Executing blockchain/getBlockHeaderBulk with these hashes: `,
       hashes
     )
 
-    // Loop through each hash and creates an array of requests to call in parallel
-    hashes = hashes.map(async (hash: any) => {
-      // Ensure the input is a valid BCH hash.
-      try {
-        if (hash.length !== 64) {
-          throw "This is not a hash"
-        }
-      } catch (err) {
+    // Validate each hash in the array.
+    for (let i = 0; i < hashes.length; i++) {
+      const hash = hashes[i]
+
+      if (hash.length !== 64) {
         res.status(400)
-        return res.json({
-          error: err
-        })
+        return res.json({ error: `This is not a hash: ${hash}` })
       }
+    }
 
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
+    // Loop through each hash and creates an array of requests to call in parallel
+    const promises = hashes.map(async (hash: any) => {
       requestConfig.data.id = "getblockheader"
       requestConfig.data.method = "getblockheader"
       requestConfig.data.params = [hash, verbose]
@@ -334,18 +335,13 @@ async function getBlockHeaderBulk(
       return await BitboxHTTP(requestConfig)
     })
 
-    const result: Array<any> = []
-    return axios.all(hashes).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg.data.result)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    // Extract the data component from the axios response.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)

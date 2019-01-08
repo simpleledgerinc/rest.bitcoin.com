@@ -118,19 +118,15 @@ describe("#ControlRouter", () => {
       const result = await getInfo(req, res)
       //console.log(`result: ${util.inspect(result)}`)
 
-      assert.hasAllKeys(result, [
+      assert.hasAnyKeys(result, [
         "version",
         "protocolversion",
-        "walletversion",
-        "balance",
         "blocks",
         "timeoffset",
         "connections",
         "proxy",
         "difficulty",
         "testnet",
-        "keypoololdest",
-        "keypoolsize",
         "paytxfee",
         "relayfee",
         "errors"
