@@ -128,13 +128,20 @@ async function list(
 
     return tokens
   } catch (err) {
-    res.status(500).send(err.response.data.error)
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+    res.status(500)
+    return res.json({ error: `Error in /properties: ${err.message}` })
   }
 }
 
 module.exports = {
   router,
   testableComponents: {
-    root
+    root,
+    list
   }
 }

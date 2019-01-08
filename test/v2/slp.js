@@ -29,20 +29,13 @@ describe("#SLP", () => {
   before(() => {
     // Save existing environment variables.
     originalEnvVars = {
-      BITCOINCOM_BASEURL: process.env.BITCOINCOM_BASEURL,
-      RPC_BASEURL: process.env.RPC_BASEURL,
-      RPC_USERNAME: process.env.RPC_USERNAME,
-      RPC_PASSWORD: process.env.RPC_PASSWORD
+      BITDB_URL: process.env.BITDB_URL
     }
 
     // Set default environment variables for unit tests.
     if (!process.env.TEST) process.env.TEST = "unit"
-    if (process.env.TEST === "unit") {
-      process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
-      process.env.RPC_BASEURL = "http://fakeurl/api"
-      process.env.RPC_USERNAME = "fakeusername"
-      process.env.RPC_PASSWORD = "fakepassword"
-    }
+    if (process.env.TEST === "unit")
+      process.env.BITDB_URL = "http://fakeurl/api/"
   })
 
   // Setup the mocks before each test.
@@ -68,10 +61,7 @@ describe("#SLP", () => {
 
   after(() => {
     // Restore any pre-existing environment variables.
-    process.env.BITCOINCOM_BASEURL = originalEnvVars.BITCOINCOM_BASEURL
-    process.env.RPC_BASEURL = originalEnvVars.RPC_BASEURL
-    process.env.RPC_USERNAME = originalEnvVars.RPC_USERNAME
-    process.env.RPC_PASSWORD = originalEnvVars.RPC_PASSWORD
+    process.env.BITDB_URL = originalEnvVars.BITDB_URL
   })
 
   describe("#root", async () => {
@@ -83,6 +73,53 @@ describe("#SLP", () => {
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(result.status, "slp", "Returns static string")
+    })
+  })
+
+  describe("list()", () => {
+    // list route handler
+    const list = slpRoute.testableComponents.list
+
+    it("should throw 500 when network issues", async () => {
+      // Save the existing BITDB_URL.
+      const savedUrl2 = process.env.BITDB_URL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.BITDB_URL = "http://fakeurl/api/"
+
+      const result = await list(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.BITDB_URL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+
+    it("should GET list", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITDB_URL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockProperties })
+      }
+
+      const result = await list(req, res)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.hasAnyKeys(result[0], [
+        "id",
+        "timestamp",
+        "symbol",
+        "name",
+        "document"
+      ])
     })
   })
 })
