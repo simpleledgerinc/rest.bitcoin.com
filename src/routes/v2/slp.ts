@@ -175,7 +175,7 @@ async function listSingleToken(
     tokens.forEach((token: any) => {
       if (token.id === req.params.tokenId) t = token
     })
-    return t
+    return res.json(t)
   } catch (err) {
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {
