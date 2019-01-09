@@ -704,6 +704,52 @@ describe("#BlockchainRouter", () => {
     })
   })
 
+  describe("#getMempoolEntryBulk", () => {
+    // route handler.
+    const getMempoolEntryBulk =
+      blockchainRoute.testableComponents.getMempoolEntryBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await getMempoolEntryBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single txid", async () => {
+      req.body.txids =
+        `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getMempoolEntryBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.txids = testArray
+
+      const result = await getMempoolEntryBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+  })
+
   describe("getTxOut()", () => {
     // block route handler.
     const getTxOut = blockchainRoute.testableComponents.getTxOut

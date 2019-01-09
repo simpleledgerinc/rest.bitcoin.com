@@ -489,10 +489,11 @@ async function getMempoolEntryBulk(
       })
     }
 
-    // Enforce no more than 20 txids.
-    if (txids.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 txids"
+    // Enforce no more than 20 addresses.
+    if (txids.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
     }
 
