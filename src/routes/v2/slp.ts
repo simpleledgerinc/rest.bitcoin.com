@@ -13,7 +13,7 @@ const utils = require("slpjs").utils
 const slpBalances = require("slp-balances")
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
-util.inspect.defaultOptions = { depth: 1 }
+util.inspect.defaultOptions = { depth: 5 }
 
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
@@ -130,11 +130,10 @@ async function list(
     const b64 = Buffer.from(s).toString("base64")
     const url = `${process.env.BITDB_URL}q/${b64}`
 
-    console.log(`url: ${util.inspect(url)}`)
-
+    // Get data from BitDB.
     const tokenRes = await axios.get(url)
-    console.log(`tokenRes: ${util.inspect(url)}`)
 
+    // Parse data.
     const tokens = tokenRes.data.c
     if (tokenRes.data.u && tokenRes.data.u.length)
       tokens.concat(tokenRes.data.u)
