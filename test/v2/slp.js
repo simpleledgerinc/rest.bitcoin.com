@@ -24,7 +24,7 @@ const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
 
 describe("#SLP", () => {
-  let req, res
+  let req, res, mockServerUrl
 
   before(() => {
     // Save existing environment variables.
@@ -34,7 +34,10 @@ describe("#SLP", () => {
 
     // Set default environment variables for unit tests.
     if (!process.env.TEST) process.env.TEST = "unit"
-    if (process.env.TEST === "unit") process.env.BITDB_URL = "http://fakeurl/"
+    if (process.env.TEST === "unit") {
+      process.env.BITDB_URL = "http://fakeurl/"
+      mockServerUrl = `http://fakeurl`
+    }
   })
 
   // Setup the mocks before each test.
@@ -103,20 +106,15 @@ describe("#SLP", () => {
     it("should GET list", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
-        // console.log(
-        //   `${
-        //     process.env.BITDB_URL
-        //   }q/eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
-        // )
-        nock(`${process.env.BITDB_URL}`)
-          .get(
-            `q/eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
-          )
-          .reply(200, { result: mockData.mockList })
+        const b64 = `eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
+
+        nock(mockServerUrl)
+          .get(`/q/${b64}`)
+          .reply(200, mockData.mockList)
       }
 
       const result = await list(req, res)
-      // console.log(`result: ${util.inspect(result)}`)
+      //console.log(`test result: ${util.inspect(result)}`)
 
       assert.isArray(result)
       assert.hasAnyKeys(result[0], [
@@ -167,13 +165,22 @@ describe("#SLP", () => {
     it("should get token information", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
+        const b64 = `eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
+
+        nock(mockServerUrl)
+          .get(`/q/${b64}`)
+          .reply(200, mockData.mockList)
+      }
+/*
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
         nock(`${process.env.BITDB_URL}`)
           .get(
             `q/eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
           )
           .reply(200, { result: mockData.mockList[0] })
       }
-
+*/
       req.params.tokenId =
         "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
 
