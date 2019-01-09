@@ -116,7 +116,7 @@ describe("#SLP", () => {
       }
 
       const result = await list(req, res)
-      // console.log(`result: ${util.inspect(result)}`)
+      console.log(`result: ${util.inspect(result)}`)
 
       assert.isArray(result)
       assert.hasAnyKeys(result[0], [
