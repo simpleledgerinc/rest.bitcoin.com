@@ -493,5 +493,20 @@
     "key": "/dataRetrieval/ownerOfERC721Token/{propertyId}/{tokenId}/{address}",
     "name": "address",
     "value": "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf"
+  },
+  {
+    "key": "/slp/list/{tokenId}",
+    "name": "tokenId",
+    "value": "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
+  },
+  {
+    "key": "/slp/balancesForAddress/{address}",
+    "name": "address",
+    "value": "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5"
+  },
+  {
+    "key": "/slp/address/convert/{address}",
+    "name": "address",
+    "value": "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5"
   }
 ]
