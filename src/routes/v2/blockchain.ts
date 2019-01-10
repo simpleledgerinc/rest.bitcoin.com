@@ -502,25 +502,25 @@ async function getMempoolEntryBulk(
       txids
     )
 
-    // Loop through each txid and creates an array of requests to call in parallel
-    txids = txids.map(async (txid: any) => {
-      try {
-        if (txid.length !== 64) {
-          throw "This is not a txid"
-        }
-      } catch (err) {
-        res.status(400)
-        return res.json({
-          error: err
-        })
-      }
+    // Validate each element in the array
+    for(let i=0; i < txids.length; i++) {
+      const txid = txids[i]
 
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
+      if (txid.length !== 64) {
+        res.status(400)
+        return res.json({error: "This is not a txid"})
+      }
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    // Loop through each txid and creates an array of requests to call in parallel
+    const promises = txids.map(async (txid: any) => {
 
       requestConfig.data.id = "getmempoolentry"
       requestConfig.data.method = "getmempoolentry"
@@ -529,6 +529,14 @@ async function getMempoolEntryBulk(
       return await BitboxHTTP(requestConfig)
     })
 
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    // Extract the data component from the axios response.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
+/*
     const result: Array<any> = []
     return axios.all(txids).then(
       axios.spread((...args) => {
@@ -541,6 +549,7 @@ async function getMempoolEntryBulk(
         return res.json(result)
       })
     )
+    */
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)

@@ -2,7 +2,7 @@
   TODO:
   -getRawMempool
   --Add tests for 'verbose' input values
-  -getMempoolEntry
+  -getMempoolEntry & getMempoolEntryBulk
   --Needs e2e test to create unconfirmed tx, for real-world test.
 */
 
@@ -14,7 +14,9 @@ const nock = require("nock") // HTTP mocking
 const blockchainRoute = require("../../dist/routes/v2/blockchain")
 
 const util = require("util")
-util.inspect.defaultOptions = { depth: 5 }
+util.inspect.defaultOptions = { depth: 1 }
+
+if (!process.env.TEST) process.env.TEST = "unit"
 
 // Mocking data.
 const { mockReq, mockRes } = require("./mocks/express-mocks")
@@ -38,7 +40,6 @@ describe("#BlockchainRouter", () => {
     }
 
     // Set default environment variables for unit tests.
-    if (!process.env.TEST) process.env.TEST = "unit"
     if (process.env.TEST === "unit") {
       process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
       process.env.RPC_BASEURL = "http://fakeurl/api"
@@ -365,7 +366,7 @@ describe("#BlockchainRouter", () => {
     it("should throw a 400 error for an invalid hash", async () => {
       req.body.hashes = ["badHash"]
 
-      const result = await getBlockHeaderBulk(req, res)
+      await getBlockHeaderBulk(req, res)
       // console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
@@ -723,8 +724,7 @@ describe("#BlockchainRouter", () => {
     })
 
     it("should error on non-array single txid", async () => {
-      req.body.txids =
-        `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      req.body.txids = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
 
       const result = await getMempoolEntryBulk(req, res)
 
@@ -748,6 +748,43 @@ describe("#BlockchainRouter", () => {
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "Array too large")
     })
+
+    // Only execute on integration tests.
+    console.log(`process.env.TEST: ${process.env.TEST}`)
+    if (process.env.TEST !== "unit") {
+      // Dev-note: This test passes because it expects an error. TXIDs do not
+      // stay in the mempool for long, so it does not work well for a unit or
+      // integration test.
+      it("should retrieve single mempool entry", async () => {
+        req.body.txids = [
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+        ]
+
+        const result = await getMempoolEntryBulk(req, res)
+        console.log(`result: ${util.inspect(result)}`)
+
+        assert.hasAllKeys(result, ["error"])
+        assert.isString(result.error)
+        assert.equal(result.error, "Transaction not in mempool")
+      })
+
+      // Dev-note: This test passes because it expects an error. TXIDs do not
+      // stay in the mempool for long, so it does not work well for a unit or
+      // integration test.
+      it("should retrieve multiple mempool entries", async () => {
+        req.body.txids = [
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`,
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+        ]
+
+        const result = await getMempoolEntryBulk(req, res)
+        console.log(`result: ${util.inspect(result)}`)
+
+        assert.hasAllKeys(result, ["error"])
+        assert.isString(result.error)
+        assert.equal(result.error, "Transaction not in mempool")
+      })
+    }
   })
 
   describe("getTxOut()", () => {
