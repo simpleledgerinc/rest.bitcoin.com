@@ -14,6 +14,7 @@
     "test": "npm run test-v2",
     "test-v1": "npm run build && nyc --reporter=text mocha --require babel-core/register --timeout 15000 test/v1/",
     "test-v2": "export NETWORK=testnet && npm run build && nyc --reporter=text mocha --require babel-core/register --timeout 15000 test/v2/",
+    "test-v2-no-build": "export NETWORK=testnet && nyc --reporter=text mocha --require babel-core/register --timeout 15000 test/v2/",
     "test-all": "TEST=integration nyc --reporter=text mocha --require babel-core/register --timeout 15000 test/v1/ test/v2/",
     "test:integration": "mocha test/v2/integration",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
@@ -48,7 +49,6 @@
     "sequelize": "^3.30.4",
     "slp-balances": "^0.2.5",
     "slpjs": "^0.1.7",
-    "slp-sdk": "^0.5.0",
     "socket.io": "^2.1.1",
     "swagger-stats": "^0.95.6",
     "zeromq": "^4.6.0"
