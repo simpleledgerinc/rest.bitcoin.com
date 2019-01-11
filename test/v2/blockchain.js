@@ -2,7 +2,7 @@
   TODO:
   -getRawMempool
   --Add tests for 'verbose' input values
-  -getMempoolEntry
+  -getMempoolEntry & getMempoolEntryBulk
   --Needs e2e test to create unconfirmed tx, for real-world test.
 */
 
@@ -14,7 +14,9 @@ const nock = require("nock") // HTTP mocking
 const blockchainRoute = require("../../dist/routes/v2/blockchain")
 
 const util = require("util")
-util.inspect.defaultOptions = { depth: 5 }
+util.inspect.defaultOptions = { depth: 1 }
+
+if (!process.env.TEST) process.env.TEST = "unit"
 
 // Mocking data.
 const { mockReq, mockRes } = require("./mocks/express-mocks")
@@ -38,7 +40,6 @@ describe("#BlockchainRouter", () => {
     }
 
     // Set default environment variables for unit tests.
-    if (!process.env.TEST) process.env.TEST = "unit"
     if (process.env.TEST === "unit") {
       process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
       process.env.RPC_BASEURL = "http://fakeurl/api"
@@ -106,16 +107,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(
-      //  result.error,
-      //  "Could not communicate with full node",
-      //  "Error message expected"
-      //)
     })
 
     it("should GET /getBestBlockHash", async () => {
@@ -152,12 +149,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getBlockchainInfo", async () => {
@@ -204,12 +201,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getBlockCount", async () => {
@@ -255,12 +252,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should GET block header", async () => {
@@ -369,7 +366,7 @@ describe("#BlockchainRouter", () => {
     it("should throw a 400 error for an invalid hash", async () => {
       req.body.hashes = ["badHash"]
 
-      const result = await getBlockHeaderBulk(req, res)
+      await getBlockHeaderBulk(req, res)
       // console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
@@ -391,12 +388,8 @@ describe("#BlockchainRouter", () => {
         // Restore the saved URL.
         process.env.BITCOINCOM_BASEURL = savedUrl
 
-        assert.isAbove(
-          res.statusCode,
-          499,
-          "HTTP status code 500 or greater expected."
-        )
-        //assert.include(result.error, "ENOTFOUND", "Error message expected")
+        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.include(result.error, "ENOTFOUND", "Error message expected")
       } catch (err) {
         // Restore the saved URL.
         process.env.BITCOINCOM_BASEURL = savedUrl
@@ -506,12 +499,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getChainTips", async () => {
@@ -547,12 +540,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getDifficulty", async () => {
@@ -587,12 +580,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getMempoolInfo", async () => {
@@ -633,12 +626,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getMempoolInfo", async () => {
@@ -685,12 +678,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getMempoolEntry", async () => {
@@ -710,6 +703,87 @@ describe("#BlockchainRouter", () => {
       assert.isString(result.error)
       assert.equal(result.error, "Transaction not in mempool")
     })
+  })
+
+  describe("#getMempoolEntryBulk", () => {
+    // route handler.
+    const getMempoolEntryBulk =
+      blockchainRoute.testableComponents.getMempoolEntryBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await getMempoolEntryBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single txid", async () => {
+      req.body.txids = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getMempoolEntryBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.txids = testArray
+
+      const result = await getMempoolEntryBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    // Only execute on integration tests.
+    if (process.env.TEST !== "unit") {
+      // Dev-note: This test passes because it expects an error. TXIDs do not
+      // stay in the mempool for long, so it does not work well for a unit or
+      // integration test.
+      it("should retrieve single mempool entry", async () => {
+        req.body.txids = [
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+        ]
+
+        const result = await getMempoolEntryBulk(req, res)
+        //console.log(`result: ${util.inspect(result)}`)
+
+        assert.hasAllKeys(result, ["error"])
+        assert.isString(result.error)
+        assert.equal(result.error, "Transaction not in mempool")
+      })
+
+      // Dev-note: This test passes because it expects an error. TXIDs do not
+      // stay in the mempool for long, so it does not work well for a unit or
+      // integration test.
+      it("should retrieve multiple mempool entries", async () => {
+        req.body.txids = [
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`,
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+        ]
+
+        const result = await getMempoolEntryBulk(req, res)
+        //console.log(`result: ${util.inspect(result)}`)
+
+        assert.hasAllKeys(result, ["error"])
+        assert.isString(result.error)
+        assert.equal(result.error, "Transaction not in mempool")
+      })
+    }
   })
 
   describe("getTxOut()", () => {
@@ -749,12 +823,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     // This test can only run for unit tests. See TODO at the top of this file.
@@ -816,12 +890,12 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getTxOutProof", async () => {
@@ -838,6 +912,91 @@ describe("#BlockchainRouter", () => {
       //console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isString(result)
+    })
+  })
+
+  describe("#getTxOutProofBulk", () => {
+    // route handler.
+    const getTxOutProofBulk =
+      blockchainRoute.testableComponents.getTxOutProofBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await getTxOutProofBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single txid", async () => {
+      req.body.txids = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getTxOutProofBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.txids = testArray
+
+      const result = await getTxOutProofBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    it("should GET proof for single txid", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockTxOutProof })
+      }
+
+      req.body.txids = [
+        `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      ]
+
+      const result = await getTxOutProofBulk(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.isString(result[0])
+    })
+
+    it("should GET proof for multiple txids", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .times(2)
+          .reply(200, { result: mockData.mockTxOutProof })
+      }
+
+      req.body.txids = [
+        `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`,
+        `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      ]
+
+      const result = await getTxOutProofBulk(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.equal(result.length, 2, "Correct length of returned array")
     })
   })
 
@@ -868,15 +1027,15 @@ describe("#BlockchainRouter", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.isAbove(
-        res.statusCode,
-        499,
-        "HTTP status code 500 or greater expected."
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Could not communicate with full node",
+        "Error message expected"
       )
-      //assert.include(result.error,"Could not communicate with full node","Error message expected")
     })
 
-    it("should GET /getTxOutProof", async () => {
+    it("should GET /verifyTxOutProof", async () => {
       const expected =
         "d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde"
 
@@ -895,6 +1054,95 @@ describe("#BlockchainRouter", () => {
       assert.isArray(result)
       assert.isString(result[0])
       assert.equal(result[0], expected)
+    })
+  })
+
+  describe("#verifyTxOutProofBulk", () => {
+    // route handler.
+    const verifyTxOutProofBulk =
+      blockchainRoute.testableComponents.verifyTxOutProofBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await verifyTxOutProofBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "proofs needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single txid", async () => {
+      req.body.proofs = mockData.mockTxOutProof
+
+      const result = await verifyTxOutProofBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "proofs needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.proofs = testArray
+
+      const result = await verifyTxOutProofBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    it("should get single proof", async () => {
+      const expected =
+        "d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde"
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: [expected] })
+      }
+
+      req.body.proofs = [mockData.mockTxOutProof]
+
+      const result = await verifyTxOutProofBulk(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.isString(result[0])
+      assert.equal(result[0], expected)
+    })
+
+    it("should get multiple proofs", async () => {
+      const expected =
+        "d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde"
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .times(2)
+          .reply(200, { result: [expected] })
+      }
+
+      req.body.proofs = [mockData.mockTxOutProof, mockData.mockTxOutProof]
+
+      const result = await verifyTxOutProofBulk(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.isString(result[0])
+      assert.equal(result[0], expected)
+      assert.equal(result.length, 2)
     })
   })
 })
