@@ -24,6 +24,9 @@ const password = process.env.RPC_PASSWORD
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
+const SLPsdk = require("slp-sdk/lib/SLP").default
+const SLP = new SLPsdk()
+
 const requestConfig: IRequestConfig = {
   method: "post",
   auth: {
@@ -98,7 +101,12 @@ router.get(
   config.slpRateLimit4,
   balancesForAddress
 )
-router.get("/address/convert/:address", config.slpRateLimit4, convertAddress)
+router.get(
+  "/balance/:address/:tokenId",
+  config.slpRateLimit5,
+  balancesForAddressByTokenID
+)
+router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
 
 function root(
   req: express.Request,
@@ -199,7 +207,7 @@ async function listSingleToken(
   }
 }
 
-// TODO - finish balancesForAddress
+// TODO - Only works for mainnet. Get it to work for testnet too.
 async function balancesForAddress(
   req: express.Request,
   res: express.Response,
@@ -211,10 +219,29 @@ async function balancesForAddress(
       res.status(400)
       return res.json({ error: "address can not be empty" })
     }
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = SLP.Utils.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    let cashAddr = SLP.Utils.toCashAddress(address)
+    const networkIsValid = routeUtils.validateNetwork(cashAddr)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
     const slpAddr = utils.toSlpAddress(req.params.address)
-    console.log("SLP ADDR", slpAddr)
     const balances = await bitboxproxy.getAllTokenBalances(slpAddr)
-    console.log("balances: ", balances)
     balances.slpAddress = slpAddr
     balances.cashAddress = utils.toCashAddress(slpAddr)
     balances.legacyAddress = BITBOX.Address.toLegacyAddress(
@@ -230,6 +257,119 @@ async function balancesForAddress(
     res.status(500)
     return res.json({
       error: `Error in /balancesForAddress/:address: ${err.message}`
+    })
+  }
+}
+
+// TODO - Only works for mainnet. Get it to work for testnet too.
+async function balancesForAddressByTokenID(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let address = req.params.address
+    let tokenId = req.params.tokenId
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    if (!tokenId || tokenId === "") {
+      res.status(400)
+      return res.json({ error: "tokenId can not be empty" })
+    }
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = SLP.Utils.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    let cashAddr = SLP.Utils.toCashAddress(address)
+    const networkIsValid = routeUtils.validateNetwork(cashAddr)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    const slpAddr = utils.toSlpAddress(address)
+    const balances = await bitboxproxy.getAllTokenBalances(slpAddr)
+    const query = {
+      v: 3,
+      q: {
+        find: { "out.h1": "534c5000", "out.s3": "GENESIS" },
+        limit: 1000
+      },
+      r: {
+        f:
+          '[ .[] | { id: .tx.h, timestamp: (.blk.t | strftime("%Y-%m-%d %H:%M")), symbol: .out[0].s4, name: .out[0].s5, document: .out[0].s6 } ]'
+      }
+    }
+
+    const s = JSON.stringify(query)
+    const b64 = Buffer.from(s).toString("base64")
+    const url = `${process.env.BITDB_URL}q/${b64}`
+
+    const tokenRes = await axios.get(url)
+    const tokens = tokenRes.data.c
+    if (tokenRes.data.u && tokenRes.data.u.length)
+      tokens.concat(tokenRes.data.u)
+
+    let t: any
+    tokens.forEach((token: any) => {
+      if (token.id === req.params.tokenId) t = token
+    })
+
+    interface ReturnObj {
+      [id: string]: any
+      timestamp: any
+      symbol: any
+      name: any
+      document: any
+      balance: any
+      slpAddress: any
+      cashAddress: any
+      legacyAddress: any
+    }
+    const obj: ReturnObj = {
+      id: undefined,
+      timestamp: undefined,
+      symbol: undefined,
+      name: undefined,
+      document: undefined,
+      balance: undefined,
+      slpAddress: undefined,
+      cashAddress: undefined,
+      legacyAddress: undefined
+    }
+
+    obj.id = t.id
+    obj.timestamp = t.timestamp
+    obj.symbol = t.symbol
+    obj.name = t.name
+    obj.document = t.document
+    obj.balance = balances[req.params.tokenId]
+    obj.slpAddress = slpAddr
+    obj.cashAddress = utils.toCashAddress(slpAddr)
+    obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
+    return res.json(obj)
+  } catch (err) {
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+    res.status(500)
+    return res.json({
+      error: `Error in /balance/:address/:tokenId: ${err.message}`
     })
   }
 }
@@ -279,6 +419,7 @@ module.exports = {
     list,
     listSingleToken,
     balancesForAddress,
+    balancesForAddressByTokenID,
     convertAddress
   }
 }

@@ -142,12 +142,12 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
+      assert.isAbove(
+        res.statusCode,
+        499,
+        "HTTP status code 500 or greater expected."
       )
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should report a zero balance correctly.", async () => {
@@ -211,12 +211,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should return empty array for zero balances", async () => {
@@ -292,12 +288,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should report token balances correctly", async () => {
@@ -345,12 +337,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should report token block information", async () => {
@@ -401,12 +389,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 for noncrowdsale propertyid", async () => {
@@ -485,12 +469,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should GET /getCurrentConsensusHash", async () => {
@@ -534,12 +514,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 for non-managed propertyid", async () => {
@@ -610,12 +586,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should GET info", async () => {
@@ -669,12 +641,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 for non-WH TX", async () => {
@@ -735,12 +703,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should GET properties", async () => {
@@ -793,12 +757,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 for non-existing propertyid", async () => {
@@ -880,12 +840,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 for non-WH transaction", async () => {
@@ -974,12 +930,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 for non-WH transaction", async () => {
@@ -1068,12 +1020,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 for out-of-range block index", async () => {
@@ -1142,12 +1090,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 if address is invalid", async () => {
@@ -1224,12 +1168,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 if address is invalid", async () => {
@@ -1300,12 +1240,8 @@ describe("#DataRetrieval", () => {
       // Restore the saved URL.
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-      assert.include(
-        result.error,
-        "Network error: Could not communicate with full node",
-        "Error message expected"
-      )
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
     it("should throw 400 if address is invalid", async () => {

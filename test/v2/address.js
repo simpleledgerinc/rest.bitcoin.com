@@ -169,7 +169,7 @@ describe("#AddressRouter", () => {
         // Restore the saved URL.
         process.env.BITCOINCOM_BASEURL = savedUrl
 
-        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.isAbove(res.statusCode, 499, "HTTP status code 500 expected.")
         //assert.include(result.error, "ENOTFOUND", "Error message expected")
         assert.include(
           result.error,
