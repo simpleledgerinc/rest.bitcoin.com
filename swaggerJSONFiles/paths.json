@@ -2899,6 +2899,30 @@
           }
         }
       }
+    },
+    "/slp/validate": {
+      "post": {
+        "tags": ["slp"],
+        "summary": "Validate list of txids",
+        "description": "Validate TXIDs",
+        "operationId": "slpValidate",
+        "requestBody": {
+          "description": "Array of txids",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Txids"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful response"
+          }
+        }
+      }
     }
   }
 }

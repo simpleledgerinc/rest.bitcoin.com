@@ -107,6 +107,7 @@ router.get(
   balancesForAddressByTokenID
 )
 router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
+router.post("/validate", config.slpRateLimit7, validate)
 
 function root(
   req: express.Request,
@@ -412,6 +413,44 @@ async function convertAddress(
   }
 }
 
+async function validate(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let txids = req.body.txids
+    // if (!address || address === "") {
+    //   res.status(400)
+    //   return res.json({ error: "address can not be empty" })
+    // }
+    // const slpAddr = utils.toSlpAddress(req.params.address)
+    // const obj: {
+    //   [slpAddress: string]: any
+    //   cashAddress: any
+    //   legacyAddress: any
+    // } = {
+    //   slpAddress: "",
+    //   cashAddress: "",
+    //   legacyAddress: ""
+    // }
+    // obj.slpAddress = slpAddr
+    // obj.cashAddress = utils.toCashAddress(slpAddr)
+    // obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
+    return res.json(txids)
+  } catch (err) {
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+    res.status(500)
+    return res.json({
+      error: `Error in /address/convert/:address: ${err.message}`
+    })
+  }
+}
+
 module.exports = {
   router,
   testableComponents: {
@@ -420,6 +459,7 @@ module.exports = {
     listSingleToken,
     balancesForAddress,
     balancesForAddressByTokenID,
-    convertAddress
+    convertAddress,
+    validate
   }
 }
