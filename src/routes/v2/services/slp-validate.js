@@ -1,7 +1,7 @@
 "use strict"
 
 const axios = require("axios")
-const chunk = require("lodash.chunk")
+// const chunk = require("lodash.chunk")
 const SLPSDK = require("slp-sdk/lib/SLP").default
 const SLP = new SLPSDK()
 const bitdbApiKey = process.env.BITDB_TOKEN
@@ -10,7 +10,7 @@ const slpParse = require("./slp-parse")
 
 async function validate(tokenId) {
   try {
-    const utxos = await getSlpUtxos(bitdbApiKey, tokenId)
+    const utxos = await getSlpUtxos(tokenId)
     if (utxos.length === 0) return []
 
     const txidsToValidate = [...new Set(utxos.map(utxo => utxo.txid))]
@@ -57,7 +57,7 @@ async function validate(tokenId) {
   }
 }
 
-async function getSlpUtxos(bitdbApiKey, tokenId) {
+async function getSlpUtxos(tokenId) {
   try {
     var query = {
       v: 3,
