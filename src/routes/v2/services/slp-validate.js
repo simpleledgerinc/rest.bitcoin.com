@@ -4,7 +4,6 @@ const axios = require("axios")
 // const chunk = require("lodash.chunk")
 const SLPSDK = require("slp-sdk/lib/SLP").default
 const SLP = new SLPSDK()
-const bitdbApiKey = process.env.BITDB_TOKEN
 
 const slpParse = require("./slp-parse")
 
@@ -38,7 +37,7 @@ async function validate(tokenId) {
         } else {
           bals.push({
             cashAddress: SLP.Address.toCashAddress(utxo.address),
-            slpAddress: SLP.Conversion.toSLPAddress(utxo.address),
+            slpAddress: SLP.Utils.toSLPAddress(utxo.address),
             legacyAddress: SLP.Address.toLegacyAddress(utxo.address),
             balance: utxo.amount
           })
