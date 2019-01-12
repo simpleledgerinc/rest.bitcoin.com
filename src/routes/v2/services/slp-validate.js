@@ -1,14 +1,13 @@
 "use strict"
 
 const axios = require("axios")
-const BigNumber = require("bignumber.js")
 const chunk = require("lodash.chunk")
 const SLPSDK = require("slp-sdk/lib/SLP").default
 const SLP = new SLPSDK()
 
 const slpParse = require("./slp-parse")
 
-async function validate(bitdbApiKey, tokenId) {
+async function validate(tokenId) {
   try {
     const utxos = await getSlpUtxos(bitdbApiKey, tokenId)
     if (utxos.length === 0) return []
@@ -84,10 +83,7 @@ async function getSlpUtxos(bitdbApiKey, tokenId) {
 
     var s = JSON.stringify(query)
     var b64 = Buffer.from(s).toString("base64")
-    var url = `https://bitdb.network/q/${b64}`
-    var header = {
-      headers: { key: bitdbApiKey }
-    }
+    var url = `https://bitdb.bitcoin.com/q/${b64}`
 
     const tokenTxRes = await axios.get(url, header)
     const tokenTxs = tokenTxRes.data.c
@@ -96,7 +92,7 @@ async function getSlpUtxos(bitdbApiKey, tokenId) {
 
     console.log(tokenTxs)
 
-    const outputs = parseSlpOutputs(tokenId, tokenTxs)
+    const outputs = slpParse(tokenId, tokenTxs)
 
     const unspentOutputs = outputs.filter(
       output =>

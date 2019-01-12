@@ -1,5 +1,7 @@
 "use strict"
 
+const BigNumber = require("bignumber.js")
+
 function parseSlpOutputs(tokenId, txs) {
   const genesisTx = txs.filter(tx => tx.tx.h === tokenId)[0]
   const decimals = parseGenesisDecimals(genesisTx)
