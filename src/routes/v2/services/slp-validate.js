@@ -12,7 +12,8 @@ async function validate(tokenId) {
     const utxos = await getSlpUtxos(tokenId)
     if (utxos.length === 0) return []
 
-    const txidsToValidate = [...new Set(utxos.map(utxo => utxo.txid))]
+    // const txidsToValidate = [...new Set(utxos.map(utxo => utxo.txid))]
+    const txidsToValidate = utxos.map(utxo => utxo.txid)
 
     // const validTxidArrays = await Promise.all(
     //   chunk(txidsToValidate, 20).map(txids => {
