@@ -7,7 +7,7 @@ import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
 const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
-const valide = require("./services/slp-validate").validate
+const slpValidate = require("./services/slp-validate")
 console.log("validate", validate)
 
 const bitboxproxy = require("slpjs").bitbox
@@ -439,7 +439,9 @@ async function validate(
     // obj.slpAddress = slpAddr
     // obj.cashAddress = utils.toCashAddress(slpAddr)
     // obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
-    return res.json(txids)
+
+    const validTxids =  await slpValidate(txids)
+    return res.json(validTxids)
   } catch (err) {
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {
