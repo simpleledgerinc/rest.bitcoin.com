@@ -3082,7 +3082,7 @@
 				}
 			}
 		},
-		"/slp/validate/:txid": {
+		"/slp/validate/{txid}": {
 			"get": {
 				"tags": [
 					"slp"
