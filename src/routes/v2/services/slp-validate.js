@@ -89,7 +89,7 @@ async function getSlpUtxos(tokenId) {
     const tokenTxRes = await axios.get(url)
     const tokenTxs = tokenTxRes.data.c
     if (tokenTxRes.data.u && tokenTxRes.data.u.length)
-      tokenTxs.concat(tokenTxRes.u)
+      tokenTxs.concat(tokenTxRes.data.u)
 
     console.log(tokenTxs)
 
