@@ -7,6 +7,8 @@ import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
 const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
+const valide = require("./services/slp-validate").validate
+console.log("validate", validate)
 
 const bitboxproxy = require("slpjs").bitbox
 const utils = require("slpjs").utils
