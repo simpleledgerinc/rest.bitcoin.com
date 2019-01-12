@@ -108,7 +108,7 @@ router.get(
   balancesForAddressByTokenID
 )
 router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
-router.post("/validate", config.slpRateLimit7, validate)
+router.get("/validate/:txid", config.slpRateLimit7, validate)
 
 function root(
   req: express.Request,
@@ -420,7 +420,7 @@ async function validate(
   next: express.NextFunction
 ) {
   try {
-    let txids = req.body.txids
+    let txid = req.params.txid
     // if (!address || address === "") {
     //   res.status(400)
     //   return res.json({ error: "address can not be empty" })
@@ -439,8 +439,8 @@ async function validate(
     // obj.cashAddress = utils.toCashAddress(slpAddr)
     // obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
 
-    const validTxids =  await slpValidate(txids)
-    return res.json(validTxids)
+    const validTxid = await slpValidate(txid)
+    return res.json(validTxid)
   } catch (err) {
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {

@@ -4,6 +4,7 @@ const axios = require("axios")
 const chunk = require("lodash.chunk")
 const SLPSDK = require("slp-sdk/lib/SLP").default
 const SLP = new SLPSDK()
+const bitdbApiKey = process.env.BITDB_TOKEN
 
 const slpParse = require("./slp-parse")
 
@@ -83,9 +84,9 @@ async function getSlpUtxos(bitdbApiKey, tokenId) {
 
     var s = JSON.stringify(query)
     var b64 = Buffer.from(s).toString("base64")
-    var url = `https://bitdb.bitcoin.com/q/${b64}`
+    const url = `${process.env.BITDB_URL}q/${b64}`
 
-    const tokenTxRes = await axios.get(url, header)
+    const tokenTxRes = await axios.get(url)
     const tokenTxs = tokenTxRes.data.c
     if (tokenTxRes.data.u && tokenTxRes.data.u.length)
       tokenTxs.concat(tokenTxRes.u)
