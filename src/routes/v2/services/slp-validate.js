@@ -91,7 +91,7 @@ async function getSlpUtxos(tokenId) {
     if (tokenTxRes.data.u && tokenTxRes.data.u.length)
       tokenTxs.concat(tokenTxRes.data.u)
 
-    console.log(tokenTxs)
+    // console.log(tokenTxs)
 
     const outputs = slpParse(tokenId, tokenTxs)
 
