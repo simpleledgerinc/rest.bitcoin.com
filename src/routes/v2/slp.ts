@@ -421,23 +421,10 @@ async function validate(
 ) {
   try {
     let txid = req.params.txid
-    // if (!address || address === "") {
-    //   res.status(400)
-    //   return res.json({ error: "address can not be empty" })
-    // }
-    // const slpAddr = utils.toSlpAddress(req.params.address)
-    // const obj: {
-    //   [slpAddress: string]: any
-    //   cashAddress: any
-    //   legacyAddress: any
-    // } = {
-    //   slpAddress: "",
-    //   cashAddress: "",
-    //   legacyAddress: ""
-    // }
-    // obj.slpAddress = slpAddr
-    // obj.cashAddress = utils.toCashAddress(slpAddr)
-    // obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
 
     const validTxid = await slpValidate(txid)
     return res.json(validTxid)
@@ -449,7 +436,7 @@ async function validate(
     }
     res.status(500)
     return res.json({
-      error: `Error in /address/convert/:address: ${err.message}`
+      error: `Error in /validate/:txid: ${err.message}`
     })
   }
 }
