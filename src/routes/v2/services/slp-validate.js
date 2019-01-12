@@ -1,19 +1,19 @@
 "use strict"
 
-const axios = require("axios");
-const BigNumber = require("bignumber.js");
-const chunk = require("lodash.chunk");
-const SLPSDK = require("slp-sdk/lib/SLP").default;
-const SLP = new SLPSDK();
+const axios = require("axios")
+const BigNumber = require("bignumber.js")
+const chunk = require("lodash.chunk")
+const SLPSDK = require("slp-sdk/lib/SLP").default
+const SLP = new SLPSDK()
 
 const slpParse = require("./slp-parse")
 
 async function validate(bitdbApiKey, tokenId) {
   try {
-    const utxos = await getSlpUtxos(bitdbApiKey, tokenId);
-    if (utxos.length === 0) return [];
+    const utxos = await getSlpUtxos(bitdbApiKey, tokenId)
+    if (utxos.length === 0) return []
 
-    const txidsToValidate = [...new Set(utxos.map(utxo => utxo.txid))];
+    const txidsToValidate = [...new Set(utxos.map(utxo => utxo.txid))]
 
     // const validTxidArrays = await Promise.all(
     //   chunk(txidsToValidate, 20).map(txids => {
@@ -28,32 +28,32 @@ async function validate(bitdbApiKey, tokenId) {
 
     const validTxids = txidsToValidate
 
-    const validUtxos = utxos.filter(utxo => validTxids.includes(utxo.txid));
+    const validUtxos = utxos.filter(utxo => validTxids.includes(utxo.txid))
 
     const balances = validUtxos
       .reduce((bals, utxo) => {
-        const existingBal = bals.find(bal => bal.address === utxo.address);
+        const existingBal = bals.find(bal => bal.address === utxo.address)
         if (existingBal) {
-          existingBal.amount = existingBal.amount.plus(utxo.amount);
+          existingBal.amount = existingBal.amount.plus(utxo.amount)
         } else {
           bals.push({
             cashAddress: SLP.Address.toCashAddress(utxo.address),
             slpAddress: SLP.Conversion.toSLPAddress(utxo.address),
             legacyAddress: SLP.Address.toLegacyAddress(utxo.address),
             balance: utxo.amount
-          });
+          })
         }
-        return bals;
+        return bals
       }, [])
       .map(bal => {
-        bal.balance = bal.balance.toString();
-        return bal;
-      });
+        bal.balance = bal.balance.toString()
+        return bal
+      })
 
-    return balances;
+    return balances
   } catch (err) {
-    console.error("slp-balances", err);
-    return [];
+    console.error("slp-balances", err)
+    return []
   }
 }
 
@@ -80,37 +80,37 @@ async function getSlpUtxos(bitdbApiKey, tokenId) {
         },
         limit: 1000
       }
-    };
+    }
 
-    var s = JSON.stringify(query);
-    var b64 = Buffer.from(s).toString("base64");
-    var url = "https://bitdb.network/q/" + b64;
+    var s = JSON.stringify(query)
+    var b64 = Buffer.from(s).toString("base64")
+    var url = `https://bitdb.network/q/${b64}`
     var header = {
       headers: { key: bitdbApiKey }
-    };
-
-    const tokenTxRes = await axios.get(url, header);
-    const tokenTxs = tokenTxRes.data.c;
-    if (tokenTxRes.data.u && tokenTxRes.data.u.length) {
-      tokenTxs.concat(tokenTxRes.u);
     }
+
+    const tokenTxRes = await axios.get(url, header)
+    const tokenTxs = tokenTxRes.data.c
+    if (tokenTxRes.data.u && tokenTxRes.data.u.length)
+      tokenTxs.concat(tokenTxRes.u)
 
     console.log(tokenTxs)
 
-    const outputs = parseSlpOutputs(tokenId, tokenTxs);
+    const outputs = parseSlpOutputs(tokenId, tokenTxs)
 
-    const unspentOutputs = outputs.filter(output => {
-      return !tokenTxs.some(tokenTx => {
-        return tokenTx.in.some(input => {
-          return input.e.h === output.txid && input.e.i === output.vout;
-        });
-      });
-    });
+    const unspentOutputs = outputs.filter(
+      output =>
+        !tokenTxs.some(tokenTx =>
+          tokenTx.in.some(
+            input => input.e.h === output.txid && input.e.i === output.vout
+          )
+        )
+    )
 
-    return unspentOutputs;
+    return unspentOutputs
   } catch (err) {
-    console.error("slp-balances", err);
-    return [];
+    console.error("slp-balances", err)
+    return []
   }
 }
 
