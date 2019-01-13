@@ -57,6 +57,84 @@ async function validate(tokenId) {
   }
 }
 
+async function getSlpTransactions(tokenId) {
+  try {
+    var query = {
+      v: 3,
+      q: {
+        find: {
+          "out.h1": "534c5000",
+          $or: [
+            {
+              $and: [
+                {
+                  $or: [{ "out.s3": "MINT" }, { "out.s3": "SEND" }],
+                  "out.h4": tokenId
+                }
+              ]
+            },
+            {
+              "tx.h": tokenId
+            }
+          ]
+        }
+      }
+    }
+
+    var s = JSON.stringify(query)
+    var b64 = Buffer.from(s).toString("base64")
+    const url = `${process.env.BITDB_URL}q/${b64}`
+
+    const tokenTxRes = await axios.get(url)
+    const tokenTxs = tokenTxRes.data.c
+    if (tokenTxRes.data.u && tokenTxRes.data.u.length)
+      tokenTxs.concat(tokenTxRes.data.u)
+
+    const genesisTxs = tokenTxs.filter(tx => tx.tx.h === tokenId)
+    if (genesisTxs.length !== 1) throw new Error("Could not find genesis tx")
+    const genesisTx = genesisTxs[0]
+
+    const unspentOutputs = outputs.filter(
+      output =>
+        !tokenTxs.some(tokenTx =>
+          tokenTx.in.some(
+            input => input.e.h === output.txid && input.e.i === output.vout
+          )
+        )
+    )
+
+    return unspentOutputs
+  } catch (err) {
+    console.error("slp-balances", err)
+    return []
+  }
+}
+
+async function validateTx(tokenTxs, transaction, inputAmount) {
+  // Parse all token properties
+
+  // Validate protocol format rules
+
+  // Get list of amounts sent to each output
+  const outputAmounts = ["5", "3"]
+
+  // Validate protocol balance rules of input and output amounts
+
+  // Find valid vout range of transaction outputs
+  const validVouts = ["1", "2", "3"]
+
+  // Find children
+  const children = tokenTxs.filter(tx => {
+    for (var i; i < tx.in.length; i++) {
+      if (tx.in[i].e.h === transaction.tx.h && validVouts.includes(tx.in[i].e.i)) return true
+    }
+    return false
+  })
+
+  // Validate each child
+  validateTx(tokenTxs, children[0], outputAmounts[0])
+}
+
 async function getSlpUtxos(tokenId) {
   try {
     var query = {
