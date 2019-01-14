@@ -494,26 +494,29 @@ async function unconfirmedBulk(
       }
     }
 
-    // Loop through each address and collect an array of promises.
-    addresses = addresses.map(async (address: any, index: number) => {
-
-      const retData = await utxoFromInsight(address)
-
-      // Loop through each returned UTXO.
-      for (let j = 0; j < retData.utxos.length; j++) {
-        const thisUtxo = (<any>retData.utxos)[j]
-
-        // Only interested in UTXOs with no confirmations.
-        if (thisUtxo.confirmations !== 0) return thisUtxo
-      }
-    })
+    // Collect an array of promises.
+    const promises = addresses.map((address) => utxoFromInsight(address))
 
     // Wait for all parallel Insight requests to return.
-    let result: Array<any> = await axios.all(addresses)
+    let result: Array<any> = await axios.all(promises)
+
+    // Loop through each result
+    const finalResult = result.map(elem => {
+      //console.log(`elem: ${util.inspect(elem)}`)
+
+      // Filter out confirmed transactions.
+      const unconfirmedUtxos = elem.utxos.filter((utxo: any) => {
+        utxo.confirmations === 0
+      })
+
+      elem.utxos = unconfirmedUtxos
+
+      return elem
+    })
 
     // Return the array of retrieved address information.
     res.status(200)
-    return res.json(result)
+    return res.json(finalResult)
 
   } catch (err) {
     // Attempt to decode the error message.
