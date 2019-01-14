@@ -513,28 +513,6 @@ async function unconfirmedBulk(
 
       return elem
     })
-    //console.log(`finalResult: ${util.inspect(finalResult)}`)
-
-/*
-    // Loop through each address and collect an array of promises.
-    addresses = addresses.map(async (address: any, index: number) => {
-
-      const retData = await utxoFromInsight(address)
-      const unconfirmedUTXOs = []
-
-      // Loop through each returned UTXO.
-      for (let j = 0; j < retData.utxos.length; j++) {
-        const thisUtxo = (<any>retData.utxos)[j]
-
-
-        // Only interested in UTXOs with no confirmations.
-        //if (thisUtxo.confirmations !== 0) return thisUtxo
-        if (thisUtxo.confirmations === 0) unconfirmedUTXOs.push(thisUtxo)
-      }
-      return unconfirmedUTXOs
-    })
-*/
-
 
     // Return the array of retrieved address information.
     res.status(200)
