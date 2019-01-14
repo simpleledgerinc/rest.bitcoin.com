@@ -830,6 +830,7 @@ describe("#AddressRouter", () => {
       // Call the details API.
       const result = await unconfirmedBulk(req, res)
       //console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result[0].utxos: ${util.inspect(result[0].utxos)}`)
 
       assert.isArray(result, "result should be an array")
 
