@@ -1,3 +1,8 @@
+/*
+  TODO
+  - Add blockhash functionality back into getTxOutProof
+*/
+
 "use strict"
 
 import * as express from "express"
