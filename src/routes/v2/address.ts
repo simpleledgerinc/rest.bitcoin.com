@@ -506,7 +506,7 @@ async function unconfirmedBulk(
 
       // Filter out confirmed transactions.
       const unconfirmedUtxos = elem.utxos.filter((utxo: any) => {
-        utxo.confirmations === 0
+        return utxo.confirmations === 0
       })
 
       elem.utxos = unconfirmedUtxos
