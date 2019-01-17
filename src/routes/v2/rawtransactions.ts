@@ -180,17 +180,57 @@ async function decodeRawTransactionBulk(
 ) {
   try {
     let hexes = req.body.hexes
+
     if (!Array.isArray(hexes)) {
       res.status(400)
       return res.json({ error: "hexes must be an array" })
     }
-    if (hexes.length > 20) {
+
+    if (hexes.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
-      return res.json({ error: "Array too large. Max 20 hexes" })
+      return res.json({ error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} hexes` })
     }
 
     const results = []
 
+    // Validate each element in the address array.
+    for(let i=0; i < hexes.length; i++) {
+      const thisHex = hexes[i]
+
+      // Reject if id is empty
+      if (!thisHex || thisHex === "") {
+        res.status(400)
+        return res.json({ error: "Encountered empty hex" })
+      }
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    // Loop through each height and creates an array of requests to call in parallel
+    const promises = hexes.map(async (hex: any) => {
+
+      requestConfig.data.id = "decoderawtransaction"
+      requestConfig.data.method = "decoderawtransaction"
+      requestConfig.data.params = [hex]
+
+      return await BitboxHTTP(requestConfig)
+    })
+
+    // Wait for all parallel Insight requests to return.
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    // Retrieve the data part of the result.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
+
+/*
     // Loop through each hex and creates an array of requests to call in parallel
     hexes = hexes.map(async (hex: any) => {
       if (!hex || hex === "") {
@@ -224,6 +264,7 @@ async function decodeRawTransactionBulk(
         return res.json(result)
       })
     )
+*/
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)

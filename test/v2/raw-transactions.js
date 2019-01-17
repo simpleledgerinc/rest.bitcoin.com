@@ -153,6 +153,116 @@ describe("#Raw-Transactions", () => {
     })
   })
 
+  describe("decodeRawTransactionBulk()", () => {
+    const decodeRawTransactionBulk =
+      rawtransactions.testableComponents.decodeRawTransactionBulk
+
+    it("should throw 400 error if hexes array is missing", async () => {
+      const result = await decodeRawTransactionBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "hexes must be an array")
+    })
+
+    it("should throw 400 error if hexes array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.hexes = testArray
+
+      const result = await decodeRawTransactionBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large. Max 20 hexes")
+    })
+
+    it("should throw 400 error if hexes is empty", async () => {
+      req.body.hexes = [""]
+
+      const result = await decodeRawTransactionBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Encountered empty hex")
+    })
+
+    it("should error on non-array single address", async () => {
+      req.body.hexes =
+        "0200000001b9b598d7d6d72fc486b2b3a3c03c79b5bade6ec9a77ced850515ab5e64edcc21010000006b483045022100a7b1b08956abb8d6f322aa709d8583c8ea492ba0585f1a6f4f9983520af74a5a0220411aee4a9a54effab617b0508c504c31681b15f9b187179b4874257badd4139041210360cfc66fdacb650bc4c83b4e351805181ee696b7d5ab4667c57b2786f51c413dffffffff0210270000000000001976a914eb4b180def88e3f5625b2d8ae2c098ff7d85f66488ac786e9800000000001976a914eb4b180def88e3f5625b2d8ae2c098ff7d85f66488ac00000000"
+
+      const result = await decodeRawTransactionBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "hexes must be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should decode an array with a single hex", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockDecodeRawTransaction })
+      }
+
+      req.body.hexes = [
+        "0200000001b9b598d7d6d72fc486b2b3a3c03c79b5bade6ec9a77ced850515ab5e64edcc21010000006b483045022100a7b1b08956abb8d6f322aa709d8583c8ea492ba0585f1a6f4f9983520af74a5a0220411aee4a9a54effab617b0508c504c31681b15f9b187179b4874257badd4139041210360cfc66fdacb650bc4c83b4e351805181ee696b7d5ab4667c57b2786f51c413dffffffff0210270000000000001976a914eb4b180def88e3f5625b2d8ae2c098ff7d85f66488ac786e9800000000001976a914eb4b180def88e3f5625b2d8ae2c098ff7d85f66488ac00000000"
+      ]
+
+      const result = await decodeRawTransactionBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.hasAnyKeys(result[0], [
+        "txid",
+        "hash",
+        "size",
+        "version",
+        "locktime",
+        "vin",
+        "vout"
+      ])
+      assert.isArray(result[0].vin)
+      assert.isArray(result[0].vout)
+    })
+
+    it("should decode an array with multiple hexes", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .times(2)
+          .reply(200, { result: mockData.mockDecodeRawTransaction })
+      }
+
+      req.body.hexes = [
+        "0200000001b9b598d7d6d72fc486b2b3a3c03c79b5bade6ec9a77ced850515ab5e64edcc21010000006b483045022100a7b1b08956abb8d6f322aa709d8583c8ea492ba0585f1a6f4f9983520af74a5a0220411aee4a9a54effab617b0508c504c31681b15f9b187179b4874257badd4139041210360cfc66fdacb650bc4c83b4e351805181ee696b7d5ab4667c57b2786f51c413dffffffff0210270000000000001976a914eb4b180def88e3f5625b2d8ae2c098ff7d85f66488ac786e9800000000001976a914eb4b180def88e3f5625b2d8ae2c098ff7d85f66488ac00000000",
+        "0200000001b9b598d7d6d72fc486b2b3a3c03c79b5bade6ec9a77ced850515ab5e64edcc21010000006b483045022100a7b1b08956abb8d6f322aa709d8583c8ea492ba0585f1a6f4f9983520af74a5a0220411aee4a9a54effab617b0508c504c31681b15f9b187179b4874257badd4139041210360cfc66fdacb650bc4c83b4e351805181ee696b7d5ab4667c57b2786f51c413dffffffff0210270000000000001976a914eb4b180def88e3f5625b2d8ae2c098ff7d85f66488ac786e9800000000001976a914eb4b180def88e3f5625b2d8ae2c098ff7d85f66488ac00000000"
+      ]
+
+      const result = await decodeRawTransactionBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.hasAnyKeys(result[0], [
+        "txid",
+        "hash",
+        "size",
+        "version",
+        "locktime",
+        "vin",
+        "vout"
+      ])
+      assert.isArray(result[0].vin)
+      assert.isArray(result[0].vout)
+    })
+  })
+
   describe("decodeScript()", () => {
     // block route handler.
     const decodeScript = rawtransactions.testableComponents.decodeScript
