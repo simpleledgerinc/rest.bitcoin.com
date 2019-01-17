@@ -88,7 +88,7 @@ describe("#Raw-Transactions", () => {
     })
   })
 
-  describe("decodeRawTransaction()", () => {
+  describe("decodeRawTransactionSingle()", () => {
     // block route handler.
     const decodeRawTransaction =
       rawtransactions.testableComponents.decodeRawTransactionSingle
