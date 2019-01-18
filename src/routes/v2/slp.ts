@@ -107,6 +107,7 @@ router.get(
   balancesForAddressByTokenID
 )
 router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
+router.post("/validate", config.slpRateLimit7, validateBulk)
 
 function root(
   req: express.Request,
@@ -412,6 +413,74 @@ async function convertAddress(
   }
 }
 
+async function validateBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txids = req.body.txids
+
+    // Reject if address is not an array.
+    if (!Array.isArray(txids)) {
+      res.status(400)
+      return res.json({ error: "txids needs to be an array" })
+    }
+
+    // Enforce no more than 20 txids.
+    if (txids.length > 20) {
+      res.status(400)
+      return res.json({
+        error: "Array too large. Max 20 txids"
+      })
+    }
+
+    logger.debug(`Executing slp/validate with these txids: `, txids)
+
+    // Validate each txid
+    const validatePromises = txids.map(async (txid) => {
+      const isValid = await isValidSlpTxid(txid)
+      return isValid ? txid : false
+    })
+
+    // Filter array to only valid txid results
+    const validateResults = await axios.all(validatePromises)
+    const validTxids = validateResults.filter((result) => result)
+
+    res.status(200)
+    return res.json(validTxids)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function isValidSlpTxid(txid: string) {
+  const result = await axios({
+    method: "post",
+    url: process.env.SLP_VALIDATE_URL,
+    data: {
+      jsonrpc: "2.0",
+      id: "slpvalidate",
+      method: "slpvalidate",
+      params: [txid, false, false]
+    }
+  })
+
+  if (result && result.data && result.data.result === "Valid") {
+    return true
+  } else {
+    return false
+  }
+}
+
 module.exports = {
   router,
   testableComponents: {
@@ -420,6 +489,7 @@ module.exports = {
     listSingleToken,
     balancesForAddress,
     balancesForAddressByTokenID,
-    convertAddress
+    convertAddress,
+    validateBulk
   }
 }
