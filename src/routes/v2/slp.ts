@@ -428,24 +428,24 @@ async function validateBulk(
     }
 
     // Enforce no more than 20 txids.
-    if (txids.length > 20) {
+    if (txids.length > 10) {
       res.status(400)
       return res.json({
-        error: "Array too large. Max 20 txids"
+        error: "Array too large. Max 10 txids"
       })
     }
 
     logger.debug(`Executing slp/validate with these txids: `, txids)
 
     // Validate each txid
-    const validatePromises = txids.map(async (txid) => {
+    const validatePromises = txids.map(async txid => {
       const isValid = await isValidSlpTxid(txid)
       return isValid ? txid : false
     })
 
     // Filter array to only valid txid results
     const validateResults = await axios.all(validatePromises)
-    const validTxids = validateResults.filter((result) => result)
+    const validTxids = validateResults.filter(result => result)
 
     res.status(200)
     return res.json(validTxids)
@@ -463,9 +463,24 @@ async function validateBulk(
 }
 
 async function isValidSlpTxid(txid: string) {
+  let result
+  try {
+    result = await validateTx(txid, process.env.SLP_VALIDATE_URL)
+  } catch (err) {
+    result = await validateTx(txid, process.env.SLP_VALIDATE_FAILOVER_URL)
+  }
+
+  if (result === true) {
+    return true
+  } else {
+    return false
+  }
+}
+
+async function validateTx(txid: string, url: string): Promise<boolean> {
   const result = await axios({
     method: "post",
-    url: process.env.SLP_VALIDATE_URL,
+    url: url,
     data: {
       jsonrpc: "2.0",
       id: "slpvalidate",
