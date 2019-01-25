@@ -412,10 +412,10 @@ async function validateBulk(
     }
 
     // Enforce no more than 20 txids.
-    if (txids.length > 10) {
+    if (txids.length > 20) {
       res.status(400)
       return res.json({
-        error: "Array too large. Max 10 txids"
+        error: "Array too large. Max 20 txids"
       })
     }
 
