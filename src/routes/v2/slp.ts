@@ -46,14 +46,6 @@ interface IRLConfig {
   slpRateLimit5: any
   slpRateLimit6: any
   slpRateLimit7: any
-  slpRateLimit8: any
-  slpRateLimit9: any
-  slpRateLimit10: any
-  slpRateLimit11: any
-  slpRateLimit12: any
-  slpRateLimit13: any
-  slpRateLimit14: any
-  slpRateLimit15: any
 }
 
 const config: IRLConfig = {
@@ -63,19 +55,11 @@ const config: IRLConfig = {
   slpRateLimit4: undefined,
   slpRateLimit5: undefined,
   slpRateLimit6: undefined,
-  slpRateLimit7: undefined,
-  slpRateLimit8: undefined,
-  slpRateLimit9: undefined,
-  slpRateLimit10: undefined,
-  slpRateLimit11: undefined,
-  slpRateLimit12: undefined,
-  slpRateLimit13: undefined,
-  slpRateLimit14: undefined,
-  slpRateLimit15: undefined
+  slpRateLimit7: undefined
 }
 
 let i = 1
-while (i < 16) {
+while (i < 8) {
   config[`slpRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
