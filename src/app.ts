@@ -60,6 +60,7 @@ const utilV2 = require("./routes/v2/util")
 const dataRetrievalV2 = require("./routes/v2/dataRetrieval")
 const payloadCreationV2 = require("./routes/v2/payloadCreation")
 const wormholeV2 = require("./routes/v2/wormhole")
+const slpV2 = require("./routes/v2/slp")
 
 interface IError {
   message: string
@@ -148,12 +149,13 @@ app.use(`/${v2prefix}/` + `dataRetrieval`, dataRetrievalV2.router)
 
 app.use(`/${v2prefix}/` + `payloadCreation`, payloadCreationV2.router)
 app.use(`/${v2prefix}/` + `wormhole/transaction`, wormholeV2.router)
+app.use(`/${v2prefix}/` + `slp`, slpV2.router)
 
 // Initialize wormhole/transaction/socket endpoint
 const whSocketUrl = process.env.WORMHOLE_SOCKET_URL
 const whSocketPort = process.env.WORMHOLE_SOCKET_PORT
 if (whSocketUrl && whSocketPort) {
-  const bchsocketd = require('bchsocketd')
+  const bchsocketd = require("bchsocketd")
   bchsocketd.init({
     bit: {
       host: whSocketUrl,

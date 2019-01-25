@@ -1,3 +1,8 @@
+/*
+  TODO
+  - Add blockhash functionality back into getTxOutProof
+*/
+
 "use strict"
 
 import * as express from "express"
@@ -11,6 +16,8 @@ const logger = require("./logging.js")
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
+
+const FREEMIUM_INPUT_SIZE = 20
 
 interface IRLConfig {
   [blockchainRateLimit1: string]: any
@@ -74,8 +81,8 @@ while (i < 18) {
 // Define routes.
 router.get("/", config.blockchainRateLimit1, root)
 router.get("/getBestBlockHash", config.blockchainRateLimit2, getBestBlockHash)
-// TODO: Where is getBlockByHash?
-//router.get("/getBlock/:hash", config.blockchainRateLimit3, getBlock) // Same as block/getBlockByHash
+// Dev Note: getBlock/:hash ommited because its the same as block/detailsByHash
+//router.get("/getBlock/:hash", config.blockchainRateLimit3, getBlock)
 router.get("/getBlockchainInfo", config.blockchainRateLimit3, getBlockchainInfo)
 router.get("/getBlockCount", config.blockchainRateLimit4, getBlockCount)
 router.get(
@@ -294,39 +301,38 @@ async function getBlockHeaderBulk(
       })
     }
 
-    // Enforce no more than 20 hashes.
-    if (hashes.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 hashes"
+    // Enforce no more than 20 addresses.
+    if (hashes.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
     }
 
     logger.debug(
-      `Executing blockchain/getBlockHeader with these hashes: `,
+      `Executing blockchain/getBlockHeaderBulk with these hashes: `,
       hashes
     )
 
-    // Loop through each hash and creates an array of requests to call in parallel
-    hashes = hashes.map(async (hash: any) => {
-      // Ensure the input is a valid BCH hash.
-      try {
-        if (hash.length !== 64) {
-          throw "This is not a hash"
-        }
-      } catch (err) {
+    // Validate each hash in the array.
+    for (let i = 0; i < hashes.length; i++) {
+      const hash = hashes[i]
+
+      if (hash.length !== 64) {
         res.status(400)
-        return res.json({
-          error: err
-        })
+        return res.json({ error: `This is not a hash: ${hash}` })
       }
+    }
 
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
+    // Loop through each hash and creates an array of requests to call in parallel
+    const promises = hashes.map(async (hash: any) => {
       requestConfig.data.id = "getblockheader"
       requestConfig.data.method = "getblockheader"
       requestConfig.data.params = [hash, verbose]
@@ -334,18 +340,13 @@ async function getBlockHeaderBulk(
       return await BitboxHTTP(requestConfig)
     })
 
-    const result: Array<any> = []
-    return axios.all(hashes).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg.data.result)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    // Extract the data component from the axios response.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -493,10 +494,11 @@ async function getMempoolEntryBulk(
       })
     }
 
-    // Enforce no more than 20 txids.
-    if (txids.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 txids"
+    // Enforce no more than 20 addresses.
+    if (txids.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
     }
 
@@ -505,25 +507,25 @@ async function getMempoolEntryBulk(
       txids
     )
 
-    // Loop through each txid and creates an array of requests to call in parallel
-    txids = txids.map(async (txid: any) => {
-      try {
-        if (txid.length !== 64) {
-          throw "This is not a txid"
-        }
-      } catch (err) {
-        res.status(400)
-        return res.json({
-          error: err
-        })
-      }
+    // Validate each element in the array
+    for(let i=0; i < txids.length; i++) {
+      const txid = txids[i]
 
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
+      if (txid.length !== 64) {
+        res.status(400)
+        return res.json({error: "This is not a txid"})
+      }
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    // Loop through each txid and creates an array of requests to call in parallel
+    const promises = txids.map(async (txid: any) => {
 
       requestConfig.data.id = "getmempoolentry"
       requestConfig.data.method = "getmempoolentry"
@@ -532,18 +534,14 @@ async function getMempoolEntryBulk(
       return await BitboxHTTP(requestConfig)
     })
 
-    const result: Array<any> = []
-    return axios.all(txids).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg.data.result)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    // Extract the data component from the axios response.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
+
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -750,35 +748,37 @@ async function getTxOutProofBulk(
       })
     }
 
-    // Enforce no more than 20 txids.
-    if (txids.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 txids"
+    // Enforce no more than 20 addresses.
+    if (txids.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
     }
 
-    logger.debug(`Executing blockchain/getTxOutProof with these txids: `, txids)
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
-    // Loop through each txid and creates an array of requests to call in parallel
-    txids = txids.map(async (txid: any) => {
-      // Ensure the input is a valid txid.
-      try {
-        if (txid.length !== 64) {
-          throw "This is not a txid"
-        }
-      } catch (err) {
+    // Validate each element in the array.
+    for(let i=0; i < txids.length; i++) {
+      const txid = txids[i]
+
+      if (txid.length !== 64) {
         res.status(400)
         return res.json({
           error: `Invalid txid. Double check your txid is valid: ${txid}`
         })
       }
+    }
 
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
+    logger.debug(`Executing blockchain/getTxOutProof with these txids: `, txids)
+
+    // Loop through each txid and creates an array of requests to call in parallel
+    const promises = txids.map(async (txid: any) => {
 
       requestConfig.data.id = "gettxoutproof"
       requestConfig.data.method = "gettxoutproof"
@@ -787,24 +787,15 @@ async function getTxOutProofBulk(
       return await BitboxHTTP(requestConfig)
     })
 
-    const result: Array<any> = []
-    return axios.all(txids).then(
-      axios.spread((...args) => {
-        args.forEach((txid: any, index: number) => {
-          if (txid) {
-            interface Tmp {
-              [txid: string]: any
-            }
+    // Wait for all parallel promisses to resolve.
+    const axiosResult: Array<any> = await axios.all(promises)
 
-            let tmp: Tmp = {}
-            tmp[req.body.txids[index]] = txid.data.result
-            result.push(tmp)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Extract the data component from the axios response.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
+
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -952,11 +943,29 @@ async function verifyTxOutProofBulk(
       })
     }
 
-    // Enforce no more than 20 proofs.
-    if (proofs.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 proofs"
+    // Enforce no more than 20 addresses.
+    if (proofs.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    // Validate each element in the array.
+    for(let i=0; i < proofs.length; i++) {
+      const proof = proofs[i]
+
+      if (!proof || proof === "") {
+        res.status(400)
+        return res.json({ error: `proof can not be empty: ${proof}` })
+      }
     }
 
     logger.debug(
@@ -965,18 +974,7 @@ async function verifyTxOutProofBulk(
     )
 
     // Loop through each proof and creates an array of requests to call in parallel
-    proofs = proofs.map(async (proof: any) => {
-      if (!proof || proof === "") {
-        res.status(400)
-        return res.json({ error: "proof can not be empty" })
-      }
-
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
+    const promises = proofs.map(async (proof: any) => {
 
       requestConfig.data.id = "verifytxoutproof"
       requestConfig.data.method = "verifytxoutproof"
@@ -985,24 +983,15 @@ async function verifyTxOutProofBulk(
       return await BitboxHTTP(requestConfig)
     })
 
-    const result: Array<any> = []
-    return axios.all(proofs).then(
-      axios.spread((...args) => {
-        args.forEach((proof: any, index: number) => {
-          if (proof) {
-            interface Tmp {
-              [proof: string]: any
-            }
+    // Wait for all parallel promisses to resolve.
+    const axiosResult: Array<any> = await axios.all(promises)
 
-            let tmp: Tmp = {}
-            tmp[req.body.proofs[index]] = proof.data.result
-            result.push(tmp)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Extract the data component from the axios response.
+    const result = axiosResult.map(x => x.data.result[0])
+
+    res.status(200)
+    return res.json(result)
+
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)

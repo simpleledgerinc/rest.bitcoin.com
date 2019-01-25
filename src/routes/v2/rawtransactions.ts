@@ -13,6 +13,8 @@ const logger = require("./logging.js")
 const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
 
+const FREEMIUM_INPUT_SIZE = 20
+
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
 })
@@ -178,17 +180,57 @@ async function decodeRawTransactionBulk(
 ) {
   try {
     let hexes = req.body.hexes
+
     if (!Array.isArray(hexes)) {
       res.status(400)
       return res.json({ error: "hexes must be an array" })
     }
-    if (hexes.length > 20) {
+
+    if (hexes.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
-      return res.json({ error: "Array too large. Max 20 hexes" })
+      return res.json({ error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} hexes` })
     }
 
     const results = []
 
+    // Validate each element in the address array.
+    for(let i=0; i < hexes.length; i++) {
+      const thisHex = hexes[i]
+
+      // Reject if id is empty
+      if (!thisHex || thisHex === "") {
+        res.status(400)
+        return res.json({ error: "Encountered empty hex" })
+      }
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    // Loop through each height and creates an array of requests to call in parallel
+    const promises = hexes.map(async (hex: any) => {
+
+      requestConfig.data.id = "decoderawtransaction"
+      requestConfig.data.method = "decoderawtransaction"
+      requestConfig.data.params = [hex]
+
+      return await BitboxHTTP(requestConfig)
+    })
+
+    // Wait for all parallel Insight requests to return.
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    // Retrieve the data part of the result.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
+
+/*
     // Loop through each hex and creates an array of requests to call in parallel
     hexes = hexes.map(async (hex: any) => {
       if (!hex || hex === "") {
@@ -222,6 +264,7 @@ async function decodeRawTransactionBulk(
         return res.json(result)
       })
     )
+*/
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -321,9 +364,9 @@ async function getRawTransactionBulk(
       res.status(400)
       return res.json({ error: "txids must be an array" })
     }
-    if (txids.length > 20) {
+    if (txids.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
-      return res.json({ error: "Array too large. Max 20 txids" })
+      return res.json({ error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} txids` })
     }
 
     // stub response object
@@ -334,45 +377,32 @@ async function getRawTransactionBulk(
       }
     }
 
-    // Loop through each txid and creates an array of requests to call in parallel
-    txids = txids.map(async (txid: any) => {
-      if (!txid || txid === "") {
-        returnResponse.status = 400
-        returnResponse.json = {
-          error: `Encountered empty TXID`
-        }
-        return
+    // Validate each txid in the array.
+    for (let i = 0; i < txids.length; i++) {
+      const txid = txids[i]
+
+      if(!txid || txid === "") {
+        res.status(400)
+        return res.json({ error: `Encountered empty TXID` })
       }
 
       if (txid.length !== 64) {
-        returnResponse.status = 400
-        returnResponse.json = {
-          error: `parameter 1 must be of length 64 (not ${txid.length})`
-        }
-        return
+        res.status(400)
+        return res.json({ error: `parameter 1 must be of length 64 (not ${txid.length})` })
       }
-
-      return await getRawTransactionsFromNode(txid, verbose)
-    })
-
-    // if any input errors return response
-    if (returnResponse.status !== 100) {
-      res.status(returnResponse.status)
-      return res.json(returnResponse.json)
     }
 
-    const result: Array<any> = []
-    return axios.all(txids).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Loop through each txid and create an array of promises
+    const promises = txids.map(async (txid: any) => {
+      return getRawTransactionsFromNode(txid, verbose)
+    })
+
+    // Wait for all parallel promises to return.
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    res.status(200)
+    return res.json(axiosResult)
+
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)

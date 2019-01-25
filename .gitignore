@@ -7,3 +7,4 @@ coverage
 start-my-infra
 dist/routes/**
 test-v1
+nohup.out

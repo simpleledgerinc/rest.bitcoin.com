@@ -1,8 +1,8 @@
 /*
   TODO:
   -getRawMempool
-  --Add tests for 'verbos' input values
-  -getMempoolEntry
+  --Add tests for 'verbose' input values
+  -getMempoolEntry & getMempoolEntryBulk
   --Needs e2e test to create unconfirmed tx, for real-world test.
 */
 
@@ -14,7 +14,9 @@ const nock = require("nock") // HTTP mocking
 const blockchainRoute = require("../../dist/routes/v2/blockchain")
 
 const util = require("util")
-util.inspect.defaultOptions = { depth: 5 }
+util.inspect.defaultOptions = { depth: 1 }
+
+if (!process.env.TEST) process.env.TEST = "unit"
 
 // Mocking data.
 const { mockReq, mockRes } = require("./mocks/express-mocks")
@@ -38,7 +40,6 @@ describe("#BlockchainRouter", () => {
     }
 
     // Set default environment variables for unit tests.
-    if (!process.env.TEST) process.env.TEST = "unit"
     if (process.env.TEST === "unit") {
       process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
       process.env.RPC_BASEURL = "http://fakeurl/api"
@@ -223,7 +224,7 @@ describe("#BlockchainRouter", () => {
     })
   })
 
-  describe("getBlockHeader()", async () => {
+  describe("getBlockHeaderSingle()", async () => {
     const getBlockHeader =
       blockchainRoute.testableComponents.getBlockHeaderSingle
 
@@ -314,6 +315,170 @@ describe("#BlockchainRouter", () => {
         "previousblockhash",
         "nextblockhash"
       ])
+    })
+  })
+
+  describe("#getBlockHeaderBulk", () => {
+    // route handler.
+    const getBlockHeaderBulk =
+      blockchainRoute.testableComponents.getBlockHeaderBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await getBlockHeaderBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "hashes needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single hash", async () => {
+      req.body.hashes =
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+
+      const result = await getBlockHeaderBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "hashes needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.hashes = testArray
+
+      const result = await getBlockHeaderBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    it("should throw a 400 error for an invalid hash", async () => {
+      req.body.hashes = ["badHash"]
+
+      await getBlockHeaderBulk(req, res)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+    })
+
+    it("should throw 500 when network issues", async () => {
+      const savedUrl = process.env.BITCOINCOM_BASEURL
+
+      try {
+        req.body.hashes = [
+          "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+        ]
+
+        // Switch the Insight URL to something that will error out.
+        process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
+
+        const result = await getBlockHeaderBulk(req, res)
+
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+
+        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.include(result.error, "ENOTFOUND", "Error message expected")
+      } catch (err) {
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+      }
+    })
+
+    it("should get concise block header for a single hash", async () => {
+      req.body.hashes = [
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+      ]
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBlockHeaderConcise })
+      }
+
+      // Call the details API.
+      const result = await getBlockHeaderBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Assert that required fields exist in the returned object.
+      assert.isArray(result)
+      assert.equal(
+        result[0],
+        "0000ff7f7d217c9b7845ea8b50d620c59a1bf7c276566406e9b7bc7e463e0000000000006d70322c0b697c1c81d2744f87f09f1e9780ba5d30338952e2cdc64e60456f8423bb0a5ceafa091a3e843526"
+      )
+    })
+
+    it("should get verbose block header for a single hash", async () => {
+      req.body = {
+        hashes: [
+          "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+        ],
+        verbose: true
+      }
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBlockHeader })
+      }
+
+      // Call the details API.
+      const result = await getBlockHeaderBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Assert that required fields exist in the returned object.
+      assert.isArray(result)
+      assert.hasAllKeys(result[0], [
+        "hash",
+        "confirmations",
+        "height",
+        "version",
+        "versionHex",
+        "merkleroot",
+        "time",
+        "mediantime",
+        "nonce",
+        "bits",
+        "difficulty",
+        "chainwork",
+        "previousblockhash",
+        "nextblockhash"
+      ])
+    })
+
+    it("should get details for multiple block heights", async () => {
+      req.body.hashes = [
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900",
+        "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900"
+      ]
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .times(2)
+          .reply(200, { result: mockData.mockBlockHeaderConcise })
+      }
+
+      // Call the details API.
+      const result = await getBlockHeaderBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.equal(result.length, 2, "2 outputs for 2 inputs")
     })
   })
 
@@ -540,6 +705,87 @@ describe("#BlockchainRouter", () => {
     })
   })
 
+  describe("#getMempoolEntryBulk", () => {
+    // route handler.
+    const getMempoolEntryBulk =
+      blockchainRoute.testableComponents.getMempoolEntryBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await getMempoolEntryBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single txid", async () => {
+      req.body.txids = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getMempoolEntryBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.txids = testArray
+
+      const result = await getMempoolEntryBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    // Only execute on integration tests.
+    if (process.env.TEST !== "unit") {
+      // Dev-note: This test passes because it expects an error. TXIDs do not
+      // stay in the mempool for long, so it does not work well for a unit or
+      // integration test.
+      it("should retrieve single mempool entry", async () => {
+        req.body.txids = [
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+        ]
+
+        const result = await getMempoolEntryBulk(req, res)
+        //console.log(`result: ${util.inspect(result)}`)
+
+        assert.hasAllKeys(result, ["error"])
+        assert.isString(result.error)
+        assert.equal(result.error, "Transaction not in mempool")
+      })
+
+      // Dev-note: This test passes because it expects an error. TXIDs do not
+      // stay in the mempool for long, so it does not work well for a unit or
+      // integration test.
+      it("should retrieve multiple mempool entries", async () => {
+        req.body.txids = [
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`,
+          `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+        ]
+
+        const result = await getMempoolEntryBulk(req, res)
+        //console.log(`result: ${util.inspect(result)}`)
+
+        assert.hasAllKeys(result, ["error"])
+        assert.isString(result.error)
+        assert.equal(result.error, "Transaction not in mempool")
+      })
+    }
+  })
+
   describe("getTxOut()", () => {
     // block route handler.
     const getTxOut = blockchainRoute.testableComponents.getTxOut
@@ -669,6 +915,91 @@ describe("#BlockchainRouter", () => {
     })
   })
 
+  describe("#getTxOutProofBulk", () => {
+    // route handler.
+    const getTxOutProofBulk =
+      blockchainRoute.testableComponents.getTxOutProofBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await getTxOutProofBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single txid", async () => {
+      req.body.txids = `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+
+      const result = await getTxOutProofBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "txids needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.txids = testArray
+
+      const result = await getTxOutProofBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    it("should GET proof for single txid", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockTxOutProof })
+      }
+
+      req.body.txids = [
+        `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      ]
+
+      const result = await getTxOutProofBulk(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.isString(result[0])
+    })
+
+    it("should GET proof for multiple txids", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .times(2)
+          .reply(200, { result: mockData.mockTxOutProof })
+      }
+
+      req.body.txids = [
+        `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`,
+        `d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde`
+      ]
+
+      const result = await getTxOutProofBulk(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.equal(result.length, 2, "Correct length of returned array")
+    })
+  })
+
   describe("verifyTxOutProof()", () => {
     const verifyTxOutProof =
       blockchainRoute.testableComponents.verifyTxOutProofSingle
@@ -704,7 +1035,7 @@ describe("#BlockchainRouter", () => {
       )
     })
 
-    it("should GET /getTxOutProof", async () => {
+    it("should GET /verifyTxOutProof", async () => {
       const expected =
         "d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde"
 
@@ -723,6 +1054,95 @@ describe("#BlockchainRouter", () => {
       assert.isArray(result)
       assert.isString(result[0])
       assert.equal(result[0], expected)
+    })
+  })
+
+  describe("#verifyTxOutProofBulk", () => {
+    // route handler.
+    const verifyTxOutProofBulk =
+      blockchainRoute.testableComponents.verifyTxOutProofBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await verifyTxOutProofBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "proofs needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single txid", async () => {
+      req.body.proofs = mockData.mockTxOutProof
+
+      const result = await verifyTxOutProofBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "proofs needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.proofs = testArray
+
+      const result = await verifyTxOutProofBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    it("should get single proof", async () => {
+      const expected =
+        "d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde"
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: [expected] })
+      }
+
+      req.body.proofs = [mockData.mockTxOutProof]
+
+      const result = await verifyTxOutProofBulk(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.isString(result[0])
+      assert.equal(result[0], expected)
+    })
+
+    it("should get multiple proofs", async () => {
+      const expected =
+        "d65881582ff2bff36747d7a0d0e273f10281abc8bd5c15df5d72f8f3fa779cde"
+
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .times(2)
+          .reply(200, { result: [expected] })
+      }
+
+      req.body.proofs = [mockData.mockTxOutProof, mockData.mockTxOutProof]
+
+      const result = await verifyTxOutProofBulk(req, res)
+      //console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.isString(result[0])
+      assert.equal(result[0], expected)
+      assert.equal(result.length, 2)
     })
   })
 })

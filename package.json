@@ -1,6 +1,6 @@
 {
   "name": "rest.bitcoin.com",
-  "version": "1.14.0",
+  "version": "1.14.2",
   "description": "REST API for Bitcoin.com's Cloud",
   "author": "Gabriel Cardona @ Bitcoin.com",
   "contributors": [
@@ -14,6 +14,7 @@
     "test": "npm run test-v2",
     "test-v1": "npm run build && nyc --reporter=text mocha --require babel-core/register --timeout 15000 test/v1/",
     "test-v2": "export NETWORK=testnet && npm run build && nyc --reporter=text mocha --require babel-core/register --timeout 15000 test/v2/",
+    "test-v2-no-build": "export NETWORK=testnet && nyc --reporter=text mocha --require babel-core/register --timeout 15000 test/v2/",
     "test-all": "TEST=integration nyc --reporter=text mocha --require babel-core/register --timeout 15000 test/v1/ test/v2/",
     "test:integration": "mocha test/v2/integration",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
@@ -25,7 +26,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "bchsocketd": "^0.0.3",
-    "bitbox-sdk": "^2.2.8",
+    "bitbox-sdk": "^2.3.0",
     "bitcoincash-zmq-decoder": "0.1.5",
     "body-parser": "~1.17.1",
     "cookie-parser": "~1.4.3",
