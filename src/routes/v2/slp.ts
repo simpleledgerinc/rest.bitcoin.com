@@ -449,9 +449,9 @@ async function validateBulk(
 async function isValidSlpTxid(txid: string) {
   let result
   try {
-    result = await validateTx(txid, process.env.SLP_VALIDATE_URL)
-  } catch (err) {
     result = await validateTx(txid, process.env.SLP_VALIDATE_FAILOVER_URL)
+  } catch (err) {
+    result = await validateTx(txid, process.env.SLP_VALIDATE_URL)
   }
 
   if (result === true) {
