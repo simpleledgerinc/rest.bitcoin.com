@@ -446,7 +446,7 @@ async function validateBulk(
   }
 }
 
-async function isValidSlpTxid(txid: string) {
+async function isValidSlpTxid(txid: string): Promise<boolean> {
   let result
   try {
     result = await validateTx(txid, process.env.SLP_VALIDATE_FAILOVER_URL)
