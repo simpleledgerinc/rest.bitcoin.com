@@ -11,6 +11,8 @@ const logger = require("./logging.js")
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
+const FREEMIUM_INPUT_SIZE = 20
+
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
@@ -136,16 +138,17 @@ async function validateAddressBulk(
     }
 
     // Enforce no more than 20 addresses.
-    if (addresses.length > 20) {
-      res.json({
-        error: "Array too large. Max 20 addresses"
+    if (addresses.length > FREEMIUM_INPUT_SIZE) {
+      res.status(400)
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} addresses`
       })
     }
 
-    logger.debug(`Executing util/validate with these addresses: `, addresses)
+    // Validate each element in the array.
+    for(let i=0; i < addresses.length; i++) {
+      const address = addresses[i]
 
-    // Loop through each address and creates an array of requests to call in parallel
-    addresses = addresses.map(async (address: any) => {
       // Ensure the input is a valid BCH address.
       try {
         var legacyAddr = BITBOX.Address.toLegacyAddress(address)
@@ -164,13 +167,19 @@ async function validateAddressBulk(
           error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
         })
       }
+    }
 
-      const {
-        BitboxHTTP,
-        username,
-        password,
-        requestConfig
-      } = routeUtils.setEnvVars()
+    logger.debug(`Executing util/validate with these addresses: `, addresses)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    // Loop through each address and creates an array of requests to call in parallel
+    const promises = addresses.map(async (address: any) => {
 
       requestConfig.data.id = "validateaddress"
       requestConfig.data.method = "validateaddress"
@@ -179,18 +188,15 @@ async function validateAddressBulk(
       return await BitboxHTTP(requestConfig)
     })
 
-    const result: Array<any> = []
-    return axios.all(addresses).then(
-      axios.spread((...args) => {
-        args.forEach((arg: any) => {
-          if (arg) {
-            result.push(arg)
-          }
-        })
-        res.status(200)
-        return res.json(result)
-      })
-    )
+    // Wait for all parallel Insight requests to return.
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    // Retrieve the data part of the result.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
+
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
