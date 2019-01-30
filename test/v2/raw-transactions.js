@@ -535,7 +535,7 @@ describe("#Raw-Transactions", () => {
       //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
-      assert.include(result.error, "Array too large. Max 20 entries")
+      assert.include(result.error, "Array too large. Max 1 entries")
     })
 
     //TODO: fix this test
