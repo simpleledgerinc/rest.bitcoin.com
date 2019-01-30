@@ -484,27 +484,22 @@ async function sendRawTransaction(
       requestConfig
     } = routeUtils.setEnvVars()
 
-    requestConfig.data.id = "sendrawtransaction"
-    requestConfig.data.method = "sendrawtransaction"
-
-    const results = []
-
-    // Loop through each hex in the array
-    for (let i = 0; i < hexs.length; i++) {
-      const hex = hexs[i]
-
-      if (!hex || hex === "") {
-        res.status(400)
-        return res.json({ error: "Encountered empty hex" })
-      }
-
+    const promises = hexs.map(async (hex: any) => {
+      requestConfig.data.id = "sendrawtransaction"
+      requestConfig.data.method = "sendrawtransaction"
       requestConfig.data.params = [hex]
 
-      const response = await BitboxHTTP(requestConfig)
-      results.push(response.data.result)
-    }
+      return await BitboxHTTP(requestConfig)
+    })
 
-    return res.json(results)
+    // Wait for all parallel Insight requests to return.
+    const axiosResult: Array<any> = await axios.all(promises)
+
+    // Retrieve the data part of the result.
+    const result = axiosResult.map(x => x.data.result)
+
+    res.status(200)
+    return res.json(result)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
