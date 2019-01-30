@@ -2571,26 +2571,25 @@
 				}
 			}
 		},
-		"/rawtransactions/sendRawTransaction/{hex}": {
+		"/rawtransactions/sendRawTransaction": {
 			"post": {
 				"tags": [
 					"rawtransactions"
 				],
-				"summary": "Submits raw transaction to local node and network.",
-				"description": "Submits raw transaction (serialized, hex-encoded) to local node and network. Also see createrawtransaction and signrawtransaction calls.",
+				"summary": "Submits multiple raw transactions to local node and network.",
+				"description": "Submits multiple raw transaction (serialized, hex-encoded) to local node and network.",
 				"operationId": "sendRawTransaction",
-				"parameters": [
-					{
-						"in": "path",
-						"name": "hex",
-						"description": "The hex string of the raw transaction",
-						"required": true,
-						"example": "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000",
-						"schema": {
-							"type": "string"
+				"requestBody": {
+					"description": "Array of raw tx hexes",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Hexes"
+							}
 						}
 					}
-				],
+				},
 				"responses": {
 					"200": {
 						"description": "successful operation"
@@ -4291,70 +4290,6 @@
 				}
 			}
 		},
-		"/slp/balancesForAddress/{address}": {
-			"get": {
-				"tags": [
-					"slp"
-				],
-				"summary": "list slp balances for address",
-				"description": "List SLP token balances for address",
-				"operationId": "slpBalancesForAddress",
-				"parameters": [
-					{
-						"name": "address",
-						"in": "path",
-						"description": "The slp address",
-						"required": true,
-						"example": "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5",
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "successful response"
-					}
-				}
-			}
-		},
-		"/slp/balance/{address}/{tokenId}": {
-			"get": {
-				"tags": [
-					"slp"
-				],
-				"summary": "list single slp token balance for address",
-				"description": "List single SLP token balance for address",
-				"operationId": "slpListSingleBalanceForAddress",
-				"parameters": [
-					{
-						"name": "address",
-						"in": "path",
-						"description": "The slp address",
-						"required": true,
-						"example": "simpleledger:qz9tzs6d5097ejpg279rg0rnlhz546q4fsnck9wh5m",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "tokenId",
-						"in": "path",
-						"description": "The token id",
-						"required": true,
-						"example": "1cda254d0a995c713b7955298ed246822bee487458cd9747a91d9e81d9d28125",
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "successful response"
-					}
-				}
-			}
-		},
 		"/slp/address/convert/{address}": {
 			"get": {
 				"tags": [
@@ -4382,40 +4317,13 @@
 				}
 			}
 		},
-		"/slp/balancesForToken/{tokenId}": {
-			"get": {
-				"tags": [
-					"slp"
-				],
-				"summary": "list slp balances for all holders of a token",
-				"description": "List SLP token balances for all holders of a token",
-				"operationId": "slpListBalancesForToken",
-				"parameters": [
-					{
-						"name": "tokenId",
-						"in": "path",
-						"description": "The slp token id",
-						"required": true,
-						"example": "d7c32d972a21b664f60b5fc422900179d8883dec7bd61418434aa12b09b99c12",
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "successful response"
-					}
-				}
-			}
-		},
 		"/slp/validate": {
 			"post": {
 				"tags": [
 					"slp"
 				],
-				"summary": "Validate a single txid",
-				"description": "Validate TXID",
+				"summary": "Validate multiple txids",
+				"description": "Validate multiple txids",
 				"operationId": "slpValidate",
 				"requestBody": {
 					"description": "",

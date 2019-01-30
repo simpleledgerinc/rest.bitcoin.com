@@ -467,14 +467,15 @@ async function sendRawTransaction(
 ) {
   try {
     // Validation
+    // TODO: allow 20 txids at a time
     const hexs = req.body.hexes
     if (!Array.isArray(hexs)) {
       res.status(400)
       return res.json({ error: "hex must be an array" })
     }
-    if (hexs.length > 20) {
+    if (hexs.length > 1) {
       res.status(400)
-      return res.json({ error: "Array too large. Max 20 entries" })
+      return res.json({ error: "Array too large. Max 1 entries" })
     }
 
     const {
