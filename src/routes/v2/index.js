@@ -20,7 +20,7 @@ const indexRateLimit1 = new RateLimit({
 })
 
 /* GET home page. */
-router.get("/v2", indexRateLimit1, (req, res, next) => {
+router.get("/", indexRateLimit1, (req, res, next) => {
   res.render("swagger-v2")
 })
 
