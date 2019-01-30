@@ -496,7 +496,7 @@ async function sendRawTransaction(
     const axiosResult: Array<any> = await axios.all(promises)
 
     // Retrieve the data part of the result.
-    const results = axiosResult.map(x => x.data.result)
+    const result = axiosResult.map(x => x.data.result)
 
     res.status(200)
     return res.json(result)
