@@ -2818,8 +2818,8 @@
     "/slp/validate": {
       "post": {
         "tags": ["slp"],
-        "summary": "Validate a single txid",
-        "description": "Validate TXID",
+        "summary": "Validate multiple txids",
+        "description": "Validate multiple txids",
         "operationId": "slpValidate",
         "requestBody": {
           "description": "",
