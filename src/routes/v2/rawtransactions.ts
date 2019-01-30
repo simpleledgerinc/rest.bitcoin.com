@@ -105,7 +105,7 @@ router.get(
   getRawTransactionSingle
 )
 router.post(
-  "/sendRawTransaction/:hex",
+  "/sendRawTransaction",
   config.rawTransactionsRateLimit6,
   sendRawTransaction
 )
@@ -188,13 +188,15 @@ async function decodeRawTransactionBulk(
 
     if (hexes.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
-      return res.json({ error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} hexes` })
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} hexes`
+      })
     }
 
     const results = []
 
     // Validate each element in the address array.
-    for(let i=0; i < hexes.length; i++) {
+    for (let i = 0; i < hexes.length; i++) {
       const thisHex = hexes[i]
 
       // Reject if id is empty
@@ -213,7 +215,6 @@ async function decodeRawTransactionBulk(
 
     // Loop through each height and creates an array of requests to call in parallel
     const promises = hexes.map(async (hex: any) => {
-
       requestConfig.data.id = "decoderawtransaction"
       requestConfig.data.method = "decoderawtransaction"
       requestConfig.data.params = [hex]
@@ -230,7 +231,7 @@ async function decodeRawTransactionBulk(
     res.status(200)
     return res.json(result)
 
-/*
+    /*
     // Loop through each hex and creates an array of requests to call in parallel
     hexes = hexes.map(async (hex: any) => {
       if (!hex || hex === "") {
@@ -366,7 +367,9 @@ async function getRawTransactionBulk(
     }
     if (txids.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
-      return res.json({ error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} txids` })
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} txids`
+      })
     }
 
     // stub response object
@@ -381,14 +384,16 @@ async function getRawTransactionBulk(
     for (let i = 0; i < txids.length; i++) {
       const txid = txids[i]
 
-      if(!txid || txid === "") {
+      if (!txid || txid === "") {
         res.status(400)
         return res.json({ error: `Encountered empty TXID` })
       }
 
       if (txid.length !== 64) {
         res.status(400)
-        return res.json({ error: `parameter 1 must be of length 64 (not ${txid.length})` })
+        return res.json({
+          error: `parameter 1 must be of length 64 (not ${txid.length})`
+        })
       }
     }
 
@@ -402,7 +407,6 @@ async function getRawTransactionBulk(
 
     res.status(200)
     return res.json(axiosResult)
-
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
