@@ -28,7 +28,7 @@ while (i < 2) {
 }
 
 /* GET home page. */
-router.get("/", config.indexRateLimit1, (req, res, next) => {
+router.get("/v1", config.indexRateLimit1, (req, res, next) => {
   res.render("swagger")
 })
 
