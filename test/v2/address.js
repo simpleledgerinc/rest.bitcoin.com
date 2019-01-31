@@ -564,14 +564,17 @@ describe("#AddressRouter", () => {
       assert.isArray(result, "result should be an array")
 
       // Each element should have these primary properties.
-      assert.hasAllKeys(result[0], ["utxos", "legacyAddress", "cashAddress"])
+      assert.hasAllKeys(result[0], [
+        "utxos",
+        "legacyAddress",
+        "cashAddress",
+        "scriptPubKey"
+      ])
 
       // Validate the UTXO data structure.
       assert.hasAnyKeys(result[0].utxos[0], [
-        "address",
         "txid",
         "vout",
-        "scriptPubKey",
         "amount",
         "satoshis",
         "height",
