@@ -39,7 +39,7 @@
     "rest-spread-spacing": ["error", "never"],
     "prefer-const": ["warn", { "destructuring": "all" }],
     "no-unreachable": ["warn"],
-    "no-unused-vars": ["warn", { "args": "none" }],
+    "no-unused-vars": ["off"],
 
     "prettier/prettier": [
       "warn",

@@ -217,10 +217,55 @@ const mockRawMempool = [
   "6b3df7febf2b9834f1409155f88b866dd516b36376eae00e2b455df82e290405"
 ]
 
+const mockBlockHeaderConcise =
+  "0000ff7f7d217c9b7845ea8b50d620c59a1bf7c276566406e9b7bc7e463e0000000000006d70322c0b697c1c81d2744f87f09f1e9780ba5d30338952e2cdc64e60456f8423bb0a5ceafa091a3e843526"
+
+const mockBlockHeader = {
+  hash: "00000000000008c3679777df34f1a09565f98b2400a05b7c8da72525fdca3900",
+  confirmations: 7,
+  height: 1272859,
+  version: 2147418112,
+  versionHex: "7fff0000",
+  merkleroot:
+    "846f45604ec6cde2528933305dba80971e9ff0874f74d2811c7c690b2c32706d",
+  time: 1544207139,
+  mediantime: 1544202884,
+  nonce: 641041470,
+  bits: "1a09faea",
+  difficulty: 1681035.704111868,
+  chainwork: "00000000000000000000000000000000000000000000003fc4752e608403be04",
+  previousblockhash:
+    "0000000000003e467ebcb7e906645676c2f71b9ac520d6508bea45789b7c217d",
+  nextblockhash:
+    "00000000000006899041cdfd6c0b73a97730c362346dde479b77414ad7f25ace"
+}
+
+const mockTxOut = {
+  bestblock: "00000000003a7f19730dd9f172d7466658a5c8833dd03ed8f4ba36e3d857b5e7",
+  confirmations: 10,
+  value: 0.0001,
+  scriptPubKey: {
+    asm:
+      "OP_DUP OP_HASH160 0ee020c07f39526ac5505c54fa1ab98490979b83 OP_EQUALVERIFY OP_CHECKSIG",
+    hex: "76a9140ee020c07f39526ac5505c54fa1ab98490979b8388ac",
+    reqSigs: 1,
+    type: "pubkeyhash",
+    addresses: ["bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf"]
+  },
+  coinbase: false
+}
+
+const mockTxOutProof =
+  "000000200798039affceb7a381e15dc62443c286efe7cae852393b656807000000000000cf9a7d6c654fd1c4558229a619a550ff749b373fa0f0027eed68b1abf6175d5c07c50f5cffff001d0452403b34000000070d0765da76980d542b5670d27ccda9e717073270f8921ad017deb7ee83fe6c4c22830a48cc8392197f1742a3d81805bd2aa4eb7469f38c74f674429d682cb87efcff1713fd0c388a50f0d11adf05363397ef79d16cdb786d47c941c2cb89f2588f42aced9c05f4203b4440616a9e4266ec47909b9580a643f402b5d4e82cc3cddd73df05a33abf6af3975d973d3033d10c4168a73d58d01f685a96d5a2519cd0de9c77faf3f8725ddf155cbdc8ab8102f173e2d0a0d74767f3bff22f588158d6d5bc71c079c7659cc864819c43877635007650502eb4060fcc9feec3280a41d602ad0a"
+
 module.exports = {
   mockBlockHash,
   mockBlockchainInfo,
   mockChainTips,
   mockMempoolInfo,
-  mockRawMempool
+  mockRawMempool,
+  mockBlockHeaderConcise,
+  mockBlockHeader,
+  mockTxOut,
+  mockTxOutProof
 }

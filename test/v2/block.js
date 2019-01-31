@@ -1,8 +1,3 @@
-/*
-
-
-*/
-
 "use strict"
 
 const blockRoute = require("../../dist/routes/v2/block")
@@ -20,7 +15,7 @@ const mockData = require("./mocks/block-mock")
 const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
 
-describe("#BlockRouter", () => {
+describe("#Block", () => {
   let req, res
 
   before(() => {
@@ -81,8 +76,8 @@ describe("#BlockRouter", () => {
     })
   })
 
-  describe("Block Details By Hash", () => {
-    const detailsByHash = blockRoute.testableComponents.detailsByHash
+  describe("#detailsByHashSingle", () => {
+    const detailsByHash = blockRoute.testableComponents.detailsByHashSingle
 
     it("should throw an error for an empty hash", async () => {
       req.params.hash = ""
@@ -112,7 +107,7 @@ describe("#BlockRouter", () => {
       process.env.BITCOINCOM_BASEURL = savedUrl
 
       assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      //assert.include(result.error, "ENOTFOUND", "Error message expected")
     })
 
     it("should throw an error for invalid hash", async () => {
@@ -169,9 +164,183 @@ describe("#BlockRouter", () => {
     })
   })
 
+  describe("#detailsByHashBulk", () => {
+    // details route handler.
+    const detailsByHashBulk = blockRoute.testableComponents.detailsByHashBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await detailsByHashBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "hashes needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single address", async () => {
+      req.body = {
+        hashes:
+          "00000000000000645dec6503d3f5eafb0d2537a7a28f181d721dec7c44154c79"
+      }
+
+      const result = await detailsByHashBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "hashes needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.hashes = testArray
+
+      const result = await detailsByHashBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    it("should throw an error for an invalid hash", async () => {
+      req.body = {
+        hashes: [`abc123`]
+      }
+
+      const result = await detailsByHashBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(result.error, "Invalid hash", "Proper error message")
+    })
+
+    it("should throw 500 when network issues", async () => {
+      const savedUrl = process.env.BITCOINCOM_BASEURL
+
+      try {
+        req.body = {
+          hashes: [
+            "00000000000000645dec6503d3f5eafb0d2537a7a28f181d721dec7c44154c79"
+          ]
+        }
+
+        // Switch the Insight URL to something that will error out.
+        process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
+
+        const result = await detailsByHashBulk(req, res)
+
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+
+        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.include(result.error, "ENOTFOUND", "Error message expected")
+      } catch (err) {
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+      }
+    })
+
+    it("should get details for a single hash", async () => {
+      req.body = {
+        hashes: [
+          "00000000000000645dec6503d3f5eafb0d2537a7a28f181d721dec7c44154c79"
+        ]
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/block/${req.body.hashes[0]}`)
+          .reply(200, mockData.mockBlockDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsByHashBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Assert that required fields exist in the returned object.
+      assert.equal(result.length, 1, "Array with one entry")
+      assert.hasAllKeys(result[0], [
+        "bits",
+        "chainwork",
+        "confirmations",
+        "difficulty",
+        "hash",
+        "height",
+        "isMainChain",
+        "merkleroot",
+        "nextblockhash",
+        "nonce",
+        "poolInfo",
+        "previousblockhash",
+        "reward",
+        "size",
+        "time",
+        "tx",
+        "version"
+      ])
+    })
+
+    it("should get details for multiple hashes", async () => {
+      req.body = {
+        hashes: [
+          `00000000000000645dec6503d3f5eafb0d2537a7a28f181d721dec7c44154c79`,
+          `00000000c2b2c19cf499f57d5b0f724c6df753330d7acc7d4a8ebe412d427bd0`
+        ]
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/block/${req.body.hashes[0]}`)
+          .reply(200, mockData.mockBlockDetails)
+
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/block/${req.body.hashes[1]}`)
+          .reply(200, mockData.mockBlockDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsByHashBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.equal(result.length, 2, "2 outputs for 2 inputs")
+    })
+
+    it("should throw an error if hash not found", async () => {
+      req.body = {
+        hashes: [
+          `00000000000000645dec6503d3f5eafb0d2537a7a28f181d721dec7c44abcdef`
+        ]
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/block/${req.body.hashes[0]}`)
+          .reply(404, { error: { message: "Not Found" } })
+      }
+
+      const result = await detailsByHashBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.equal(res.statusCode, 404, "HTTP status code 400 expected.")
+      assert.include(result.error, "Not Found", "Proper error message")
+    })
+  })
+
   describe("Block Details By Height", () => {
     // block route handler.
-    const detailsByHeight = blockRoute.testableComponents.detailsByHeight
+    const detailsByHeight = blockRoute.testableComponents.detailsByHeightSingle
 
     it("should throw an error for an empty height", async () => {
       req.params.height = ""
@@ -203,8 +372,12 @@ describe("#BlockRouter", () => {
       process.env.BITCOINCOM_BASEURL = savedUrl
       process.env.RPC_BASEURL = savedUrl2
 
-      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
-      assert.include(result.error, "ENOTFOUND", "Error message expected")
+      assert.isAbove(
+        res.statusCode,
+        499,
+        "HTTP status code 500 or great expected."
+      )
+      //assert.include(result.error, "ENOTFOUND", "Error message expected")
     })
 
     it("should throw an error for invalid height", async () => {
@@ -273,6 +446,151 @@ describe("#BlockRouter", () => {
         "poolInfo"
       ])
       assert.isArray(result.tx)
+    })
+  })
+
+  describe("#detailsByHeightBulk", () => {
+    // details route handler.
+    const detailsByHeightBulk =
+      blockRoute.testableComponents.detailsByHeightBulk
+
+    it("should throw an error for an empty body", async () => {
+      req.body = {}
+
+      const result = await detailsByHeightBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "heights needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should error on non-array single height", async () => {
+      req.body = {
+        heights: 500000
+      }
+
+      const result = await detailsByHeightBulk(req, res)
+
+      assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
+      assert.include(
+        result.error,
+        "heights needs to be an array",
+        "Proper error message"
+      )
+    })
+
+    it("should throw 400 error if addresses array is too large", async () => {
+      const testArray = []
+      for (var i = 0; i < 25; i++) testArray.push("")
+
+      req.body.heights = testArray
+
+      const result = await detailsByHeightBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["error"])
+      assert.include(result.error, "Array too large")
+    })
+
+    it("should throw a 500 error for an invalid height", async () => {
+      req.body.heights = [`abc123`]
+
+      const result = await detailsByHeightBulk(req, res)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+    })
+
+    it("should throw 500 when network issues", async () => {
+      const savedUrl = process.env.BITCOINCOM_BASEURL
+
+      try {
+        req.body.heights = [`500000`]
+
+        // Switch the Insight URL to something that will error out.
+        process.env.BITCOINCOM_BASEURL = "http://fakeurl/api/"
+
+        const result = await detailsByHeightBulk(req, res)
+
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+
+        assert.equal(res.statusCode, 500, "HTTP status code 500 expected.")
+        assert.include(result.error, "ENOTFOUND", "Error message expected")
+      } catch (err) {
+        // Restore the saved URL.
+        process.env.BITCOINCOM_BASEURL = savedUrl
+      }
+    })
+
+    it("should get details for a single height", async () => {
+      req.body.heights = [`500000`]
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .reply(200, { result: mockData.mockBlockHash })
+
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/block/${mockData.mockBlockHash}`)
+          .reply(200, mockData.mockBlockDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsByHeightBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      // Assert that required fields exist in the returned object.
+      assert.equal(result.length, 1, "Array with one entry")
+      assert.hasAllKeys(result[0], [
+        "bits",
+        "chainwork",
+        "confirmations",
+        "difficulty",
+        "hash",
+        "height",
+        "isMainChain",
+        "merkleroot",
+        "nextblockhash",
+        "nonce",
+        "poolInfo",
+        "previousblockhash",
+        "reward",
+        "size",
+        "time",
+        "tx",
+        "version"
+      ])
+    })
+
+    it("should get details for multiple block heights", async () => {
+      req.body = {
+        heights: [`500000`, `500001`]
+      }
+
+      // Mock the Insight URL for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(`${process.env.RPC_BASEURL}`)
+          .post(``)
+          .times(2)
+          .reply(200, { result: mockData.mockBlockHash })
+
+        nock(`${process.env.BITCOINCOM_BASEURL}`)
+          .get(`/block/${mockData.mockBlockHash}`)
+          .times(2)
+          .reply(200, mockData.mockBlockDetails)
+      }
+
+      // Call the details API.
+      const result = await detailsByHeightBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.equal(result.length, 2, "2 outputs for 2 inputs")
     })
   })
 })

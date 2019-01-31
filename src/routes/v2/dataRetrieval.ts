@@ -12,7 +12,7 @@ const logger = require("./logging.js")
 const util = require("util")
 util.inspect.defaultOptions = { depth: 1 }
 
-const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
 const BitboxHTTP = axios.create({
@@ -97,10 +97,97 @@ while (i < 21) {
   i++
 }
 
+// Create the routes and point to the route handler functions.
 router.get("/", config.dataRetrievalRateLimit1, root)
-router.get("/currentConsensusHash", config.dataRetrievalRateLimit6, getCurrentConsensusHash)
+router.get(
+  "/balancesForAddress/:address",
+  config.dataRetrievalRateLimit2,
+  balancesForAddress
+)
+router.get(
+  "/balancesForId/:propertyId",
+  config.dataRetrievalRateLimit3,
+  balancesForId
+)
+router.get(
+  "/balance/:address/:propertyId",
+  config.dataRetrievalRateLimit4,
+  addressPropertyBalance
+)
+router.get(
+  "/balancesHash/:propertyId",
+  config.dataRetrievalRateLimit5,
+  balancesHash
+)
+router.get("/crowdSale/:propertyId", config.dataRetrievalRateLimit6, crowdsale)
+router.get(
+  "/currentConsensusHash",
+  config.dataRetrievalRateLimit7,
+  getCurrentConsensusHash
+)
+router.get("/grants/:propertyId", config.dataRetrievalRateLimit8, grants)
+
 router.get("/info", config.dataRetrievalRateLimit9, info)
-router.get("/properties", config.dataRetrievalRateLimit17, properties)
+router.get("/payload/:txid", config.dataRetrievalRateLimit10, payload)
+router.get("/properties", config.dataRetrievalRateLimit11, properties)
+router.get("/property/:propertyId", config.dataRetrievalRateLimit12, property)
+router.get(
+  "/seedBlocks/:startBlock/:endBlock",
+  config.dataRetrievalRateLimit13,
+  seedBlocks
+)
+router.get("/STO/:txid/:recipientFilter", config.dataRetrievalRateLimit14, sto)
+router.get("/transaction/:txid", config.dataRetrievalRateLimit15, transaction)
+router.get(
+  "/blockTransactions/:index",
+  config.dataRetrievalRateLimit16,
+  blockTransactions
+)
+router.get(
+  "/pendingTransactions/:address",
+  config.dataRetrievalRateLimit17,
+  pendingTransactions
+)
+router.get(
+  "/frozenBalance/:address/:propertyId",
+  config.dataRetrievalRateLimit18,
+  frozenBalance
+)
+router.get(
+  "/frozenBalanceForAddress/:address",
+  config.dataRetrievalRateLimit19,
+  frozenBalanceForAddress
+)
+router.get(
+  "/frozenBalanceForId/:propertyId",
+  config.dataRetrievalRateLimit20,
+  frozenBalanceForId
+)
+router.get(
+  "/ERC721AddressTokens/:address/:propertyId",
+  config.dataRetrievalRateLimit20,
+  ERC721AddressTokens
+)
+router.get(
+  "/ERC721PropertyDestroyTokens/:propertyId",
+  config.dataRetrievalRateLimit20,
+  ERC721PropertyDestroyTokens
+)
+router.get(
+  "/ERC721PropertyNews/:propertyId",
+  config.dataRetrievalRateLimit20,
+  ERC721PropertyNews
+)
+router.get(
+  "/ERC721TokenNews/:propertyId/:tokenId",
+  config.dataRetrievalRateLimit20,
+  ERC721TokenNews
+)
+router.get(
+  "/ownerOfERC721Token/:propertyId/:tokenId/:address",
+  config.dataRetrievalRateLimit20,
+  ownerOfERC721Token
+)
 
 function root(
   req: express.Request,
@@ -110,134 +197,242 @@ function root(
   return res.json({ status: "dataRetrieval" })
 }
 
+// Returns a list of all token balances for a given address.
+async function balancesForAddress(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
 
-router.get(
-  "/balancesForAddress/:address",
-  config.dataRetrievalRateLimit2,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getallbalancesforaddress"
     requestConfig.data.method = "whc_getallbalancesforaddress"
     requestConfig.data.params = [req.params.address]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      // Check for no balance error
-      if (
-        error &&
-        error.response &&
-        error.response.data &&
-        error.response.data.error &&
-        error.response.data.error.code === -8 &&
-        error.response.data.error.message === "Address not found"
-      ) {
-        res.json([])
-      } else {
-        res.status(500).send(error.response.data.error)
-      }
-    }
-  }
-)
+    const response = await BitboxHTTP(requestConfig)
 
-router.get(
-  "/balancesForId/:propertyId",
-  config.dataRetrievalRateLimit2,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+
+    // Catch corner-case specific to this route. 'Address not found' error message
+    // actually means the address has no token balance.
+    if (msg === "Address not found") return res.send("No tokens found.")
+
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/getRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// Returns a list of token balances for a given property identifier.
+async function balancesForId(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getallbalancesforid"
     requestConfig.data.method = "whc_getallbalancesforid"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      //res.status(500).send(error.response.data.error)
-      res.status(500)
-      return res.send(error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/balance/:address/:propertyId",
-  config.dataRetrievalRateLimit3,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function addressPropertyBalance(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getbalance"
     requestConfig.data.method = "whc_getbalance"
-    requestConfig.data.params = [
-      req.params.address,
-      parseInt(req.params.propertyId)
-    ]
+    requestConfig.data.params = [address, propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/balancesHash/:propertyId",
-  config.dataRetrievalRateLimit4,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function balancesHash(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getbalanceshash"
     requestConfig.data.method = "whc_getbalanceshash"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/crowdSale/:propertyId",
-  config.dataRetrievalRateLimit5,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function crowdsale(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
     let verbose = false
     if (req.query.verbose && req.query.verbose === "true") verbose = true
 
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getcrowdsale"
     requestConfig.data.method = "whc_getcrowdsale"
-    requestConfig.data.params = [parseInt(req.params.propertyId), verbose]
+    requestConfig.data.params = [propertyId, verbose]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      //res.status(500).send(error.response.data.error);
-      res.status(500)
-      return res.send(error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
 
 async function getCurrentConsensusHash(
   req: express.Request,
@@ -258,39 +453,58 @@ async function getCurrentConsensusHash(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
-    // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
+async function grants(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
 
-router.get(
-  "/grants/:propertyId",
-  config.dataRetrievalRateLimit8,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getgrants"
     requestConfig.data.method = "whc_getgrants"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      //res.status(500).send(error.response.data.error);
-      res.status(500)
-      return res.send(error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
 
 async function info(
   req: express.Request,
@@ -311,172 +525,328 @@ async function info(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
-    // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: util.inspect(err) })
   }
 }
 
+async function payload(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
 
-router.get(
-  "/payload/:txid",
-  config.dataRetrievalRateLimit10,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getpayload"
     requestConfig.data.method = "whc_getpayload"
-    requestConfig.data.params = [req.params.txid]
+    requestConfig.data.params = [txid]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/property/:propertyId",
-  config.dataRetrievalRateLimit11,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function property(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyid = req.params.propertyId
+    if (!propertyid || propertyid === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyid = parseInt(propertyid)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getproperty"
     requestConfig.data.method = "whc_getproperty"
-    requestConfig.data.params = [parseInt(req.params.propertyId)]
+    requestConfig.data.params = [propertyid]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/seedBlocks/:startBlock/:endBlock",
-  config.dataRetrievalRateLimit12,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// Returns a list of blocks containing Omni transactions for use in seed block filtering.
+// Does this even work?
+async function seedBlocks(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let startBlock = req.params.startBlock
+    if (!startBlock || startBlock === "") {
+      res.status(400)
+      return res.json({ error: "startBlock can not be empty" })
+    }
+    startBlock = parseInt(startBlock)
+
+    let endBlock = req.params.endBlock
+    if (!endBlock || endBlock === "") {
+      res.status(400)
+      return res.json({ error: "endBlock can not be empty" })
+    }
+    endBlock = parseInt(endBlock)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getseedblocks"
     requestConfig.data.method = "whc_getseedblocks"
-    requestConfig.data.params = [
-      parseInt(req.params.startBlock),
-      parseInt(req.params.endBlock)
-    ]
+    requestConfig.data.params = [startBlock, endBlock]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/STO/:txid/:recipientFilter",
-  config.dataRetrievalRateLimit13,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// Get information and recipients of a send-to-owners transaction.
+async function sto(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    let recipientFilter = req.params.recipientFilter
+    if (!recipientFilter || recipientFilter === "") {
+      recipientFilter = "*"
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getsto"
     requestConfig.data.method = "whc_getsto"
-    requestConfig.data.params = [req.params.txid, req.params.recipientFilter]
+    requestConfig.data.params = [txid, recipientFilter]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/transaction/:txid",
-  config.dataRetrievalRateLimit14,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function transaction(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_gettransaction"
     requestConfig.data.method = "whc_gettransaction"
-    requestConfig.data.params = [req.params.txid]
+    requestConfig.data.params = [txid]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      //res.status(500).send(error.response.data.error);
-      res.status(500)
-      return res.send(error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/blockTransactions/:index",
-  config.dataRetrievalRateLimit15,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function blockTransactions(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let index = req.params.index
+    if (!index || index === "") {
+      res.status(400)
+      return res.json({ error: "index can not be empty" })
+    }
+    index = parseInt(index)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_listblocktransactions"
     requestConfig.data.method = "whc_listblocktransactions"
-    requestConfig.data.params = [parseInt(req.params.index)]
+    requestConfig.data.params = [index]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/pendingTransactions",
-  config.dataRetrievalRateLimit16,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = []
-    if (req.query.address) params.push(req.query.address)
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function pendingTransactions(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
 
     requestConfig.data.id = "whc_listpendingtransactions"
     requestConfig.data.method = "whc_listpendingtransactions"
-    requestConfig.data.params = params
+    requestConfig.data.params = [address]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500)
-      return res.send(error)
-      //res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
 
 // Get a list of all tokens that have been created.
 async function properties(
@@ -498,91 +868,448 @@ async function properties(
 
     const response = await BitboxHTTP(requestConfig)
     return res.json(response.data.result)
-  } catch (error) {
-    // Write out error to error log.
-    //logger.error(`Error in control/getInfo: `, error)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
 
     res.status(500)
-    return res.json({ error: util.inspect(error) })
+    return res.json({ error: `Error in /change: ${err.message}` })
   }
 }
 
+// Returns the frozen token balance for a given address and property.
+async function frozenBalance(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
 
-router.get(
-  "/frozenBalance/:address/:propertyId",
-  config.dataRetrievalRateLimit18,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [
-      BITBOX.Address.toCashAddress(req.params.address),
-      parseInt(req.params.propertyId)
-    ]
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getfrozenbalance"
     requestConfig.data.method = "whc_getfrozenbalance"
-    requestConfig.data.params = params
+    requestConfig.data.params = [address, propertyId]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/frozenBalanceForAddress/:address",
-  config.dataRetrievalRateLimit19,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [BITBOX.Address.toCashAddress(req.params.address)]
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function frozenBalanceForAddress(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const address = req.params.address
+    if (!address || address === "") {
+      res.status(400)
+      return res.json({ error: "address can not be empty" })
+    }
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${address}`
+      })
+    }
+
+    // Prevent a common user error. Ensure they are using the correct network address.
+    const networkIsValid = routeUtils.validateNetwork(address)
+    if (!networkIsValid) {
+      res.status(400)
+      return res.json({
+        error: `Invalid network. Trying to use a testnet address on mainnet, or vice versa.`
+      })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getfrozenbalanceforaddress"
     requestConfig.data.method = "whc_getfrozenbalanceforaddress"
-    requestConfig.data.params = params
+    requestConfig.data.params = [address]
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
-  }
-)
 
-router.get(
-  "/frozenBalanceForId/:propertyId",
-  config.dataRetrievalRateLimit20,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    const params = [parseInt(req.params.propertyId)]
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function frozenBalanceForId(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+    propertyId = parseInt(propertyId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
     requestConfig.data.id = "whc_getfrozenbalanceforid"
     requestConfig.data.method = "whc_getfrozenbalanceforid"
+    requestConfig.data.params = [propertyId]
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ERC721AddressTokens(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(req.params.address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${
+          req.params.address
+        }`
+      })
+    }
+
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [req.params.address, propertyId]
+    requestConfig.data.id = "whc_getERC721AddressTokens"
+    requestConfig.data.method = "whc_getERC721AddressTokens"
     requestConfig.data.params = params
 
-    try {
-      const response = await BitboxHTTP(requestConfig)
-      res.json(response.data.result)
-    } catch (error) {
-      res.status(500).send(error.response.data.error)
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
     }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
   }
-)
+}
+
+async function ERC721PropertyDestroyTokens(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId]
+    requestConfig.data.id = "whc_getERC721PropertyDestroyTokens"
+    requestConfig.data.method = "whc_getERC721PropertyDestroyTokens"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ERC721PropertyNews(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId]
+    requestConfig.data.id = "whc_getERC721PropertyNews"
+    requestConfig.data.method = "whc_getERC721PropertyNews"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ERC721TokenNews(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    let tokenId = req.params.tokenId
+    if (!tokenId || tokenId === "") {
+      res.status(400)
+      return res.json({ error: "tokenId can not be empty" })
+    }
+    tokenId = parseInt(tokenId)
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId, req.params.tokenId]
+    requestConfig.data.id = "whc_getERC721TokenNews"
+    requestConfig.data.method = "whc_getERC721TokenNews"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+async function ownerOfERC721Token(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    let propertyId = req.params.propertyId
+    if (!propertyId || propertyId === "") {
+      res.status(400)
+      return res.json({ error: "propertyId can not be empty" })
+    }
+
+    let tokenId = req.params.tokenId
+    if (!tokenId || tokenId === "") {
+      res.status(400)
+      return res.json({ error: "tokenId can not be empty" })
+    }
+    tokenId = parseInt(tokenId)
+
+    // Ensure the input is a valid BCH address.
+    try {
+      var legacyAddr = BITBOX.Address.toLegacyAddress(req.params.address)
+    } catch (err) {
+      res.status(400)
+      return res.json({
+        error: `Invalid BCH address. Double check your address is valid: ${
+          req.params.address
+        }`
+      })
+    }
+
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const params = [propertyId, tokenId, req.params.address]
+    requestConfig.data.id = "whc_ownerOfERC721Token"
+    requestConfig.data.method = "whc_ownerOfERC721Token"
+    requestConfig.data.params = params
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return res.json(response.data.result)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
 
 module.exports = {
   router,
   testableComponents: {
     root,
+    balancesForAddress,
+    balancesForId,
+    addressPropertyBalance,
+    balancesHash,
+    crowdsale,
     getCurrentConsensusHash,
+    grants,
     info,
-    properties
+    payload,
+    properties,
+    property,
+    seedBlocks,
+    sto,
+    transaction,
+    blockTransactions,
+    pendingTransactions,
+    frozenBalance,
+    frozenBalanceForAddress,
+    frozenBalanceForId,
+    ERC721AddressTokens,
+    ERC721PropertyDestroyTokens,
+    ERC721PropertyNews,
+    ERC721TokenNews,
+    ownerOfERC721Token
   }
 }

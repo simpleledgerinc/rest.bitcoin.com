@@ -5,20 +5,29 @@ const router = express.Router()
 import axios from "axios"
 import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
+const routeUtils = require("./route-utils")
+const logger = require("./logging.js")
 
-const BITBOXCli = require("bitbox-cli/lib/bitbox-cli").default
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
+
+// Used to convert error messages to strings, to safely pass to users.
+const util = require("util")
+util.inspect.defaultOptions = { depth: 3 }
 
 interface IRLConfig {
   [transactionRateLimit1: string]: any
   transactionRateLimit2: any
+  transactionRateLimit3: any
 }
 
 const config: IRLConfig = {
   transactionRateLimit1: undefined,
-  transactionRateLimit2: undefined
+  transactionRateLimit2: undefined,
+  transactionRateLimit3: undefined
 }
 
+// Manipulates and formats the raw data comming from Insight API.
 const processInputs = (tx: any) => {
   if (tx.vin) {
     tx.vin.forEach((vin: any) => {
@@ -36,7 +45,7 @@ const processInputs = (tx: any) => {
 }
 
 let i = 1
-while (i < 3) {
+while (i < 4) {
   config[`transactionRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
@@ -54,65 +63,140 @@ while (i < 3) {
   i++
 }
 
-router.get(
-  "/",
-  config.transactionRateLimit1,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    res.json({ status: "transaction" })
+router.get("/", config.transactionRateLimit1, root)
+router.post("/details", config.transactionRateLimit2, detailsBulk)
+router.get("/details/:txid", config.transactionRateLimit3, detailsSingle)
+
+function root(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  return res.json({ status: "transaction" })
+}
+
+// Retrieve transaction data from the Insight API
+async function transactionsFromInsight(txid: string) {
+  try {
+    let path = `${process.env.BITCOINCOM_BASEURL}tx/${txid}`
+
+    // Query the Insight server.
+    const response = await axios.get(path)
+
+    // Parse the data.
+    const parsed = response.data
+    if (parsed) processInputs(parsed)
+
+    return parsed
+  } catch (err) {
+    throw err
   }
-)
+}
 
-router.get(
-  "/details/:txid",
-  config.transactionRateLimit1,
-  async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    try {
-      let txs = JSON.parse(req.params.txid)
-      if (txs.length > 20) {
-        res.json({
-          error: "Array too large. Max 20 txids"
-        })
-      }
+async function detailsBulk(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txids = req.body.txids
 
-      const result = [] as any
-      txs = txs.map((tx: any) =>
-        axios.get(`${process.env.BITCOINCOM_BASEURL}tx/${tx}`)
-      )
-      axios.all(txs).then(
-        axios.spread((...args) => {
-          for (let i = 0; i < args.length; i++) {
-            let tmp = {} as any
-            const parsed = tmp.data.result
-            result.push(parsed)
-          }
-          result.forEach((tx: any) => {
-            processInputs(tx)
-          })
-          res.json(result)
-        })
-      )
-    } catch (error) {
-      axios
-        .get(`${process.env.BITCOINCOM_BASEURL}tx/${req.params.txid}`)
-        .then(response => {
-          const parsed = response.data
-          if (parsed) processInputs(parsed)
-
-          res.json(parsed)
-        })
-        .catch(error => {
-          res.send(error.response.data.error.message)
-        })
+    // Reject if address is not an array.
+    if (!Array.isArray(txids)) {
+      res.status(400)
+      return res.json({ error: "txids needs to be an array" })
     }
-  }
-)
 
-module.exports = router
+    // Enforce no more than 20 txids.
+    if (txids.length > 20) {
+      res.json({
+        error: "Array too large. Max 20 txids"
+      })
+    }
+
+    logger.debug(`Executing transaction/details with these txids: `, txids)
+
+    // Loop through each txid.
+    const retArray = []
+    for (let i = 0; i < txids.length; i++) {
+      const thisTxid = txids[i] // Current address.
+
+      const parsed = await transactionsFromInsight(thisTxid)
+
+      retArray.push(parsed)
+    }
+
+    // Return the array of retrieved transaction information.
+    res.status(200)
+    return res.json(retArray)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    //console.log(`Error in transaction details: `, err)
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+// GET handler. Retrieve any unconfirmed TX information for a given address.
+async function detailsSingle(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const txid = req.params.txid
+    if (!txid || txid === "") {
+      res.status(400)
+      return res.json({ error: "txid can not be empty" })
+    }
+
+    // Reject if address is an array.
+    if (Array.isArray(txid)) {
+      res.status(400)
+      return res.json({
+        error: "txid can not be an array. Use POST for bulk upload."
+      })
+    }
+
+    logger.debug(
+      `Executing transaction.ts/detailsSingle with this txid: `,
+      txid
+    )
+
+    // Query the Insight API.
+    const retData = await transactionsFromInsight(txid)
+    //console.log(`retData: ${JSON.stringify(retData,null,2)}`)
+
+    // Return the array of retrieved address information.
+    res.status(200)
+    return res.json(retData)
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
+module.exports = {
+  router,
+  testableComponents: {
+    root,
+    detailsBulk,
+    detailsSingle
+  }
+}

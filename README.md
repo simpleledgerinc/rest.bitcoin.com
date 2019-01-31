@@ -10,7 +10,7 @@ Testnet available at [trest.bitcoin.com](https://trest.bitcoin.com)
 
 ## Usage
 
-You can also run an instance of REST for your own full node.
+You can also run an instance of REST for your own full node
 
 ### Prerequesites
 
@@ -103,4 +103,6 @@ PORT=3000 BITCOINCOM_BASEURL=http://localhost:3000/api/ RPC_BASEURL=http://local
 
 Finally open `http://localhost:3000/` and confirm you see the GUI
 
+
 [![Greenkeeper badge](https://badges.greenkeeper.io/Bitcoin.com/rest.bitcoin.com.svg)](https://greenkeeper.io/)
+

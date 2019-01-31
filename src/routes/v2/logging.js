@@ -34,7 +34,8 @@ function log(msg, obj) {
 // This is just a placeholder function that will be replaced once we get the
 // greylog server working.
 function error(msg, obj) {
-  console.error(msg, obj)
+  if (!obj) console.error(msg)
+  else console.error(msg, obj)
 }
 
 // This is just a placeholder function that will be replaced once we get the

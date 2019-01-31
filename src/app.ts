@@ -20,7 +20,12 @@ const zmq = require("zeromq")
 const sock: any = zmq.socket("sub")
 
 const swStats = require("swagger-stats")
-const apiSpec = require("./public/bitcoin-com-rest-v1.json")
+let apiSpec
+if (process.env.NETWORK === "mainnet") {
+  apiSpec = require("./public/bitcoin-com-mainnet-rest-v2.json")
+} else {
+  apiSpec = require("./public/bitcoin-com-testnet-rest-v2.json")
+}
 
 // v1
 const indexV1 = require("./routes/v1/index")
@@ -54,6 +59,8 @@ const transactionV2 = require("./routes/v2/transaction")
 const utilV2 = require("./routes/v2/util")
 const dataRetrievalV2 = require("./routes/v2/dataRetrieval")
 const payloadCreationV2 = require("./routes/v2/payloadCreation")
+const wormholeV2 = require("./routes/v2/wormhole")
+const slpV2 = require("./routes/v2/slp")
 
 interface IError {
   message: string
@@ -63,6 +70,8 @@ interface IError {
 require("dotenv").config()
 
 const app: express.Application = express()
+
+app.locals.env = process.env
 
 app.use(swStats.getMiddleware({ swaggerSpec: apiSpec }))
 
@@ -131,13 +140,33 @@ app.use(`/${v2prefix}/` + `blockchain`, blockchainV2.router)
 app.use(`/${v2prefix}/` + `block`, blockV2.router)
 app.use(`/${v2prefix}/` + `control`, controlV2.router)
 app.use(`/${v2prefix}/` + `generating`, generatingV2)
-app.use(`/${v2prefix}/` + `mining`, miningV2)
+app.use(`/${v2prefix}/` + `mining`, miningV2.router)
 app.use(`/${v2prefix}/` + `network`, networkV2)
 app.use(`/${v2prefix}/` + `rawtransactions`, rawtransactionsV2.router)
-app.use(`/${v2prefix}/` + `transaction`, transactionV2)
-app.use(`/${v2prefix}/` + `util`, utilV2)
+app.use(`/${v2prefix}/` + `transaction`, transactionV2.router)
+app.use(`/${v2prefix}/` + `util`, utilV2.router)
 app.use(`/${v2prefix}/` + `dataRetrieval`, dataRetrievalV2.router)
-app.use(`/${v2prefix}/` + `payloadCreation`, payloadCreationV2)
+
+app.use(`/${v2prefix}/` + `payloadCreation`, payloadCreationV2.router)
+app.use(`/${v2prefix}/` + `wormhole/transaction`, wormholeV2.router)
+app.use(`/${v2prefix}/` + `slp`, slpV2.router)
+
+// Initialize wormhole/transaction/socket endpoint
+const whSocketUrl = process.env.WORMHOLE_SOCKET_URL
+const whSocketPort = process.env.WORMHOLE_SOCKET_PORT
+if (whSocketUrl && whSocketPort) {
+  const bchsocketd = require("bchsocketd")
+  bchsocketd.init({
+    bit: {
+      host: whSocketUrl,
+      port: whSocketPort
+    },
+    socket: {
+      app: app,
+      endpoint: `${v2prefix}/wormhole/transaction/socket`
+    }
+  })
+}
 
 // catch 404 and forward to error handler
 app.use(
@@ -171,6 +200,7 @@ app.use((err: IError, req: express.Request, res: express.Response) => {
  */
 const port = normalizePort(process.env.PORT || "3000")
 app.set("port", port)
+console.log(`rest.bitcoin.com started on port ${port}`)
 
 /**
  * Create HTTP server.
