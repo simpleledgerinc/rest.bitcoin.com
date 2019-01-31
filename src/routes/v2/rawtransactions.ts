@@ -541,7 +541,7 @@ async function sendRawTransaction(
 
       result.push(rpcResult.data.result)
 
-      await sleep(5000)
+      //await sleep(5000)
     }
 
     res.status(200)
