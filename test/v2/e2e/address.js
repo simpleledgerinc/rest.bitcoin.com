@@ -1,6 +1,6 @@
 /*
   End-to-end tests for the Address endpoint.
-  These tests assume that the repo is running locally.
+  These tests assume that the repo is running locally and pointed at TESTNET
 */
 
 "use strict"
@@ -13,9 +13,14 @@ const rawtransactions = require("../../../dist/routes/v2/address")
   This unconfirmed utxo test needs to be expanded in the future to automatically
   create a transaction. For now, that is done manually and the address provided
   as a constant.
+
+  1. Start rest running locally, pointed at TESTNET.
+  2. Fund each address with a small amount of tBCH
+  3. Run this program with `node address.js`
+  4. If successful, it will return the unconfirmed UTXOs.
 */
-const addr1 = "bitcoincash:qqcp8fw06dmjd2gnfanpwytj7q93w408nv7usdqgsk"
-const addr2 = "bitcoincash:qz7teqlcltdhqjn2an8nspu7g2x6g3d3rcq8nk4nzs"
+const addr1 = "bchtest:qpdcp5pv7qphu5tsjfgwezld9n9aq9ue6swgqpf45c"
+const addr2 = "bchtest:qzpvx999fagau0xqmvu3xvll9evapge7u5hcgeknzv"
 
 async function testSingleUnconfirmed() {
   try {
