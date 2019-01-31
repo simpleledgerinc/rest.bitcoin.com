@@ -484,10 +484,10 @@ async function sendRawTransaction(
     }
 
     // Validate each element
-    for(let i=0; i < hexes.length; i++) {
+    for (let i = 0; i < hexes.length; i++) {
       const hex = hexes[i]
 
-      if(hex === "") {
+      if (hex === "") {
         res.status(400)
         return res.json({
           error: `Encountered empty hex`
@@ -512,7 +512,7 @@ async function sendRawTransaction(
     // How to send TX hexes in parallel the WRONG WAY:
     /*
     // Collect an array of promises.
-    const promises = hexs.map(async (hex: any) => {
+    const promises = hexes.map(async (hex: any) => {
       requestConfig.data.id = "sendrawtransaction"
       requestConfig.data.method = "sendrawtransaction"
       requestConfig.data.params = [hex]
@@ -529,7 +529,7 @@ async function sendRawTransaction(
 
     // Sending them serially.
     const result = []
-    for(let i=0; i < hexes.length; i++) {
+    for (let i = 0; i < hexes.length; i++) {
       const hex = hexes[i]
 
       requestConfig.data.id = "sendrawtransaction"
@@ -537,11 +537,8 @@ async function sendRawTransaction(
       requestConfig.data.params = [hex]
 
       const rpcResult = await BitboxHTTP(requestConfig)
-      console.log(`rcpResult.data.result: ${util.inspect(rpcResult.data.result)}`)
 
       result.push(rpcResult.data.result)
-
-      //await sleep(5000)
     }
 
     res.status(200)
@@ -865,10 +862,6 @@ async function whCreateTx(
     res.status(500)
     return res.json({ error: util.inspect(err) })
   }
-}
-
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = {
