@@ -296,10 +296,12 @@ async function utxoFromInsight(thisAddress: string) {
       cashAddress: String,
       scriptPubKey: String
     }
-    let spk = response.data[0].scriptPubKey
+    if (response.data.length && response.data[0].scriptPubKey) {
+      let spk = response.data[0].scriptPubKey
+      retData.scriptPubKey = spk
+    }
     retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
     retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
-    retData.scriptPubKey = spk
     retData.utxos = response.data.map((utxo: any) => {
       delete utxo.address
       delete utxo.scriptPubKey
