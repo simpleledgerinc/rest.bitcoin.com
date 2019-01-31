@@ -483,6 +483,18 @@ async function sendRawTransaction(
       })
     }
 
+    // Validate each element
+    for(let i=0; i < hexs.length; i++) {
+      const hex = hexs[i]
+
+      if(hex === "") {
+        res.status(400)
+        return res.json({
+          error: `Encountered empty hex`
+        })
+      }
+    }
+
     const {
       BitboxHTTP,
       username,
