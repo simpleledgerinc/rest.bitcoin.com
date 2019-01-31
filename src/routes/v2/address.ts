@@ -31,6 +31,10 @@ interface IRLConfig {
   addressRateLimit3: any
   addressRateLimit4: any
   addressRateLimit5: any
+  addressRateLimit6: any
+  addressRateLimit7: any
+  addressRateLimit8: any
+  addressRateLimit9: any
 }
 
 const config: IRLConfig = {
@@ -159,7 +163,7 @@ async function detailsBulk(
     logger.debug(`Executing address/details with these addresses: `, addresses)
 
     // Validate each element in the address array.
-    for(let i=0; i < addresses.length; i++) {
+    for (let i = 0; i < addresses.length; i++) {
       const thisAddress = addresses[i]
 
       // Ensure the input is a valid BCH address.
@@ -289,11 +293,18 @@ async function utxoFromInsight(thisAddress: string) {
     const retData = {
       utxos: Array,
       legacyAddress: String,
-      cashAddress: String
+      cashAddress: String,
+      scriptPubKey: String
     }
-    retData.utxos = response.data
+    let spk = response.data[0].scriptPubKey
     retData.legacyAddress = BITBOX.Address.toLegacyAddress(thisAddress)
     retData.cashAddress = BITBOX.Address.toCashAddress(thisAddress)
+    retData.scriptPubKey = spk
+    retData.utxos = response.data.map((utxo: any) => {
+      delete utxo.address
+      delete utxo.scriptPubKey
+      return utxo
+    })
     //console.log(`utxoFromInsight retData: ${util.inspect(retData)}`)
 
     return retData
@@ -327,7 +338,7 @@ async function utxoBulk(
     }
 
     // Validate each element in the address array.
-    for(let i=0; i < addresses.length; i++) {
+    for (let i = 0; i < addresses.length; i++) {
       const thisAddress = addresses[i]
 
       // Ensure the input is a valid BCH address.
@@ -364,7 +375,6 @@ async function utxoBulk(
 
     res.status(200)
     return res.json(result)
-
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -471,7 +481,7 @@ async function unconfirmedBulk(
     }
 
     // Validate each element in the address array.
-    for(let i=0; i < addresses.length; i++) {
+    for (let i = 0; i < addresses.length; i++) {
       const thisAddress = addresses[i]
 
       // Ensure the input is a valid BCH address.
@@ -495,7 +505,7 @@ async function unconfirmedBulk(
     }
 
     // Collect an array of promises.
-    const promises = addresses.map((address) => utxoFromInsight(address))
+    const promises = addresses.map(address => utxoFromInsight(address))
 
     // Wait for all parallel Insight requests to return.
     let result: Array<any> = await axios.all(promises)
@@ -517,7 +527,6 @@ async function unconfirmedBulk(
     // Return the array of retrieved address information.
     res.status(200)
     return res.json(finalResult)
-
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
@@ -653,7 +662,6 @@ async function transactionsBulk(
   next: express.NextFunction
 ) {
   try {
-
     let addresses = req.body.addresses
     const currentPage = req.body.page ? parseInt(req.body.page, 10) : 0
 
@@ -674,7 +682,7 @@ async function transactionsBulk(
     }
 
     // Validate each element in the address array.
-    for(let i=0; i < addresses.length; i++) {
+    for (let i = 0; i < addresses.length; i++) {
       const thisAddress = addresses[i]
 
       // Ensure the input is a valid BCH address.
@@ -708,7 +716,6 @@ async function transactionsBulk(
     // Return the array of retrieved address information.
     res.status(200)
     return res.json(result)
-
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
