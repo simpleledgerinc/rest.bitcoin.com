@@ -27,30 +27,24 @@ const mockAddressDetails = {
 
 const mockUtxoDetails = [
   {
-    address: "1Fg4r9iDrEkCcDmHTy2T79EusNfhyQpu7W",
     txid: "15f6a584080b04911121fbaca7bfcf3dd64ef2bfa5a01daf31e05a296c3e5e9e",
     vout: 286,
-    scriptPubKey: "76a914a0f531f4ff810a415580c12e54a7072946bb927e88ac",
     amount: 0.00001,
     satoshis: 1000,
     height: 546083,
     confirmations: 3490
   },
   {
-    address: "1Fg4r9iDrEkCcDmHTy2T79EusNfhyQpu7W",
     txid: "15f6a584080b04911121fbaca7bfcf3dd64ef2bfa5a01daf31e05a296c3e5e9e",
     vout: 287,
-    scriptPubKey: "76a914a0f531f4ff810a415580c12e54a7072946bb927e88ac",
     amount: 0.00001,
     satoshis: 1000,
     height: 546083,
     confirmations: 3490
   },
   {
-    address: "1Fg4r9iDrEkCcDmHTy2T79EusNfhyQpu7W",
     txid: "15f6a584080b04911121fbaca7bfcf3dd64ef2bfa5a01daf31e05a296c3e5e9e",
     vout: 288,
-    scriptPubKey: "76a914a0f531f4ff810a415580c12e54a7072946bb927e88ac",
     amount: 0.00001,
     satoshis: 1000,
     height: 546083,
