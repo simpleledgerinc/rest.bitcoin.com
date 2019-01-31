@@ -542,7 +542,7 @@ describe("#Raw-Transactions", () => {
       req.body.hexes = [""]
 
       const result = await sendRawTransaction(req, res)
-      console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "Encountered empty hex")
