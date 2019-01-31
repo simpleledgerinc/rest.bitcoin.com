@@ -467,15 +467,20 @@ async function sendRawTransaction(
 ) {
   try {
     // Validation
-    // TODO: allow 20 txids at a time
     const hexs = req.body.hexes
+
+    // Reject if input is not an array.
     if (!Array.isArray(hexs)) {
       res.status(400)
       return res.json({ error: "hex must be an array" })
     }
-    if (hexs.length > 1) {
+
+    // Reject if there are too many elements in the array.
+    if (hexs.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
-      return res.json({ error: "Array too large. Max 1 entries" })
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} hexes`
+      })
     }
 
     const {
@@ -485,6 +490,7 @@ async function sendRawTransaction(
       requestConfig
     } = routeUtils.setEnvVars()
 
+    // Collect an array of promises.
     const promises = hexs.map(async (hex: any) => {
       requestConfig.data.id = "sendrawtransaction"
       requestConfig.data.method = "sendrawtransaction"
