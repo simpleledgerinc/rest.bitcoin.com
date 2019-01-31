@@ -507,7 +507,7 @@ async function sendRawTransaction(
     // not work. Testing showed that the full node will return the same TXID for
     // different TX hexes. I believe this is by design, to prevent double spends.
     // In parallel, we are essentially asking the node to broadcast a new TX before
-    // it's finished broadcast the previous one.
+    // it's finished broadcast the previous one. Serial execution is required.
 
     // How to send TX hexes in parallel the WRONG WAY:
     /*
