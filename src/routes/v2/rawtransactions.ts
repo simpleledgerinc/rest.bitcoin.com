@@ -467,16 +467,16 @@ async function sendRawTransaction(
 ) {
   try {
     // Validation
-    const hexs = req.body.hexes
+    const hexes = req.body.hexes
 
     // Reject if input is not an array.
-    if (!Array.isArray(hexs)) {
+    if (!Array.isArray(hexes)) {
       res.status(400)
       return res.json({ error: "hex must be an array" })
     }
 
     // Reject if there are too many elements in the array.
-    if (hexs.length > FREEMIUM_INPUT_SIZE) {
+    if (hexes.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
       return res.json({
         error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} hexes`
@@ -484,8 +484,8 @@ async function sendRawTransaction(
     }
 
     // Validate each element
-    for(let i=0; i < hexs.length; i++) {
-      const hex = hexs[i]
+    for(let i=0; i < hexes.length; i++) {
+      const hex = hexes[i]
 
       if(hex === "") {
         res.status(400)
@@ -502,6 +502,15 @@ async function sendRawTransaction(
       requestConfig
     } = routeUtils.setEnvVars()
 
+    // Dev Note CT 1/31/2019:
+    // Sending the 'sendrawtrnasaction' RPC call to a full node in parallel will
+    // not work. Testing showed that the full node will return the same TXID for
+    // different TX hexes. I believe this is by design, to prevent double spends.
+    // In parallel, we are essentially asking the node to broadcast a new TX before
+    // it's finished broadcast the previous one.
+
+    // How to send TX hexes in parallel the WRONG WAY:
+    /*
     // Collect an array of promises.
     const promises = hexs.map(async (hex: any) => {
       requestConfig.data.id = "sendrawtransaction"
@@ -516,6 +525,24 @@ async function sendRawTransaction(
 
     // Retrieve the data part of the result.
     const result = axiosResult.map(x => x.data.result)
+    */
+
+    // Sending them serially.
+    const result = []
+    for(let i=0; i < hexes.length; i++) {
+      const hex = hexes[i]
+
+      requestConfig.data.id = "sendrawtransaction"
+      requestConfig.data.method = "sendrawtransaction"
+      requestConfig.data.params = [hex]
+
+      const rpcResult = await BitboxHTTP(requestConfig)
+      console.log(`rcpResult.data.result: ${util.inspect(rpcResult.data.result)}`)
+
+      result.push(rpcResult.data.result)
+
+      await sleep(5000)
+    }
 
     res.status(200)
     return res.json(result)
@@ -838,6 +865,10 @@ async function whCreateTx(
     res.status(500)
     return res.json({ error: util.inspect(err) })
   }
+}
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = {
