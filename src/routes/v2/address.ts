@@ -114,7 +114,11 @@ async function detailsFromInsight(
     const retData = axiosResponse.data
 
     // Calculate pagesTotal from response
-    const pagesTotal = Math.ceil(retData.txApperances / PAGE_SIZE)
+    retData.txAppearances = retData.txApperances
+    retData.unconfirmedTxAppearances = retData.unconfirmedTxApperances
+    delete retData.txApperances
+    delete retData.unconfirmedTxApperances
+    const pagesTotal = Math.ceil(retData.txAppearances / PAGE_SIZE)
 
     // Append different address formats to the return data.
     retData.legacyAddress = BITBOX.Address.toLegacyAddress(retData.addrStr)

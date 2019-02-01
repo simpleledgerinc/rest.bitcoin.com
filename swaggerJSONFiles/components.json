@@ -154,11 +154,11 @@
             "type": "number",
             "format": "float"
           },
-          "unconfirmedTxApperances": {
+          "unconfirmedTxAppearances": {
             "type": "number",
             "format": "float"
           },
-          "txApperances": {
+          "txAppearances": {
             "type": "number"
           },
           "transactions": {

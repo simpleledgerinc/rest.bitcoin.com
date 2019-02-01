@@ -52,8 +52,8 @@ describe("#AddressRouter", () => {
           "totalSentSat",
           "unconfirmedBalance",
           "unconfirmedBalanceSat",
-          "unconfirmedTxApperances",
-          "txApperances",
+          "unconfirmedTxAppearances",
+          "txAppearances",
           "transactions",
           "legacyAddress",
           "cashAddress"
@@ -86,8 +86,8 @@ describe("#AddressRouter", () => {
           "totalSentSat",
           "unconfirmedBalance",
           "unconfirmedBalanceSat",
-          "unconfirmedTxApperances",
-          "txApperances",
+          "unconfirmedTxAppearances",
+          "txAppearances",
           "transactions",
           "legacyAddress",
           "cashAddress"
