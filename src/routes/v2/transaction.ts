@@ -127,6 +127,7 @@ async function detailsBulk(
     // Return the array of retrieved transaction information.
     res.status(200)
     return res.json(result)
+    
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
