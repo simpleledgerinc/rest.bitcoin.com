@@ -116,19 +116,17 @@ async function detailsBulk(
 
     logger.debug(`Executing transaction/details with these txids: `, txids)
 
-    // Loop through each txid.
-    const retArray = []
-    for (let i = 0; i < txids.length; i++) {
-      const thisTxid = txids[i] // Current address.
+    // Collect an array of promises
+    const promises = txids.map(async (txid: any) => {
+      return await transactionsFromInsight(txid)
+    })
 
-      const parsed = await transactionsFromInsight(thisTxid)
-
-      retArray.push(parsed)
-    }
+    // Wait for all parallel promises to return.
+    const result: Array<any> = await Promise.all(promises)
 
     // Return the array of retrieved transaction information.
     res.status(200)
-    return res.json(retArray)
+    return res.json(result)
   } catch (err) {
     // Attempt to decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
