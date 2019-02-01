@@ -114,10 +114,6 @@ async function detailsFromInsight(
     const retData = axiosResponse.data
 
     // Calculate pagesTotal from response
-    retData.txAppearances = retData.txApperances
-    retData.unconfirmedTxAppearances = retData.unconfirmedTxApperances
-    delete retData.txApperances
-    delete retData.unconfirmedTxApperances
     const pagesTotal = Math.ceil(retData.txAppearances / PAGE_SIZE)
 
     // Append different address formats to the return data.
