@@ -467,15 +467,32 @@ async function sendRawTransaction(
 ) {
   try {
     // Validation
-    // TODO: allow 20 txids at a time
-    const hexs = req.body.hexes
-    if (!Array.isArray(hexs)) {
+    const hexes = req.body.hexes
+
+    // Reject if input is not an array.
+    if (!Array.isArray(hexes)) {
       res.status(400)
       return res.json({ error: "hex must be an array" })
     }
-    if (hexs.length > 1) {
+
+    // Reject if there are too many elements in the array.
+    if (hexes.length > FREEMIUM_INPUT_SIZE) {
       res.status(400)
-      return res.json({ error: "Array too large. Max 1 entries" })
+      return res.json({
+        error: `Array too large. Max ${FREEMIUM_INPUT_SIZE} hexes`
+      })
+    }
+
+    // Validate each element
+    for (let i = 0; i < hexes.length; i++) {
+      const hex = hexes[i]
+
+      if (hex === "") {
+        res.status(400)
+        return res.json({
+          error: `Encountered empty hex`
+        })
+      }
     }
 
     const {
@@ -485,7 +502,17 @@ async function sendRawTransaction(
       requestConfig
     } = routeUtils.setEnvVars()
 
-    const promises = hexs.map(async (hex: any) => {
+    // Dev Note CT 1/31/2019:
+    // Sending the 'sendrawtrnasaction' RPC call to a full node in parallel will
+    // not work. Testing showed that the full node will return the same TXID for
+    // different TX hexes. I believe this is by design, to prevent double spends.
+    // In parallel, we are essentially asking the node to broadcast a new TX before
+    // it's finished broadcast the previous one. Serial execution is required.
+
+    // How to send TX hexes in parallel the WRONG WAY:
+    /*
+    // Collect an array of promises.
+    const promises = hexes.map(async (hex: any) => {
       requestConfig.data.id = "sendrawtransaction"
       requestConfig.data.method = "sendrawtransaction"
       requestConfig.data.params = [hex]
@@ -498,6 +525,21 @@ async function sendRawTransaction(
 
     // Retrieve the data part of the result.
     const result = axiosResult.map(x => x.data.result)
+    */
+
+    // Sending them serially.
+    const result = []
+    for (let i = 0; i < hexes.length; i++) {
+      const hex = hexes[i]
+
+      requestConfig.data.id = "sendrawtransaction"
+      requestConfig.data.method = "sendrawtransaction"
+      requestConfig.data.params = [hex]
+
+      const rpcResult = await BitboxHTTP(requestConfig)
+
+      result.push(rpcResult.data.result)
+    }
 
     res.status(200)
     return res.json(result)
