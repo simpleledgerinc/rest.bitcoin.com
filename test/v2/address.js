@@ -237,7 +237,7 @@ describe("#AddressRouter", () => {
 
       // Call the details API.
       const result = await detailsBulk(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
+      // console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(result[0].pagesTotal, 1)
     })
@@ -269,8 +269,8 @@ describe("#AddressRouter", () => {
         "totalSentSat",
         "unconfirmedBalance",
         "unconfirmedBalanceSat",
-        "unconfirmedTxApperances",
-        "txApperances",
+        "unconfirmedTxAppearances",
+        "txAppearances",
         "transactions",
         "legacyAddress",
         "cashAddress",
@@ -452,8 +452,8 @@ describe("#AddressRouter", () => {
         "totalSentSat",
         "unconfirmedBalance",
         "unconfirmedBalanceSat",
-        "unconfirmedTxApperances",
-        "txApperances",
+        "unconfirmedTxAppearances",
+        "txAppearances",
         "transactions",
         "legacyAddress",
         "cashAddress",
