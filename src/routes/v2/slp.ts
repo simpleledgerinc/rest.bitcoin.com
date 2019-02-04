@@ -27,6 +27,33 @@ const BITBOX = new BITBOXCli()
 const SLPsdk = require("slp-sdk/lib/SLP").default
 const SLP = new SLPsdk()
 
+// Retrieve raw transactions details from the full node.
+async function getRawTransactionsFromNode(txids: [string]) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    requestConfig.data.id = "getrawtransaction"
+    requestConfig.data.method = "getrawtransaction"
+    requestConfig.data.params = [txids[0], 0]
+
+    const response = await BitboxHTTP(requestConfig)
+
+    return response.data.result
+  } catch (err) {
+    throw err
+  }
+}
+
+const slpValidator = SLP.Utils.createValidator(
+  process.env.NETWORK,
+  getRawTransactionsFromNode.bind(this)
+)
+
 const requestConfig: IRequestConfig = {
   method: "post",
   auth: {
@@ -447,37 +474,8 @@ async function validateBulk(
 }
 
 async function isValidSlpTxid(txid: string): Promise<boolean> {
-  let result
-  try {
-    result = await validateTx(txid, process.env.SLP_VALIDATE_URL)
-  } catch (err) {
-    result = await validateTx(txid, process.env.SLP_VALIDATE_FAILOVER_URL)
-  }
-
-  if (result === true) {
-    return true
-  } else {
-    return false
-  }
-}
-
-async function validateTx(txid: string, url: string): Promise<boolean> {
-  const result = await axios({
-    method: "post",
-    url: url,
-    data: {
-      jsonrpc: "2.0",
-      id: "slpvalidate",
-      method: "slpvalidate",
-      params: [txid, false, false]
-    }
-  })
-
-  if (result && result.data && result.data.result === "Valid") {
-    return true
-  } else {
-    return false
-  }
+  const isValid = await slpValidator.isValidSlpTxid(txid)
+  return isValid
 }
 
 module.exports = {

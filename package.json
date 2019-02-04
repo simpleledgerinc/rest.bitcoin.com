@@ -48,6 +48,7 @@
     "pg-hstore": "^2.3.2",
     "sequelize": "^3.30.4",
     "slp-balances": "^0.2.5",
+    "slp-sdk": "^1.0.3",
     "slpjs": "^0.1.7",
     "socket.io": "^2.1.1",
     "swagger-stats": "^0.95.6",
