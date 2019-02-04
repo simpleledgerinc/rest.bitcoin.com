@@ -461,22 +461,16 @@ async function isValidSlpTxid(txid: string): Promise<boolean> {
   }
 }
 
-async function validateTx(txid: string, url: string): Promise<boolean> {
-  const result = await axios({
-    method: "post",
-    url: url,
-    data: {
-      jsonrpc: "2.0",
-      id: "slpvalidate",
-      method: "slpvalidate",
-      params: [txid, false, false]
-    }
-  })
-
-  if (result && result.data && result.data.result === "Valid") {
-    return true
-  } else {
-    return false
+async function validateTx(txid: string, network: string): Promise<boolean> {
+  try {
+    let isValid = await SLP.Utils.validateTxid(
+      txid,
+      network
+    );
+    res.json(isValid: isValid)
+    return isValid
+  } catch (error) {
+    console.error(error);
   }
 }
 
