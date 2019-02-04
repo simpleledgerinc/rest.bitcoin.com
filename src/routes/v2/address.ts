@@ -112,9 +112,10 @@ async function detailsFromInsight(
     // Query the Insight server.
     const axiosResponse = await axios.get(path)
     const retData = axiosResponse.data
+    //console.log(`retData: ${util.inspect(retData)}`)
 
     // Calculate pagesTotal from response
-    const pagesTotal = Math.ceil(retData.txAppearances / PAGE_SIZE)
+    const pagesTotal = Math.ceil(retData.txApperances / PAGE_SIZE)
 
     // Append different address formats to the return data.
     retData.legacyAddress = BITBOX.Address.toLegacyAddress(retData.addrStr)
