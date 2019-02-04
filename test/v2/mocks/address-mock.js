@@ -14,8 +14,8 @@ const mockAddressDetails = {
   totalSentSat: 2049449,
   unconfirmedBalance: 0,
   unconfirmedBalanceSat: 0,
-  unconfirmedTxAppearances: 0,
-  txAppearances: 3,
+  unconfirmedTxApperances: 0,
+  txApperances: 3,
   transactions: [
     "2dc053f55a666a3d2a08b1c680b704d62a55506d14ad884add87edcc56b9277d",
     "544c15ce35c0f2e808d28f29d6587f1ec9276233e29856b7f2938cf0daef0026",

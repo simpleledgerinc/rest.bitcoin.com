@@ -88,6 +88,7 @@ describe("#AddressRouter", () => {
       req.body = {}
 
       const result = await detailsBulk(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(res.statusCode, 400, "HTTP status code 400 expected.")
       assert.include(
@@ -237,7 +238,7 @@ describe("#AddressRouter", () => {
 
       // Call the details API.
       const result = await detailsBulk(req, res)
-      // console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(result[0].pagesTotal, 1)
     })
@@ -269,8 +270,8 @@ describe("#AddressRouter", () => {
         "totalSentSat",
         "unconfirmedBalance",
         "unconfirmedBalanceSat",
-        "unconfirmedTxAppearances",
-        "txAppearances",
+        "unconfirmedTxApperances",
+        "txApperances",
         "transactions",
         "legacyAddress",
         "cashAddress",
@@ -452,8 +453,8 @@ describe("#AddressRouter", () => {
         "totalSentSat",
         "unconfirmedBalance",
         "unconfirmedBalanceSat",
-        "unconfirmedTxAppearances",
-        "txAppearances",
+        "unconfirmedTxApperances",
+        "txApperances",
         "transactions",
         "legacyAddress",
         "cashAddress",
