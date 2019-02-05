@@ -10,6 +10,9 @@
       "Txid": {
         "type": "string"
       },
+      "RawTxid": {
+        "type": "string"
+      },
       "Hex": {
         "type": "string"
       },
@@ -104,6 +107,22 @@
               "$ref": "#/components/schemas/Txid"
             },
             "example": []
+          }
+        }
+      },
+      "RawTxids": {
+        "type": "object",
+        "properties": {
+          "txids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RawTxid"
+            },
+            "example": []
+          },
+          "verbose": {
+            "type": "boolean",
+            "example": true
           }
         }
       },
