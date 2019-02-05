@@ -194,6 +194,20 @@ async function listSingleToken(
 
     let formattedTokens: Array<any> = []
 
+    if (tokenRes.data.u.length) {
+      tokenRes.data.u.forEach((token: any) => {
+        formattedTokens.push({
+          id: token.tx.h,
+          timestamp: token.blk
+            ? strftime("%Y-%m-%d %H:%M", new Date(token.blk.t * 1000))
+            : "unconfirmed",
+          symbol: token.out[0].s4,
+          name: token.out[0].s5,
+          document: token.out[0].s6
+        })
+      })
+    }
+
     if (tokenRes.data.c.length) {
       tokenRes.data.c.forEach((token: any) => {
         formattedTokens.push({
