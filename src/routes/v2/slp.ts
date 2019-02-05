@@ -28,7 +28,7 @@ const SLPsdk = require("slp-sdk/lib/SLP").default
 const SLP = new SLPsdk()
 
 // Retrieve raw transactions details from the full node.
-async function getRawTransactionsFromNode(txids: [string]) {
+async function getRawTransactionsFromNode(txids: string[]) {
   try {
     const {
       BitboxHTTP,
@@ -37,13 +37,17 @@ async function getRawTransactionsFromNode(txids: [string]) {
       requestConfig
     } = routeUtils.setEnvVars()
 
-    requestConfig.data.id = "getrawtransaction"
-    requestConfig.data.method = "getrawtransaction"
-    requestConfig.data.params = [txids[0], 0]
+    const txPromises = txids.map((async txid => {
+      requestConfig.data.id = "getrawtransaction"
+      requestConfig.data.method = "getrawtransaction"
+      requestConfig.data.params = [txid, 0]
 
-    const response = await BitboxHTTP(requestConfig)
+      const response = await BitboxHTTP(requestConfig)
+      return response.data.result
+    }))
 
-    return response.data.result
+    const results = await axios.all(txPromises)
+    return results
   } catch (err) {
     throw err
   }
@@ -51,7 +55,7 @@ async function getRawTransactionsFromNode(txids: [string]) {
 
 const slpValidator = SLP.Utils.createValidator(
   process.env.NETWORK,
-  getRawTransactionsFromNode.bind(this)
+  getRawTransactionsFromNode
 )
 
 const requestConfig: IRequestConfig = {
@@ -475,6 +479,7 @@ async function validateBulk(
 
 async function isValidSlpTxid(txid: string): Promise<boolean> {
   const isValid = await slpValidator.isValidSlpTxid(txid)
+  console.log(txid, isValid)
   return isValid
 }
 
