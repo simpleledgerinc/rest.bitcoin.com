@@ -108,22 +108,6 @@ app.use("/" + v2prefix + "/" + "dataRetrieval", dataRetrievalV2.router);
 app.use("/" + v2prefix + "/" + "payloadCreation", payloadCreationV2.router);
 app.use("/" + v2prefix + "/" + "wormhole/transaction", wormholeV2.router);
 app.use("/" + v2prefix + "/" + "slp", slpV2.router);
-// Initialize wormhole/transaction/socket endpoint
-var whSocketUrl = process.env.WORMHOLE_SOCKET_URL;
-var whSocketPort = process.env.WORMHOLE_SOCKET_PORT;
-if (whSocketUrl && whSocketPort) {
-    var bchsocketd = require("bchsocketd");
-    bchsocketd.init({
-        bit: {
-            host: whSocketUrl,
-            port: whSocketPort
-        },
-        socket: {
-            app: app,
-            endpoint: v2prefix + "/wormhole/transaction/socket"
-        }
-    });
-}
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     var err = {

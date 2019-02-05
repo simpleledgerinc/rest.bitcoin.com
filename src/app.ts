@@ -151,23 +151,6 @@ app.use(`/${v2prefix}/` + `payloadCreation`, payloadCreationV2.router)
 app.use(`/${v2prefix}/` + `wormhole/transaction`, wormholeV2.router)
 app.use(`/${v2prefix}/` + `slp`, slpV2.router)
 
-// Initialize wormhole/transaction/socket endpoint
-const whSocketUrl = process.env.WORMHOLE_SOCKET_URL
-const whSocketPort = process.env.WORMHOLE_SOCKET_PORT
-if (whSocketUrl && whSocketPort) {
-  const bchsocketd = require("bchsocketd")
-  bchsocketd.init({
-    bit: {
-      host: whSocketUrl,
-      port: whSocketPort
-    },
-    socket: {
-      app: app,
-      endpoint: `${v2prefix}/wormhole/transaction/socket`
-    }
-  })
-}
-
 // catch 404 and forward to error handler
 app.use(
   (req: express.Request, res: express.Response, next: express.NextFunction) => {
