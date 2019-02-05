@@ -16,6 +16,10 @@ const slpBalances = require("slp-balances")
 const util = require("util")
 util.inspect.defaultOptions = { depth: 5 }
 
+// SLP tx db
+const level = require("level")
+const slpTxDb = level("./slp-tx-db")
+
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
 })
@@ -39,12 +43,31 @@ async function getRawTransactionsFromNode(txids: string[]) {
     } = routeUtils.setEnvVars()
 
     const txPromises = txids.map(async txid => {
+      // Check slpTxDb
+      try {
+        if (slpTxDb.isOpen()) {
+          const rawTx = await slpTxDb.get(txid)
+          return rawTx
+        }
+      } catch (err) { }
+
       requestConfig.data.id = "getrawtransaction"
       requestConfig.data.method = "getrawtransaction"
       requestConfig.data.params = [txid, 0]
 
       const response = await BitboxHTTP(requestConfig)
-      return response.data.result
+      const result = response.data.result
+
+      // Insert to slpTxDb
+      try {
+        if (slpTxDb.isOpen()) {
+          await slpTxDb.put(txid, result)
+        }
+      } catch (err) {
+        console.log("Error inserting to slpTxDb", err)
+      }
+
+      return result
     })
 
     const results = await axios.all(txPromises)
