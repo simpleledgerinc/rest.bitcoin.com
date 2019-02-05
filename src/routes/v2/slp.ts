@@ -7,6 +7,7 @@ import { IRequestConfig } from "./interfaces/IRequestConfig"
 const RateLimit = require("express-rate-limit")
 const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
+const strftime = require("strftime")
 
 const bitboxproxy = require("slpjs").bitbox
 const utils = require("slpjs").utils
@@ -26,6 +27,37 @@ const BITBOX = new BITBOXCli()
 
 const SLPsdk = require("slp-sdk/lib/SLP").default
 const SLP = new SLPsdk()
+
+// Retrieve raw transactions details from the full node.
+async function getRawTransactionsFromNode(txids: string[]) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const txPromises = txids.map(async txid => {
+      requestConfig.data.id = "getrawtransaction"
+      requestConfig.data.method = "getrawtransaction"
+      requestConfig.data.params = [txid, 0]
+
+      const response = await BitboxHTTP(requestConfig)
+      return response.data.result
+    })
+
+    const results = await axios.all(txPromises)
+    return results
+  } catch (err) {
+    throw err
+  }
+}
+
+const slpValidator = SLP.Utils.createValidator(
+  process.env.NETWORK,
+  getRawTransactionsFromNode
+)
 
 const requestConfig: IRequestConfig = {
   method: "post",
@@ -112,10 +144,6 @@ async function list(
       q: {
         find: { "out.h1": "534c5000", "out.s3": "GENESIS" },
         limit: 1000
-      },
-      r: {
-        f:
-          '[ .[] | { id: .tx.h, timestamp: (.blk.t | strftime("%Y-%m-%d %H:%M")), symbol: .out[0].s4, name: .out[0].s5, document: .out[0].s6 } ]'
       }
     }
 
@@ -126,13 +154,23 @@ async function list(
     // Get data from BitDB.
     const tokenRes = await axios.get(url)
 
-    // Parse data.
-    const tokens = tokenRes.data.c
-    if (tokenRes.data.u && tokenRes.data.u.length)
-      tokens.concat(tokenRes.data.u)
-    res.json(tokens.reverse())
+    let formattedTokens: Array<any> = []
 
-    return tokens
+    if (tokenRes.data.c.length) {
+      tokenRes.data.c.forEach((token: any) => {
+        formattedTokens.push({
+          id: token.tx.h,
+          timestamp: strftime("%Y-%m-%d %H:%M", new Date(token.blk.t * 1000)),
+          symbol: token.out[0].s4,
+          name: token.out[0].s5,
+          document: token.out[0].s6
+        })
+      })
+    }
+
+    res.json(formattedTokens)
+
+    return formattedTokens
   } catch (err) {
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {
@@ -447,37 +485,9 @@ async function validateBulk(
 }
 
 async function isValidSlpTxid(txid: string): Promise<boolean> {
-  let result
-  try {
-    result = await validateTx(txid, process.env.SLP_VALIDATE_URL)
-  } catch (err) {
-    result = await validateTx(txid, process.env.SLP_VALIDATE_FAILOVER_URL)
-  }
-
-  if (result === true) {
-    return true
-  } else {
-    return false
-  }
-}
-
-async function validateTx(txid: string, url: string): Promise<boolean> {
-  const result = await axios({
-    method: "post",
-    url: url,
-    data: {
-      jsonrpc: "2.0",
-      id: "slpvalidate",
-      method: "slpvalidate",
-      params: [txid, false, false]
-    }
-  })
-
-  if (result && result.data && result.data.result === "Valid") {
-    return true
-  } else {
-    return false
-  }
+  const isValid = await slpValidator.isValidSlpTxid(txid)
+  console.log(txid, isValid)
+  return isValid
 }
 
 module.exports = {
