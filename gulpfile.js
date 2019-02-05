@@ -85,8 +85,12 @@ gulp.task("build", () => {
         fileName: "./testnet/components.json",
         edit: (parsedJson, file) => {
           testnetComponents.forEach((item, index) => {
+            if (item.key === "RawTxids") {
+              parsedJson.components.schemas.RawTxids.properties.txids.example =
+                item.value
+            }
+
             Object.keys(parsedJson.components.schemas).forEach(key => {
-              // console.log(parsedJson.components.schemas[key].properties)
               if (
                 key === item.key &&
                 parsedJson.components.schemas[key].properties[

@@ -1204,7 +1204,7 @@
 				],
 				"summary": "Return the raw transaction data.",
 				"description": "return the raw transaction data. If verbose is 'true', returns an Object with information about 'txid'. If verbose is 'false' or omitted, returns a string that is serialized, hex-encoded data for 'txid'.",
-				"operationId": "getRawTransaction",
+				"operationId": "getRawTransactionSingle",
 				"parameters": [
 					{
 						"in": "path",
@@ -1237,6 +1237,35 @@
 								}
 							}
 						}
+					},
+					"400": {
+						"description": "Transaction not found"
+					}
+				}
+			}
+		},
+		"/rawtransactions/getRawTransaction": {
+			"post": {
+				"tags": [
+					"rawtransactions"
+				],
+				"summary": "Return raw transaction data for multiple transactions.",
+				"description": "Return the raw transaction data for multiple transactions. If verbose is 'true', returns an Object with information about 'txid'. If verbose is 'false' or omitted, returns a string that is serialized, hex-encoded data for 'txid'.",
+				"operationId": "getRawTransactionBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RawTxids"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful operation"
 					},
 					"400": {
 						"description": "Transaction not found"
