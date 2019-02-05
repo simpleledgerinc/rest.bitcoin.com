@@ -46,7 +46,8 @@ async function getRawTransactionsFromNode(txids: string[]) {
       // Check slpTxDb
       try {
         if (slpTxDb.isOpen()) {
-          return await slpTxDb.get(txid)
+          const rawTx = await slpTxDb.get(txid)
+          return rawTx
         }
       } catch (err) { }
 
