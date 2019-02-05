@@ -30,7 +30,9 @@ const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
 const SLPsdk = require("@spendbch/slp-sdk/lib/SLP").default // TODO: Change to slp-sdk
+//const SLPsdk = require("slp-sdk/lib/SLP").default
 const SLP = new SLPsdk()
+//console.log(`SLP.Util: ${util.inspect(SLP.Util)}`)
 
 // Retrieve raw transactions details from the full node.
 async function getRawTransactionsFromNode(txids: string[]) {
