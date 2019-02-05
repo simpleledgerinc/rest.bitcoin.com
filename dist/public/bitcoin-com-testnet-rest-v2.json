@@ -10,6 +10,9 @@
 			"Txid": {
 				"type": "string"
 			},
+			"RawTxid": {
+				"type": "string"
+			},
 			"Hex": {
 				"type": "string"
 			},
@@ -116,6 +119,25 @@
 							"3ea2767c91d087d14dda8faef736cd39d6c6ebbd5f7d2c7e8de0df3360436bfb",
 							"cce4e8eb4b3160b93ceecb0956cde405d85b42cbcb3fa1b4e9a9bedaf3476f05"
 						]
+					}
+				}
+			},
+			"RawTxids": {
+				"type": "object",
+				"properties": {
+					"txids": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/RawTxid"
+						},
+						"example": [
+							"3ea2767c91d087d14dda8faef736cd39d6c6ebbd5f7d2c7e8de0df3360436bfb",
+							"cce4e8eb4b3160b93ceecb0956cde405d85b42cbcb3fa1b4e9a9bedaf3476f05"
+						]
+					},
+					"verbose": {
+						"type": "boolean",
+						"example": true
 					}
 				}
 			},
@@ -1319,7 +1341,7 @@
 	"openapi": "3.0.0",
 	"info": {
 		"description": "trest.bitcoin.com is the REST layer for Bitcoin.com's Cloud. More info: [developer.bitcoin.com/rest](https://developer.bitcoin.com/rest). Chatroom [geni.us/CashDev](http://geni.us/CashDev)",
-		"version": "2.0.5",
+		"version": "2.0.7",
 		"title": "REST",
 		"license": {
 			"name": "MIT",
@@ -2531,7 +2553,7 @@
 				],
 				"summary": "Return the raw transaction data.",
 				"description": "return the raw transaction data. If verbose is 'true', returns an Object with information about 'txid'. If verbose is 'false' or omitted, returns a string that is serialized, hex-encoded data for 'txid'.",
-				"operationId": "getRawTransaction",
+				"operationId": "getRawTransactionSingle",
 				"parameters": [
 					{
 						"in": "path",
@@ -2564,6 +2586,35 @@
 								}
 							}
 						}
+					},
+					"400": {
+						"description": "Transaction not found"
+					}
+				}
+			}
+		},
+		"/rawtransactions/getRawTransaction": {
+			"post": {
+				"tags": [
+					"rawtransactions"
+				],
+				"summary": "Return raw transaction data for multiple transactions.",
+				"description": "Return the raw transaction data for multiple transactions. If verbose is 'true', returns an Object with information about 'txid'. If verbose is 'false' or omitted, returns a string that is serialized, hex-encoded data for 'txid'.",
+				"operationId": "getRawTransactionBulk",
+				"requestBody": {
+					"description": "Array of txids",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RawTxids"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "successful operation"
 					},
 					"400": {
 						"description": "Transaction not found"
