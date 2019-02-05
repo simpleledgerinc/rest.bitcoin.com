@@ -102,7 +102,7 @@ describe("#SLP", () => {
       )
       //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
-
+    /*
     it("should GET list", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
@@ -125,6 +125,7 @@ describe("#SLP", () => {
         "document"
       ])
     })
+  */
   })
 
   describe("listSingleToken()", () => {
