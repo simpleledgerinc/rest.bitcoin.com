@@ -24,6 +24,7 @@
     "node": ">=10.15.1"
   },
   "dependencies": {
+    "@spendbch/slp-sdk": "^1.1.3",
     "axios": "^0.18.0",
     "bchsocketd": "^0.0.3",
     "bitbox-sdk": "^3.0.7",

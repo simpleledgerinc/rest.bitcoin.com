@@ -29,7 +29,7 @@ const password = process.env.RPC_PASSWORD
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
-const SLPsdk = require("slp-sdk/lib/SLP").default
+const SLPsdk = require("@spendbch/slp-sdk/lib/SLP").default // TODO: Change to slp-sdk
 const SLP = new SLPsdk()
 
 // Retrieve raw transactions details from the full node.
@@ -43,10 +43,13 @@ async function getRawTransactionsFromNode(txids: string[]) {
     } = routeUtils.setEnvVars()
 
     const txPromises = txids.map(async txid => {
+      console.log("request", txid) // TODO: Remove
       // Check slpTxDb
       try {
         if (slpTxDb.isOpen()) {
-          return await slpTxDb.get(txid)
+          const rawTx = await slpTxDb.get(txid)
+          console.log("cached", txid) // TODO: Remove
+          return rawTx
         }
       } catch (err) { }
 
@@ -55,6 +58,7 @@ async function getRawTransactionsFromNode(txids: string[]) {
       requestConfig.data.params = [txid, 0]
 
       const response = await BitboxHTTP(requestConfig)
+      console.log("rpccall", txid) // TODO: Remove
       const result = response.data.result
 
       // Insert to slpTxDb
