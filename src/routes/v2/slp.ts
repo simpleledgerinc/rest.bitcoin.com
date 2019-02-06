@@ -9,9 +9,9 @@ const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
 const strftime = require("strftime")
 
-const bitboxproxy = require("bch-slpjs").bitbox
-const utils = require("bch-slpjs").utils
-const slpjs = require("bch-slpjs").slpjs
+const bitboxproxy = require("slpjs").bitbox
+const utils = require("slpjs").utils
+const slpjs = require("slpjs").slpjs
 
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
