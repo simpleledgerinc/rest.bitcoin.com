@@ -414,7 +414,7 @@ async function convertAddress(
       res.status(400)
       return res.json({ error: "address can not be empty" })
     }
-    const slpAddr = utils.toSlpAddress(req.params.address)
+    const slpAddr = SLP.Address.toSLPAddress(req.params.address)
     const obj: {
       [slpAddress: string]: any
       cashAddress: any
@@ -425,7 +425,7 @@ async function convertAddress(
       legacyAddress: ""
     }
     obj.slpAddress = slpAddr
-    obj.cashAddress = utils.toCashAddress(slpAddr)
+    obj.cashAddress = SLP.Address.toCashAddress(slpAddr)
     obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
     return res.json(obj)
   } catch (err) {

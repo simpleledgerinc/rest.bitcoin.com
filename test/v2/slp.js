@@ -349,7 +349,7 @@ describe("#SLP", () => {
       req.params.address = "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5"
 
       const result = await convertAddress(req, res)
-      // console.log(`result: ${util.inspect(result)}`)
+      console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["cashAddress", "legacyAddress", "slpAddress"])
     })
