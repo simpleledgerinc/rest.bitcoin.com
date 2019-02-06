@@ -166,7 +166,7 @@ router.get(
   balancesForAddressByTokenID
 )
 // router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
-router.post("/validate", config.slpRateLimit7, validateBulk)
+router.post("/validateTxid", config.slpRateLimit7, validateBulk)
 
 function root(
   req: express.Request,
