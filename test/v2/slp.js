@@ -165,14 +165,6 @@ describe("#SLP", () => {
       //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
-    /*
-      TODO: Target Testnet
-      TODO: Add code to catch testnet calls on mainnet, and vice versa.
-      Dev Note: CT 2/6/19 - The SLP Token ID used below is a mainnet TXID, even
-      though these unit tests are geared for testnet. At the moment, we do not
-      have a testnet BitDB to target.
-    */
-
     it("should get token information", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
@@ -229,29 +221,30 @@ describe("#SLP", () => {
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "Invalid")
     })
-    //
-    // it("should throw 503 when network issues", async () => {
-    //   // Save the existing BITDB_URL.
-    //   const savedUrl2 = process.env.BITDB_URL
-    //
-    //   // Manipulate the URL to cause a 500 network error.
-    //   process.env.BITDB_URL = "http://fakeurl/api/"
-    //
-    //   req.params.address = "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5"
-    //
-    //   const result = await balancesForAddress(req, res)
-    //   console.log(`result: ${util.inspect(result)}`)
-    //
-    //   // Restore the saved URL.
-    //   process.env.BITDB_URL = savedUrl2
-    //
-    //   assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-    //   assert.include(
-    //     result.error,
-    //     "Network error: Could not communicate with full node",
-    //     "Error message expected"
-    //   )
-    // })
+    /*
+    it("should throw 503 when network issues", async () => {
+      // Save the existing BITDB_URL.
+      const savedUrl2 = process.env.BITDB_URL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.BITDB_URL = "http://fakeurl/api/"
+
+      req.params.address = "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5"
+
+      const result = await balancesForAddress(req, res)
+      console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.BITDB_URL = savedUrl2
+
+      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate with full node",
+        "Error message expected"
+      )
+    })
+*/
   })
 
   describe("balancesForAddressByTokenID()", () => {

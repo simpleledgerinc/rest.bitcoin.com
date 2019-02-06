@@ -330,6 +330,7 @@ async function balancesForAddress(
 
     // Ensure the input is a valid BCH address.
     try {
+      console.log(`address: ${address}`)
       let cash = utils.toCashAddress(address)
     } catch (err) {
       res.status(400)
@@ -357,11 +358,15 @@ async function balancesForAddress(
     )
     return res.json(balances)
   } catch (err) {
+    console.log(`Error object: ${util.inspect(err)}`)
+
+    // Decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {
       res.status(status)
       return res.json({ error: msg })
     }
+
     res.status(500)
     return res.json({
       error: `Error in /balancesForAddress/:address: ${err.message}`
