@@ -2816,12 +2816,12 @@
         }
       }
     },
-    "/slp/validate": {
+    "/slp/validateTxid": {
       "post": {
         "tags": ["slp"],
         "summary": "Validate multiple txids",
         "description": "Validate multiple txids",
-        "operationId": "slpValidate",
+        "operationId": "validateTxidBulk",
         "requestBody": {
           "description": "",
           "required": true,
