@@ -50,7 +50,7 @@ async function getRawTransactionsFromNode(txids: string[]) {
           const rawTx = await slpTxDb.get(txid)
           return rawTx
         }
-      } catch (err) { }
+      } catch (err) {}
 
       requestConfig.data.id = "getrawtransaction"
       requestConfig.data.method = "getrawtransaction"
@@ -78,10 +78,7 @@ async function getRawTransactionsFromNode(txids: string[]) {
   }
 }
 
-function createValidator(
-  network: string,
-  getRawTransactions: any = null
-): any {
+function createValidator(network: string, getRawTransactions: any = null): any {
   let tmpBITBOX: any
 
   if (network === "mainnet") {
@@ -545,7 +542,11 @@ async function validateBulk(
     // Validate each txid
     const validatePromises = txids.map(async txid => {
       const isValid = await isValidSlpTxid(txid)
-      return isValid ? txid : false
+      let tmp: any = {
+        txid: txid,
+        valid: isValid ? true : false
+      }
+      return tmp
     })
 
     // Filter array to only valid txid results
