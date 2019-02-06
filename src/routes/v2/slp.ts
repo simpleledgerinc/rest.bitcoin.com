@@ -248,10 +248,12 @@ async function listSingleToken(
 ) {
   try {
     let tokenId = req.params.tokenId
+
     if (!tokenId || tokenId === "") {
       res.status(400)
       return res.json({ error: "tokenId can not be empty" })
     }
+
     const query = {
       v: 3,
       q: {
@@ -265,6 +267,8 @@ async function listSingleToken(
     const url = `${process.env.BITDB_URL}q/${b64}`
 
     const tokenRes = await axios.get(url)
+
+    console.log(`tokenRes.data: ${util.inspect(tokenRes.data)}`)
 
     let formattedTokens: Array<any> = []
 
