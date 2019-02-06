@@ -5,8 +5,8 @@ const router = express.Router()
 const axios = require("axios")
 const RateLimit = require("express-rate-limit")
 const bitdbToken = process.env.BITDB_TOKEN
-const bitboxproxy = require("slpjs").bitbox
-const utils = require("slpjs").utils
+const bitboxproxy = require("bch-slpjs").bitbox
+const utils = require("bch-slpjs").utils
 
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
