@@ -10,7 +10,8 @@ const logger = require("./logging.js")
 const strftime = require("strftime")
 
 const bitboxproxy = require("slpjs").bitbox
-const utils = require("slpjs").utils
+const utils = require("slpjs").slpjs.Utils
+
 const slpBalances = require("slp-balances")
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
@@ -24,9 +25,9 @@ const password = process.env.RPC_PASSWORD
 
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
-
-const SLPsdk = require("slp-sdk/lib/SLP").default
-const SLP = new SLPsdk()
+//
+// const SLPsdk = require("slp-sdk/lib/SLP").default
+// const SLP = new SLPsdk()
 
 const requestConfig: IRequestConfig = {
   method: "post",
@@ -91,7 +92,7 @@ router.get(
   config.slpRateLimit5,
   balancesForAddressByTokenID
 )
-router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
+// router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
 router.post("/validate", config.slpRateLimit7, validateBulk)
 
 function root(
@@ -251,7 +252,7 @@ async function balancesForAddress(
 
     // Ensure the input is a valid BCH address.
     try {
-      var legacyAddr = SLP.Utils.toLegacyAddress(address)
+      let cash = utils.toCashAddress(address)
     } catch (err) {
       res.status(400)
       return res.json({
@@ -260,7 +261,7 @@ async function balancesForAddress(
     }
 
     // Prevent a common user error. Ensure they are using the correct network address.
-    let cashAddr = SLP.Utils.toCashAddress(address)
+    let cashAddr = utils.toCashAddress(address)
     const networkIsValid = routeUtils.validateNetwork(cashAddr)
     if (!networkIsValid) {
       res.status(400)
@@ -311,7 +312,7 @@ async function balancesForAddressByTokenID(
 
     // Ensure the input is a valid BCH address.
     try {
-      var legacyAddr = SLP.Utils.toLegacyAddress(address)
+      let cash = utils.toCashAddress(address)
     } catch (err) {
       res.status(400)
       return res.json({
@@ -320,7 +321,7 @@ async function balancesForAddressByTokenID(
     }
 
     // Prevent a common user error. Ensure they are using the correct network address.
-    let cashAddr = SLP.Utils.toCashAddress(address)
+    let cashAddr = utils.toCashAddress(address)
     const networkIsValid = routeUtils.validateNetwork(cashAddr)
     if (!networkIsValid) {
       res.status(400)
@@ -403,43 +404,43 @@ async function balancesForAddressByTokenID(
   }
 }
 
-async function convertAddress(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
-  try {
-    let address = req.params.address
-    if (!address || address === "") {
-      res.status(400)
-      return res.json({ error: "address can not be empty" })
-    }
-    const slpAddr = SLP.Address.toSLPAddress(req.params.address)
-    const obj: {
-      [slpAddress: string]: any
-      cashAddress: any
-      legacyAddress: any
-    } = {
-      slpAddress: "",
-      cashAddress: "",
-      legacyAddress: ""
-    }
-    obj.slpAddress = slpAddr
-    obj.cashAddress = SLP.Address.toCashAddress(slpAddr)
-    obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
-    return res.json(obj)
-  } catch (err) {
-    const { msg, status } = routeUtils.decodeError(err)
-    if (msg) {
-      res.status(status)
-      return res.json({ error: msg })
-    }
-    res.status(500)
-    return res.json({
-      error: `Error in /address/convert/:address: ${err.message}`
-    })
-  }
-}
+// async function convertAddress(
+//   req: express.Request,
+//   res: express.Response,
+//   next: express.NextFunction
+// ) {
+//   try {
+//     let address = req.params.address
+//     if (!address || address === "") {
+//       res.status(400)
+//       return res.json({ error: "address can not be empty" })
+//     }
+//     const slpAddr = SLP.Address.toSLPAddress(req.params.address)
+//     const obj: {
+//       [slpAddress: string]: any
+//       cashAddress: any
+//       legacyAddress: any
+//     } = {
+//       slpAddress: "",
+//       cashAddress: "",
+//       legacyAddress: ""
+//     }
+//     obj.slpAddress = slpAddr
+//     obj.cashAddress = SLP.Address.toCashAddress(slpAddr)
+//     obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
+//     return res.json(obj)
+//   } catch (err) {
+//     const { msg, status } = routeUtils.decodeError(err)
+//     if (msg) {
+//       res.status(status)
+//       return res.json({ error: msg })
+//     }
+//     res.status(500)
+//     return res.json({
+//       error: `Error in /address/convert/:address: ${err.message}`
+//     })
+//   }
+// }
 
 async function validateBulk(
   req: express.Request,
@@ -532,7 +533,7 @@ module.exports = {
     listSingleToken,
     balancesForAddress,
     balancesForAddressByTokenID,
-    convertAddress,
+    // convertAddress,
     validateBulk
   }
 }
