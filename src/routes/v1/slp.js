@@ -5,9 +5,8 @@ const router = express.Router()
 const axios = require("axios")
 const RateLimit = require("express-rate-limit")
 const bitdbToken = process.env.BITDB_TOKEN
-const bitboxproxy = require("slpjs").bitbox
-const utils = require("slpjs").utils
-const slpBalances = require("slp-balances")
+const bitboxproxy = require("bch-slpjs").bitbox
+const utils = require("bch-slpjs").utils
 
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
@@ -203,10 +202,7 @@ router.get(
   config.slpRateLimit7,
   async (req, res, next) => {
     try {
-      const balances = await slpBalances.getBalances(
-        bitdbToken,
-        req.params.tokenId
-      )
+      const balances = "use v2"
       return res.json(balances)
     } catch (err) {
       res.status(500).send(err.response.data.error)

@@ -9,12 +9,17 @@ const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
 const strftime = require("strftime")
 
-const bitboxproxy = require("slpjs").bitbox
-const utils = require("slpjs").utils
-const slpBalances = require("slp-balances")
+const bitboxproxy = require("bch-slpjs").bitbox
+const utils = require("bch-slpjs").utils
+const slpjs = require("bch-slpjs").slpjs
+
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
 util.inspect.defaultOptions = { depth: 5 }
+
+// SLP tx db
+const level = require("level")
+const slpTxDb = level("./slp-tx-db")
 
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
@@ -25,8 +30,77 @@ const password = process.env.RPC_PASSWORD
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
-const SLPsdk = require("slp-sdk/lib/SLP").default
-const SLP = new SLPsdk()
+// const SLPsdk = require("slp-sdk/lib/SLP").default
+// const SLP = new SLPsdk()
+
+// Retrieve raw transactions details from the full node.
+async function getRawTransactionsFromNode(txids: string[]) {
+  try {
+    const {
+      BitboxHTTP,
+      username,
+      password,
+      requestConfig
+    } = routeUtils.setEnvVars()
+
+    const txPromises = txids.map(async txid => {
+      // Check slpTxDb
+      try {
+        if (slpTxDb.isOpen()) {
+          const rawTx = await slpTxDb.get(txid)
+          return rawTx
+        }
+      } catch (err) {}
+
+      requestConfig.data.id = "getrawtransaction"
+      requestConfig.data.method = "getrawtransaction"
+      requestConfig.data.params = [txid, 0]
+
+      const response = await BitboxHTTP(requestConfig)
+      const result = response.data.result
+
+      // Insert to slpTxDb
+      try {
+        if (slpTxDb.isOpen()) {
+          await slpTxDb.put(txid, result)
+        }
+      } catch (err) {
+        console.log("Error inserting to slpTxDb", err)
+      }
+
+      return result
+    })
+
+    const results = await axios.all(txPromises)
+    return results
+  } catch (err) {
+    throw err
+  }
+}
+
+function createValidator(network: string, getRawTransactions: any = null): any {
+  let tmpBITBOX: any
+
+  if (network === "mainnet") {
+    tmpBITBOX = new BITBOXCli({ restURL: "https://rest.bitcoin.com/v2/" })
+  } else {
+    tmpBITBOX = new BITBOXCli({ restURL: "https://trest.bitcoin.com/v2/" })
+  }
+
+  const slpValidator: any = new slpjs.LocalValidator(
+    tmpBITBOX,
+    getRawTransactions
+      ? getRawTransactions
+      : tmpBITBOX.RawTransactions.getRawTransaction.bind(this)
+  )
+
+  return slpValidator
+}
+
+const slpValidator = createValidator(
+  process.env.NETWORK,
+  getRawTransactionsFromNode
+)
 
 const requestConfig: IRequestConfig = {
   method: "post",
@@ -91,7 +165,7 @@ router.get(
   config.slpRateLimit5,
   balancesForAddressByTokenID
 )
-router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
+// router.get("/address/convert/:address", config.slpRateLimit6, convertAddress)
 router.post("/validate", config.slpRateLimit7, validateBulk)
 
 function root(
@@ -251,7 +325,7 @@ async function balancesForAddress(
 
     // Ensure the input is a valid BCH address.
     try {
-      var legacyAddr = SLP.Utils.toLegacyAddress(address)
+      let cash = utils.toCashAddress(address)
     } catch (err) {
       res.status(400)
       return res.json({
@@ -260,7 +334,7 @@ async function balancesForAddress(
     }
 
     // Prevent a common user error. Ensure they are using the correct network address.
-    let cashAddr = SLP.Utils.toCashAddress(address)
+    let cashAddr = utils.toCashAddress(address)
     const networkIsValid = routeUtils.validateNetwork(cashAddr)
     if (!networkIsValid) {
       res.status(400)
@@ -311,7 +385,7 @@ async function balancesForAddressByTokenID(
 
     // Ensure the input is a valid BCH address.
     try {
-      var legacyAddr = SLP.Utils.toLegacyAddress(address)
+      let cash = utils.toCashAddress(address)
     } catch (err) {
       res.status(400)
       return res.json({
@@ -320,7 +394,7 @@ async function balancesForAddressByTokenID(
     }
 
     // Prevent a common user error. Ensure they are using the correct network address.
-    let cashAddr = SLP.Utils.toCashAddress(address)
+    let cashAddr = utils.toCashAddress(address)
     const networkIsValid = routeUtils.validateNetwork(cashAddr)
     if (!networkIsValid) {
       res.status(400)
@@ -403,43 +477,43 @@ async function balancesForAddressByTokenID(
   }
 }
 
-async function convertAddress(
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) {
-  try {
-    let address = req.params.address
-    if (!address || address === "") {
-      res.status(400)
-      return res.json({ error: "address can not be empty" })
-    }
-    const slpAddr = utils.toSlpAddress(req.params.address)
-    const obj: {
-      [slpAddress: string]: any
-      cashAddress: any
-      legacyAddress: any
-    } = {
-      slpAddress: "",
-      cashAddress: "",
-      legacyAddress: ""
-    }
-    obj.slpAddress = slpAddr
-    obj.cashAddress = utils.toCashAddress(slpAddr)
-    obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
-    return res.json(obj)
-  } catch (err) {
-    const { msg, status } = routeUtils.decodeError(err)
-    if (msg) {
-      res.status(status)
-      return res.json({ error: msg })
-    }
-    res.status(500)
-    return res.json({
-      error: `Error in /address/convert/:address: ${err.message}`
-    })
-  }
-}
+// async function convertAddress(
+//   req: express.Request,
+//   res: express.Response,
+//   next: express.NextFunction
+// ) {
+//   try {
+//     let address = req.params.address
+//     if (!address || address === "") {
+//       res.status(400)
+//       return res.json({ error: "address can not be empty" })
+//     }
+//     const slpAddr = SLP.Address.toSLPAddress(req.params.address)
+//     const obj: {
+//       [slpAddress: string]: any
+//       cashAddress: any
+//       legacyAddress: any
+//     } = {
+//       slpAddress: "",
+//       cashAddress: "",
+//       legacyAddress: ""
+//     }
+//     obj.slpAddress = slpAddr
+//     obj.cashAddress = SLP.Address.toCashAddress(slpAddr)
+//     obj.legacyAddress = BITBOX.Address.toLegacyAddress(obj.cashAddress)
+//     return res.json(obj)
+//   } catch (err) {
+//     const { msg, status } = routeUtils.decodeError(err)
+//     if (msg) {
+//       res.status(status)
+//       return res.json({ error: msg })
+//     }
+//     res.status(500)
+//     return res.json({
+//       error: `Error in /address/convert/:address: ${err.message}`
+//     })
+//   }
+// }
 
 async function validateBulk(
   req: express.Request,
@@ -468,7 +542,11 @@ async function validateBulk(
     // Validate each txid
     const validatePromises = txids.map(async txid => {
       const isValid = await isValidSlpTxid(txid)
-      return isValid ? txid : false
+      let tmp: any = {
+        txid: txid,
+        valid: isValid ? true : false
+      }
+      return tmp
     })
 
     // Filter array to only valid txid results
@@ -491,37 +569,8 @@ async function validateBulk(
 }
 
 async function isValidSlpTxid(txid: string): Promise<boolean> {
-  let result
-  try {
-    result = await validateTx(txid, process.env.SLP_VALIDATE_URL)
-  } catch (err) {
-    result = await validateTx(txid, process.env.SLP_VALIDATE_FAILOVER_URL)
-  }
-
-  if (result === true) {
-    return true
-  } else {
-    return false
-  }
-}
-
-async function validateTx(txid: string, url: string): Promise<boolean> {
-  const result = await axios({
-    method: "post",
-    url: url,
-    data: {
-      jsonrpc: "2.0",
-      id: "slpvalidate",
-      method: "slpvalidate",
-      params: [txid, false, false]
-    }
-  })
-
-  if (result && result.data && result.data.result === "Valid") {
-    return true
-  } else {
-    return false
-  }
+  const isValid = await slpValidator.isValidSlpTxid(txid)
+  return isValid
 }
 
 module.exports = {
@@ -532,7 +581,7 @@ module.exports = {
     listSingleToken,
     balancesForAddress,
     balancesForAddressByTokenID,
-    convertAddress,
+    // convertAddress,
     validateBulk
   }
 }

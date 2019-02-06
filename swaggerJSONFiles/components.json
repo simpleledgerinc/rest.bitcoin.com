@@ -10,6 +10,9 @@
       "Txid": {
         "type": "string"
       },
+      "SLPTxid": {
+        "type": "string"
+      },
       "RawTxid": {
         "type": "string"
       },
@@ -105,6 +108,18 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Txid"
+            },
+            "example": []
+          }
+        }
+      },
+      "SLPTxids": {
+        "type": "object",
+        "properties": {
+          "txids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SLPTxid"
             },
             "example": []
           }
