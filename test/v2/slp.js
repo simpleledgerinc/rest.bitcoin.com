@@ -172,23 +172,21 @@ describe("#SLP", () => {
       though these unit tests are geared for testnet. At the moment, we do not
       have a testnet BitDB to target.
     */
-    /*
+
     it("should get token information", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {
         nock(mockServerUrl)
           .get(uri => uri.includes("/"))
-          .reply(200, mockData.mockList)
+          .reply(200, mockData.mockSingleToken)
       }
 
       req.params.tokenId =
         // testnet
-        //"650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
-        // mainnet
-        "259908ae44f46ef585edef4bcc1e50dc06e4c391ac4be929fae27235b8158cf1"
+        "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
 
       const result = await listSingleToken(req, res)
-      console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, [
         "id",
@@ -198,7 +196,6 @@ describe("#SLP", () => {
         "document"
       ])
     })
-    */
   })
 
   describe("balancesForAddress()", () => {

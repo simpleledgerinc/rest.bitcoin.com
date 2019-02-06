@@ -269,6 +269,7 @@ async function listSingleToken(
     const tokenRes = await axios.get(url)
 
     //console.log(`tokenRes.data: ${util.inspect(tokenRes.data)}`)
+    //console.log(`tokenRes.data: ${JSON.stringify(tokenRes.data,null,2)}`)
 
     let formattedTokens: Array<any> = []
 
