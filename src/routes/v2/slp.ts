@@ -11,8 +11,6 @@ const strftime = require("strftime")
 
 const bitboxproxy = require("slpjs").bitbox
 const utils = require("slpjs").slpjs.Utils
-
-const slpBalances = require("slp-balances")
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
 util.inspect.defaultOptions = { depth: 5 }
