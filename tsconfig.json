@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "outDir": "./dist/",
-    "noImplicitAny": true,
     "baseUrl": ".",
     "module": "commonjs",
+    "downlevelIteration": true,
     "target": "es5",
     "allowJs": true,
-    "lib": ["es2015", "es2015.symbol", "dom"],
+    "lib": ["es2015", "es2015.symbol", "dom", "es2017"],
     "typeRoots": ["node_modules/@types/"]
   },
   "include": ["src/**/*"],
