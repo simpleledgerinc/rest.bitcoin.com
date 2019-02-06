@@ -4,6 +4,9 @@
   This test file uses the environment variable TEST to switch between unit
   and integration tests. By default, TEST is set to 'unit'. Set this variable
   to 'integration' to run the tests against BCH mainnet.
+
+  TODO:
+  -See listSingleToken() tests.
 */
 
 "use strict"
@@ -103,28 +106,28 @@ describe("#SLP", () => {
       //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
-    // it("should GET list", async () => {
-    //   // Mock the RPC call for unit tests.
-    //   // if (process.env.TEST === "unit") {
-    //   //   const b64 = `eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
-    //   //
-    //   //   nock(mockServerUrl)
-    //   //     .get(uri => uri.includes("/"))
-    //   //     .reply(200, mockData.mockList)
-    //   // }
-    //
-    //   const result = await list(req, res)
-    //   // console.log(`test result: ${util.inspect(result)}`)
-    //
-    //   assert.isArray(result)
-    //   assert.hasAnyKeys(result[0], [
-    //     "id",
-    //     "timestamp",
-    //     "symbol",
-    //     "name",
-    //     "document"
-    //   ])
-    // })
+    it("should GET list", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        const b64 = `eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
+
+        nock(process.env.BITDB_URL)
+          .get(uri => uri.includes("/"))
+          .reply(200, mockData.mockList)
+      }
+
+      const result = await list(req, res)
+      //console.log(`test result: ${util.inspect(result)}`)
+
+      assert.isArray(result)
+      assert.hasAnyKeys(result[0], [
+        "id",
+        "timestamp",
+        "symbol",
+        "name",
+        "document"
+      ])
+    })
   })
 
   describe("listSingleToken()", () => {
@@ -149,7 +152,7 @@ describe("#SLP", () => {
         "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
 
       const result = await listSingleToken(req, res)
-      //console.log(`result: ${util.inspect(result)}`)
+      // console.log(`result: ${util.inspect(result)}`)
 
       // Restore the saved URL.
       process.env.BITDB_URL = savedUrl2
@@ -162,39 +165,37 @@ describe("#SLP", () => {
       //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
-    //     it("should get token information", async () => {
-    //       // Mock the RPC call for unit tests.
-    //       // if (process.env.TEST === "unit") {
-    //       //   const b64 = `eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
-    //       //
-    //       //   nock(mockServerUrl)
-    //       //     .get(uri => uri.includes("/"))
-    //       //     .reply(200, mockData.mockList)
-    //       // }
-    //       /*
-    //       // Mock the RPC call for unit tests.
-    //       if (process.env.TEST === "unit") {
-    //         nock(`${process.env.BITDB_URL}`)
-    //           .get(
-    //             `q/eyJ2IjozLCJxIjp7ImZpbmQiOnsib3V0LmgxIjoiNTM0YzUwMDAiLCJvdXQuczMiOiJHRU5FU0lTIn0sImxpbWl0IjoxMDAwfSwiciI6eyJmIjoiWyAuW10gfCB7IGlkOiAudHguaCwgdGltZXN0YW1wOiAoLmJsay50IHwgc3RyZnRpbWUoXCIlWS0lbS0lZCAlSDolTVwiKSksIHN5bWJvbDogLm91dFswXS5zNCwgbmFtZTogLm91dFswXS5zNSwgZG9jdW1lbnQ6IC5vdXRbMF0uczYgfSBdIn19`
-    //           )
-    //           .reply(200, { result: mockData.mockList[0] })
-    //       }
-    // */
-    //       req.params.tokenId =
-    //         "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
-    //
-    //       const result = await listSingleToken(req, res)
-    //       // console.log(`result: ${util.inspect(result)}`)
-    //
-    //       assert.hasAllKeys(result, [
-    //         "id",
-    //         "timestamp",
-    //         "symbol",
-    //         "name",
-    //         "document"
-    //       ])
-    //     })
+    /*
+      TODO: Target Testnet
+      TODO: Add code to catch testnet calls on mainnet, and vice versa.
+      Dev Note: CT 2/6/19 - The SLP Token ID used below is a mainnet TXID, even
+      though these unit tests are geared for testnet. At the moment, we do not
+      have a testnet BitDB to target.
+    */
+
+    it("should get token information", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(mockServerUrl)
+          .get(uri => uri.includes("/"))
+          .reply(200, mockData.mockSingleToken)
+      }
+
+      req.params.tokenId =
+        // testnet
+        "650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
+
+      const result = await listSingleToken(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, [
+        "id",
+        "timestamp",
+        "symbol",
+        "name",
+        "document"
+      ])
+    })
   })
 
   describe("balancesForAddress()", () => {
