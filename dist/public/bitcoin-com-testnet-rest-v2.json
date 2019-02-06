@@ -1359,7 +1359,7 @@
 	"openapi": "3.0.0",
 	"info": {
 		"description": "trest.bitcoin.com is the REST layer for Bitcoin.com's Cloud. More info: [developer.bitcoin.com/rest](https://developer.bitcoin.com/rest). Chatroom [geni.us/CashDev](http://geni.us/CashDev)",
-		"version": "2.1.3",
+		"version": "2.1.5",
 		"title": "REST",
 		"license": {
 			"name": "MIT",
@@ -4324,7 +4324,7 @@
 				],
 				"summary": "list",
 				"description": "List all SLP tokens",
-				"operationId": "slpList",
+				"operationId": "listAll",
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -4339,7 +4339,7 @@
 				],
 				"summary": "list token",
 				"description": "List single SLP token by id",
-				"operationId": "slpListToken",
+				"operationId": "listSingle",
 				"parameters": [
 					{
 						"name": "tokenId",

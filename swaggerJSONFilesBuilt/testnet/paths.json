@@ -2957,7 +2957,7 @@
 				],
 				"summary": "list",
 				"description": "List all SLP tokens",
-				"operationId": "slpList",
+				"operationId": "listAll",
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2972,7 +2972,7 @@
 				],
 				"summary": "list token",
 				"description": "List single SLP token by id",
-				"operationId": "slpListToken",
+				"operationId": "listSingle",
 				"parameters": [
 					{
 						"name": "tokenId",
