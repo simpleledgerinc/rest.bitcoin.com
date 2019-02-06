@@ -10,6 +10,9 @@
 			"Txid": {
 				"type": "string"
 			},
+			"SLPTxid": {
+				"type": "string"
+			},
 			"RawTxid": {
 				"type": "string"
 			},
@@ -122,6 +125,21 @@
 					}
 				}
 			},
+			"SLPTxids": {
+				"type": "object",
+				"properties": {
+					"txids": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/SLPTxid"
+						},
+						"example": [
+							"88b121101d71b73599dfc7d79eead599031912b2c48298bf5c1f37f4dd743ffa",
+							"fb0eeaa501a6e1acb721669c62a3f70741f48ae0fd7f4b8e1d72088785c51952"
+						]
+					}
+				}
+			},
 			"RawTxids": {
 				"type": "object",
 				"properties": {
@@ -130,7 +148,10 @@
 						"items": {
 							"$ref": "#/components/schemas/RawTxid"
 						},
-						"example": []
+						"example": [
+							"a5f972572ee1753e2fd2457dd61ce5f40fa2f8a30173d417e49feef7542c96a1",
+							"5165dc531aad05d1149bb0f0d9b7bda99c73e2f05e314bcfb5b4bb9ca5e1af5e"
+						]
 					},
 					"verbose": {
 						"type": "boolean",

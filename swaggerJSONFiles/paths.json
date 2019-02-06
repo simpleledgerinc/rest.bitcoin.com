@@ -2828,7 +2828,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Txids"
+                "$ref": "#/components/schemas/SLPTxids"
               }
             }
           }

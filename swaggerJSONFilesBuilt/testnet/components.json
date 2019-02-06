@@ -10,6 +10,9 @@
 			"Txid": {
 				"type": "string"
 			},
+			"SLPTxid": {
+				"type": "string"
+			},
 			"RawTxid": {
 				"type": "string"
 			},
@@ -114,6 +117,21 @@
 						"type": "array",
 						"items": {
 							"$ref": "#/components/schemas/Txid"
+						},
+						"example": [
+							"3ea2767c91d087d14dda8faef736cd39d6c6ebbd5f7d2c7e8de0df3360436bfb",
+							"cce4e8eb4b3160b93ceecb0956cde405d85b42cbcb3fa1b4e9a9bedaf3476f05"
+						]
+					}
+				}
+			},
+			"SLPTxids": {
+				"type": "object",
+				"properties": {
+					"txids": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/SLPTxid"
 						},
 						"example": [
 							"3ea2767c91d087d14dda8faef736cd39d6c6ebbd5f7d2c7e8de0df3360436bfb",
