@@ -222,7 +222,7 @@ describe("#SLP", () => {
 
     it("should throw 400 if address is empty", async () => {
       const result = await balancesForAddress(req, res)
-      // console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "address can not be empty")
@@ -243,7 +243,7 @@ describe("#SLP", () => {
         "simpleledger:qr5agtachyxvrwxu76vzszan5pnvuzy8duhv4lxrsk"
 
       const result = await balancesForAddress(req, res)
-      // console.log(`result: ${util.inspect(result)}`)
+      console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "Invalid")

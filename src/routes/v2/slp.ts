@@ -17,17 +17,10 @@ util.inspect.defaultOptions = { depth: 5 }
 const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
 const BITBOX = new BITBOXCli()
 
-//const slpjs = require("slpjs").slpjs
-//const utils = new slpjs.Utils()
+// Instantiate SLPJS.
 const slp = require("slpjs")
 const slpjs = new slp.Slp(BITBOX)
 const utils = slp.Utils
-
-
-
-//console.log(`slpjs: ${util.inspect(slpjs)}`)
-console.log(`utils: ${util.inspect(utils)}`)
-
 
 // SLP tx db (LevelDB for caching)
 const level = require("level")
@@ -388,11 +381,8 @@ async function balancesForAddress(
 
     // Ensure the input is a valid BCH address.
     try {
-      console.log(`address: ${address}`)
       let cash = utils.toCashAddress(address)
-      console.log(`cashAddr: ${cash}`)
     } catch (err) {
-      console.log(`err: ${util.inspect(err)}`)
       res.status(400)
       return res.json({
         error: `Invalid BCH address. Double check your address is valid: ${address}`
@@ -400,9 +390,7 @@ async function balancesForAddress(
     }
 
     // Prevent a common user error. Ensure they are using the correct network address.
-    console.log(`Address in: ${address}`)
     let cashAddr = utils.toCashAddress(address)
-    console.log(`cashAddr: ${cashAddr}`)
     const networkIsValid = routeUtils.validateNetwork(cashAddr)
     if (!networkIsValid) {
       res.status(400)
@@ -420,7 +408,7 @@ async function balancesForAddress(
     )
     return res.json(balances)
   } catch (err) {
-    console.log(`Error object: ${util.inspect(err)}`)
+    //console.log(`Error object: ${util.inspect(err)}`)
 
     // Decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
