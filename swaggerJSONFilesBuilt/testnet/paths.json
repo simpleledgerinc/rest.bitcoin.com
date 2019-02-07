@@ -334,6 +334,46 @@
 				}
 			}
 		},
+		"/address/fromXPub/{xpub}": {
+			"get": {
+				"tags": [
+					"address"
+				],
+				"summary": "Address from extended public key and hdpath",
+				"description": "Returns an address for an extended public key and hdpath",
+				"operationId": "fromXPubSingle",
+				"parameters": [
+					{
+						"name": "xpub",
+						"in": "path",
+						"description": "the extended public key",
+						"required": true,
+						"example": "tpubDHTK2jqg73w3GwoiHfAMbMYML1HN8FhrUxD9rFgbSgHXdwwrY6pAFqKDfUHhqw7vreaZty5hPGjb1S7ZPQeMmu6TFHAKfY9tJpYbvaGjPRM",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "hdPath",
+						"in": "query",
+						"description": "The HDPath. Defaults to the first BIP44 external change address",
+						"required": false,
+						"example": "",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "successful operation"
+					},
+					"400": {
+						"description": "Invalid value/s - Null"
+					}
+				}
+			}
+		},
 		"/block/detailsByHash/{hash}": {
 			"get": {
 				"tags": [
@@ -2957,7 +2997,7 @@
 				],
 				"summary": "list",
 				"description": "List all SLP tokens",
-				"operationId": "slpList",
+				"operationId": "listAll",
 				"responses": {
 					"200": {
 						"description": "successful response"
@@ -2972,7 +3012,7 @@
 				],
 				"summary": "list token",
 				"description": "List single SLP token by id",
-				"operationId": "slpListToken",
+				"operationId": "listSingle",
 				"parameters": [
 					{
 						"name": "tokenId",

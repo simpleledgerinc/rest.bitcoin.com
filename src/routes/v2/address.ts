@@ -35,6 +35,7 @@ interface IRLConfig {
   addressRateLimit7: any
   addressRateLimit8: any
   addressRateLimit9: any
+  addressRateLimit10: any
 }
 
 const config: IRLConfig = {
@@ -46,11 +47,12 @@ const config: IRLConfig = {
   addressRateLimit6: undefined,
   addressRateLimit7: undefined,
   addressRateLimit8: undefined,
-  addressRateLimit9: undefined
+  addressRateLimit9: undefined,
+  addressRateLimit10: undefined
 }
 
 let i = 1
-while (i < 10) {
+while (i < 11) {
   config[`addressRateLimit${i}`] = new RateLimit({
     windowMs: 60000, // 1 hour window
     delayMs: 0, // disable delaying - full speed until the max limit is reached
@@ -82,6 +84,7 @@ router.get(
   transactionsSingle
 )
 router.post("/transactions", config.addressRateLimit9, transactionsBulk)
+router.get("/fromXPub/:xpub", config.addressRateLimit10, fromXPubSingle)
 
 // Root API endpoint. Simply acknowledges that it exists.
 function root(
@@ -805,6 +808,53 @@ async function transactionsSingle(
   }
 }
 
+async function fromXPubSingle(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  try {
+    const xpub = req.params.xpub
+    const hdPath = req.query.hdPath ? req.query.hdPath : "0"
+
+    if (!xpub || xpub === "") {
+      res.status(400)
+      return res.json({ error: "xpub can not be empty" })
+    }
+
+    // Reject if xpub is an array.
+    if (Array.isArray(xpub)) {
+      res.status(400)
+      return res.json({
+        error: "xpub can not be an array. Use POST for bulk upload."
+      })
+    }
+
+    logger.debug(`Executing address/fromXPub with this xpub: `, xpub)
+
+    let cashAddr = BITBOX.Address.fromXPub(xpub, hdPath)
+    let legacyAddr = BITBOX.Address.toLegacyAddress(cashAddr)
+    res.status(200)
+    return res.json({
+      cashAddress: cashAddr,
+      legacyAddress: legacyAddr
+    })
+  } catch (err) {
+    // Attempt to decode the error message.
+    const { msg, status } = routeUtils.decodeError(err)
+    if (msg) {
+      res.status(status)
+      return res.json({ error: msg })
+    }
+
+    // Write out error to error log.
+    //logger.error(`Error in rawtransactions/decodeRawTransaction: `, err)
+
+    res.status(500)
+    return res.json({ error: util.inspect(err) })
+  }
+}
+
 module.exports = {
   router,
   testableComponents: {
@@ -816,6 +866,7 @@ module.exports = {
     unconfirmedBulk,
     unconfirmedSingle,
     transactionsBulk,
-    transactionsSingle
+    transactionsSingle,
+    fromXPubSingle
   }
 }

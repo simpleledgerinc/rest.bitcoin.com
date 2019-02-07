@@ -125,7 +125,10 @@ describe("#SLP", () => {
         "timestamp",
         "symbol",
         "name",
-        "document"
+        "documentUri",
+        "documentHash",
+        "decimals",
+        "initialTokenQty"
       ])
     })
   })
@@ -185,7 +188,10 @@ describe("#SLP", () => {
         "timestamp",
         "symbol",
         "name",
-        "document"
+        "documentUri",
+        "documentHash",
+        "decimals",
+        "initialTokenQty"
       ])
     })
   })
