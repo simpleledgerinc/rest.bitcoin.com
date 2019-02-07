@@ -168,6 +168,27 @@ describe("#SLP", () => {
       //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
+    it("should return 'not found' for mainnet txid on testnet", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(mockServerUrl)
+          .get(uri => uri.includes("/"))
+          .reply(200, mockData.mockSingleToken)
+      }
+
+      req.params.tokenId =
+        // testnet
+        //"650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
+        // mainnet
+        "259908ae44f46ef585edef4bcc1e50dc06e4c391ac4be929fae27235b8158cf1"
+
+      const result = await listSingleToken(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["id"])
+      assert.include(result.id, "not found")
+    })
+
     it("should get token information", async () => {
       // Mock the RPC call for unit tests.
       if (process.env.TEST === "unit") {

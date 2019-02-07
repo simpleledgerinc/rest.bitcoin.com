@@ -331,10 +331,20 @@ async function listSingleToken(
       })
     }
 
+    //console.log(`formattedTokens: ${JSON.stringify(formattedTokens,null,2)}`)
+
     let t
     formattedTokens.forEach((token: any) => {
       if (token.id === req.params.tokenId) t = token
     })
+
+    // If token could not be found.
+    if(t === undefined) {
+      t = {
+        id: 'not found'
+      }
+    }
+
     return res.json(t)
   } catch (err) {
     const { msg, status } = routeUtils.decodeError(err)
