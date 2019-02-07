@@ -19,7 +19,7 @@ const BITBOX = new BITBOXCli()
 
 //const slpjs = require("slpjs").slpjs
 //const utils = new slpjs.Utils()
-const slp = require("slpjs").slpjs
+const slp = require("slpjs")
 const slpjs = new slp.Slp(BITBOX)
 const utils = slp.Utils
 
