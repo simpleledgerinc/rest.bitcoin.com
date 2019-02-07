@@ -243,13 +243,15 @@ describe("#SLP", () => {
         "simpleledger:qr5agtachyxvrwxu76vzszan5pnvuzy8duhv4lxrsk"
 
       const result = await balancesForAddress(req, res)
-      console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "Invalid")
     })
+
+    // I don't think balancesForAddress() works yet, as it comes from slp-sdk?
     /*
-    it("should throw 503 when network issues", async () => {
+    it("should throw 5XX error when network issues", async () => {
       // Save the existing BITDB_URL.
       const savedUrl2 = process.env.BITDB_URL
 
@@ -264,10 +266,10 @@ describe("#SLP", () => {
       // Restore the saved URL.
       process.env.BITDB_URL = savedUrl2
 
-      assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
       assert.include(
         result.error,
-        "Network error: Could not communicate with full node",
+        "Network error: Could not communicate",
         "Error message expected"
       )
     })
