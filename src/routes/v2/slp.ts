@@ -201,6 +201,11 @@ async function list(
 
     if (tokenRes.data.u.length) {
       tokenRes.data.u.forEach((token: any) => {
+        let div = "1"
+        for (let i = 0; i < parseInt(token.out[0].h8); i++) {
+          div += "0"
+        }
+
         formattedTokens.push({
           id: token.tx.h,
           timestamp: token.blk
@@ -208,13 +213,21 @@ async function list(
             : "unconfirmed",
           symbol: token.out[0].s4,
           name: token.out[0].s5,
-          document: token.out[0].s6
+          documentUri: token.out[0].s6,
+          documentHash: token.out[0].h7,
+          decimals: parseInt(token.out[0].h8),
+          initialTokenQty: parseInt(token.out[0].h10, 16) / parseInt(div)
         })
       })
     }
 
     if (tokenRes.data.c.length) {
       tokenRes.data.c.forEach((token: any) => {
+        let div = "1"
+        for (let i = 0; i < parseInt(token.out[0].h8); i++) {
+          div += "0"
+        }
+
         formattedTokens.push({
           id: token.tx.h,
           timestamp: token.blk
@@ -222,7 +235,10 @@ async function list(
             : "unconfirmed",
           symbol: token.out[0].s4,
           name: token.out[0].s5,
-          document: token.out[0].s6
+          documentUri: token.out[0].s6,
+          documentHash: token.out[0].h7,
+          decimals: parseInt(token.out[0].h8),
+          initialTokenQty: parseInt(token.out[0].h10, 16) / parseInt(div)
         })
       })
     }
@@ -275,6 +291,11 @@ async function listSingleToken(
 
     if (tokenRes.data.u.length) {
       tokenRes.data.u.forEach((token: any) => {
+        let div = "1"
+        for (let i = 0; i < parseInt(token.out[0].h8); i++) {
+          div += "0"
+        }
+
         formattedTokens.push({
           id: token.tx.h,
           timestamp: token.blk
@@ -282,19 +303,30 @@ async function listSingleToken(
             : "unconfirmed",
           symbol: token.out[0].s4,
           name: token.out[0].s5,
-          document: token.out[0].s6
+          documentUri: token.out[0].s6,
+          documentHash: token.out[0].h7,
+          decimals: parseInt(token.out[0].h8),
+          initialTokenQty: parseInt(token.out[0].h10, 16) / parseInt(div)
         })
       })
     }
 
     if (tokenRes.data.c.length) {
       tokenRes.data.c.forEach((token: any) => {
+        let div = "1"
+        for (let i = 0; i < parseInt(token.out[0].h8); i++) {
+          div += "0"
+        }
+
         formattedTokens.push({
           id: token.tx.h,
           timestamp: strftime("%Y-%m-%d %H:%M", new Date(token.blk.t * 1000)),
           symbol: token.out[0].s4,
           name: token.out[0].s5,
-          document: token.out[0].s6
+          documentUri: token.out[0].s6,
+          documentHash: token.out[0].h7,
+          decimals: parseInt(token.out[0].h8),
+          initialTokenQty: parseInt(token.out[0].h10, 16) / parseInt(div)
         })
       })
     }
