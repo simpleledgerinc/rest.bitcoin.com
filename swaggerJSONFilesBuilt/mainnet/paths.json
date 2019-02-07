@@ -334,6 +334,46 @@
 				}
 			}
 		},
+		"/address/fromXPub/{xpub}": {
+			"get": {
+				"tags": [
+					"address"
+				],
+				"summary": "Address from extended public key and hdpath",
+				"description": "Returns an address for an extended public key and hdpath",
+				"operationId": "fromXPubSingle",
+				"parameters": [
+					{
+						"name": "xpub",
+						"in": "path",
+						"description": "the extended public key",
+						"required": true,
+						"example": "",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "hdPath",
+						"in": "query",
+						"description": "The HDPath. Defaults to the first BIP44 external change address",
+						"required": false,
+						"example": "",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "successful operation"
+					},
+					"400": {
+						"description": "Invalid value/s - Null"
+					}
+				}
+			}
+		},
 		"/block/detailsByHash/{hash}": {
 			"get": {
 				"tags": [
