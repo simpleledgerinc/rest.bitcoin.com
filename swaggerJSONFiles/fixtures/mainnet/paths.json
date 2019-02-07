@@ -20,6 +20,11 @@
     "value": "bitcoincash:qzs02v05l7qs5s24srqju498qu55dwuj0cx5ehjm2c"
   },
   {
+    "key": "/address/fromXPub/{xpub}",
+    "name": "xpub",
+    "value": "xpub661MyMwAqRbcG4CnhNYoK1r1TKLwQQ1UdC3LHoWFK61rsnzh7Hx35qQ9Z53ucYcE5WvA7GEDXhqqKjSY2e6Y8n7WNVLYHpXCuuX945VPuYn"
+  },
+  {
     "key": "/block/detailsByHash/{hash}",
     "name": "hash",
     "value": "000000000000000005e14d3f9fdfb70745308706615cfa9edca4f4558332b201"

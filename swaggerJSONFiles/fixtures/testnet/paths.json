@@ -20,6 +20,11 @@
     "value": "bchtest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2svtllzmlf"
   },
   {
+    "key": "/address/fromXPub/{xpub}",
+    "name": "xpub",
+    "value": "tpubDHTK2jqg73w3GwoiHfAMbMYML1HN8FhrUxD9rFgbSgHXdwwrY6pAFqKDfUHhqw7vreaZty5hPGjb1S7ZPQeMmu6TFHAKfY9tJpYbvaGjPRM"
+  },
+  {
     "key": "/block/detailsByHash/{hash}",
     "name": "hash",
     "value": "0000000000262e9a70fae6c38cc9a91af2819b04521d2e9e99b7ae0328ee429d"
