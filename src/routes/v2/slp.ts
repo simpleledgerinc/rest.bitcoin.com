@@ -9,26 +9,36 @@ const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
 const strftime = require("strftime")
 
-const bitboxproxy = require("slpjs").bitbox
-const utils = require("slpjs").utils
-const slpjs = require("slpjs").slpjs
-
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
 util.inspect.defaultOptions = { depth: 5 }
 
-// SLP tx db
+// Instantiate BITBOX
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
+const BITBOX = new BITBOXCli()
+
+//const slpjs = require("slpjs").slpjs
+//const utils = new slpjs.Utils()
+const slp = require("slpjs").slpjs
+const slpjs = new slp.Slp(BITBOX)
+const utils = slp.Utils
+
+
+
+//console.log(`slpjs: ${util.inspect(slpjs)}`)
+console.log(`utils: ${util.inspect(utils)}`)
+
+
+// SLP tx db (LevelDB for caching)
 const level = require("level")
 const slpTxDb = level("./slp-tx-db")
 
+// Setup JSON RPC
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
 })
 const username = process.env.RPC_USERNAME
 const password = process.env.RPC_PASSWORD
-
-const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
-const BITBOX = new BITBOXCli()
 
 // const SLPsdk = require("slp-sdk/lib/SLP").default
 // const SLP = new SLPsdk()
@@ -78,6 +88,7 @@ async function getRawTransactionsFromNode(txids: string[]) {
   }
 }
 
+// Create a validator for validating SLP transactions.
 function createValidator(network: string, getRawTransactions: any = null): any {
   let tmpBITBOX: any
 
@@ -87,7 +98,7 @@ function createValidator(network: string, getRawTransactions: any = null): any {
     tmpBITBOX = new BITBOXCli({ restURL: "https://trest.bitcoin.com/v2/" })
   }
 
-  const slpValidator: any = new slpjs.LocalValidator(
+  const slpValidator: any = new slp.LocalValidator(
     tmpBITBOX,
     getRawTransactions
       ? getRawTransactions
@@ -97,10 +108,15 @@ function createValidator(network: string, getRawTransactions: any = null): any {
   return slpValidator
 }
 
+// Instantiate the local SLP validator.
 const slpValidator = createValidator(
   process.env.NETWORK,
   getRawTransactionsFromNode
 )
+
+// Instantiate the bitboxproxy class in SLPJS.
+const bitboxproxy = new slp.BitboxNetwork(BITBOX, slpValidator)
+//console.log(`bitboxproxy: ${util.inspect(bitboxproxy)}`)
 
 const requestConfig: IRequestConfig = {
   method: "post",
@@ -374,7 +390,9 @@ async function balancesForAddress(
     try {
       console.log(`address: ${address}`)
       let cash = utils.toCashAddress(address)
+      console.log(`cashAddr: ${cash}`)
     } catch (err) {
+      console.log(`err: ${util.inspect(err)}`)
       res.status(400)
       return res.json({
         error: `Invalid BCH address. Double check your address is valid: ${address}`
@@ -382,7 +400,9 @@ async function balancesForAddress(
     }
 
     // Prevent a common user error. Ensure they are using the correct network address.
+    console.log(`Address in: ${address}`)
     let cashAddr = utils.toCashAddress(address)
+    console.log(`cashAddr: ${cashAddr}`)
     const networkIsValid = routeUtils.validateNetwork(cashAddr)
     if (!networkIsValid) {
       res.status(400)
