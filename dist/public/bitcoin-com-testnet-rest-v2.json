@@ -1715,7 +1715,7 @@
 						"in": "path",
 						"description": "the extended public key",
 						"required": true,
-						"example": "",
+						"example": "tpubDHTK2jqg73w3GwoiHfAMbMYML1HN8FhrUxD9rFgbSgHXdwwrY6pAFqKDfUHhqw7vreaZty5hPGjb1S7ZPQeMmu6TFHAKfY9tJpYbvaGjPRM",
 						"schema": {
 							"type": "string"
 						}
