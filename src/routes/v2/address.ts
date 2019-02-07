@@ -815,7 +815,7 @@ async function fromXPubSingle(
 ) {
   try {
     const xpub = req.params.xpub
-    const hdPath = req.query.hdPath ? req.query.hdPath : "0/0"
+    const hdPath = req.query.hdPath ? req.query.hdPath : "0"
 
     if (!xpub || xpub === "") {
       res.status(400)
