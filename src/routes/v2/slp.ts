@@ -9,26 +9,29 @@ const routeUtils = require("./route-utils")
 const logger = require("./logging.js")
 const strftime = require("strftime")
 
-const bitboxproxy = require("slpjs").bitbox
-const utils = require("slpjs").utils
-const slpjs = require("slpjs").slpjs
-
 // Used to convert error messages to strings, to safely pass to users.
 const util = require("util")
 util.inspect.defaultOptions = { depth: 5 }
 
-// SLP tx db
+// Instantiate BITBOX
+const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
+const BITBOX = new BITBOXCli()
+
+// Instantiate SLPJS.
+const slp = require("slpjs")
+const slpjs = new slp.Slp(BITBOX)
+const utils = slp.Utils
+
+// SLP tx db (LevelDB for caching)
 const level = require("level")
 const slpTxDb = level("./slp-tx-db")
 
+// Setup JSON RPC
 const BitboxHTTP = axios.create({
   baseURL: process.env.RPC_BASEURL
 })
 const username = process.env.RPC_USERNAME
 const password = process.env.RPC_PASSWORD
-
-const BITBOXCli = require("bitbox-sdk/lib/bitbox-sdk").default
-const BITBOX = new BITBOXCli()
 
 // const SLPsdk = require("slp-sdk/lib/SLP").default
 // const SLP = new SLPsdk()
@@ -78,6 +81,7 @@ async function getRawTransactionsFromNode(txids: string[]) {
   }
 }
 
+// Create a validator for validating SLP transactions.
 function createValidator(network: string, getRawTransactions: any = null): any {
   let tmpBITBOX: any
 
@@ -87,7 +91,7 @@ function createValidator(network: string, getRawTransactions: any = null): any {
     tmpBITBOX = new BITBOXCli({ restURL: "https://trest.bitcoin.com/v2/" })
   }
 
-  const slpValidator: any = new slpjs.LocalValidator(
+  const slpValidator: any = new slp.LocalValidator(
     tmpBITBOX,
     getRawTransactions
       ? getRawTransactions
@@ -97,10 +101,15 @@ function createValidator(network: string, getRawTransactions: any = null): any {
   return slpValidator
 }
 
+// Instantiate the local SLP validator.
 const slpValidator = createValidator(
   process.env.NETWORK,
   getRawTransactionsFromNode
 )
+
+// Instantiate the bitboxproxy class in SLPJS.
+const bitboxproxy = new slp.BitboxNetwork(BITBOX, slpValidator)
+//console.log(`bitboxproxy: ${util.inspect(bitboxproxy)}`)
 
 const requestConfig: IRequestConfig = {
   method: "post",
@@ -331,10 +340,20 @@ async function listSingleToken(
       })
     }
 
+    //console.log(`formattedTokens: ${JSON.stringify(formattedTokens,null,2)}`)
+
     let t
     formattedTokens.forEach((token: any) => {
       if (token.id === req.params.tokenId) t = token
     })
+
+    // If token could not be found.
+    if(t === undefined) {
+      t = {
+        id: 'not found'
+      }
+    }
+
     return res.json(t)
   } catch (err) {
     const { msg, status } = routeUtils.decodeError(err)
@@ -389,11 +408,15 @@ async function balancesForAddress(
     )
     return res.json(balances)
   } catch (err) {
+    //console.log(`Error object: ${util.inspect(err)}`)
+
+    // Decode the error message.
     const { msg, status } = routeUtils.decodeError(err)
     if (msg) {
       res.status(status)
       return res.json({ error: msg })
     }
+
     res.status(500)
     return res.json({
       error: `Error in /balancesForAddress/:address: ${err.message}`

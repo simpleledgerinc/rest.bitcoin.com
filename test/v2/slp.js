@@ -168,13 +168,26 @@ describe("#SLP", () => {
       //assert.include(result.error,"Network error: Could not communicate with full node","Error message expected")
     })
 
-    /*
-      TODO: Target Testnet
-      TODO: Add code to catch testnet calls on mainnet, and vice versa.
-      Dev Note: CT 2/6/19 - The SLP Token ID used below is a mainnet TXID, even
-      though these unit tests are geared for testnet. At the moment, we do not
-      have a testnet BitDB to target.
-    */
+    it("should return 'not found' for mainnet txid on testnet", async () => {
+      // Mock the RPC call for unit tests.
+      if (process.env.TEST === "unit") {
+        nock(mockServerUrl)
+          .get(uri => uri.includes("/"))
+          .reply(200, mockData.mockSingleToken)
+      }
+
+      req.params.tokenId =
+        // testnet
+        //"650dea14c77f4d749608e36e375450c9ac91deb8b1b53e50cb0de2059a52d19a"
+        // mainnet
+        "259908ae44f46ef585edef4bcc1e50dc06e4c391ac4be929fae27235b8158cf1"
+
+      const result = await listSingleToken(req, res)
+      //console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ["id"])
+      assert.include(result.id, "not found")
+    })
 
     it("should get token information", async () => {
       // Mock the RPC call for unit tests.
@@ -209,7 +222,7 @@ describe("#SLP", () => {
 
     it("should throw 400 if address is empty", async () => {
       const result = await balancesForAddress(req, res)
-      // console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "address can not be empty")
@@ -230,34 +243,37 @@ describe("#SLP", () => {
         "simpleledger:qr5agtachyxvrwxu76vzszan5pnvuzy8duhv4lxrsk"
 
       const result = await balancesForAddress(req, res)
-      // console.log(`result: ${util.inspect(result)}`)
+      //console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ["error"])
       assert.include(result.error, "Invalid")
     })
-    //
-    // it("should throw 503 when network issues", async () => {
-    //   // Save the existing BITDB_URL.
-    //   const savedUrl2 = process.env.BITDB_URL
-    //
-    //   // Manipulate the URL to cause a 500 network error.
-    //   process.env.BITDB_URL = "http://fakeurl/api/"
-    //
-    //   req.params.address = "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5"
-    //
-    //   const result = await balancesForAddress(req, res)
-    //   console.log(`result: ${util.inspect(result)}`)
-    //
-    //   // Restore the saved URL.
-    //   process.env.BITDB_URL = savedUrl2
-    //
-    //   assert.equal(res.statusCode, 503, "HTTP status code 503 expected.")
-    //   assert.include(
-    //     result.error,
-    //     "Network error: Could not communicate with full node",
-    //     "Error message expected"
-    //   )
-    // })
+
+    // I don't think balancesForAddress() works yet, as it comes from slp-sdk?
+    /*
+    it("should throw 5XX error when network issues", async () => {
+      // Save the existing BITDB_URL.
+      const savedUrl2 = process.env.BITDB_URL
+
+      // Manipulate the URL to cause a 500 network error.
+      process.env.BITDB_URL = "http://fakeurl/api/"
+
+      req.params.address = "slptest:qz35h5mfa8w2pqma2jq06lp7dnv5fxkp2shlcycvd5"
+
+      const result = await balancesForAddress(req, res)
+      console.log(`result: ${util.inspect(result)}`)
+
+      // Restore the saved URL.
+      process.env.BITDB_URL = savedUrl2
+
+      assert.isAbove(res.statusCode, 499, "HTTP status code 500 or greater expected.")
+      assert.include(
+        result.error,
+        "Network error: Could not communicate",
+        "Error message expected"
+      )
+    })
+*/
   })
 
   describe("balancesForAddressByTokenID()", () => {
